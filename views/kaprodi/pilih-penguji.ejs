@@ -1,0 +1,108 @@
+<div class="mobile-spacer d-block d-md-none" style="height: 3.5rem;"></div>
+
+<h1 class="text-center mb-4">Memilih Dosen Penguji</h1>
+
+<div class="container" style="max-width: 800px;">
+  <div class="card shadow-sm">
+    <div class="card-body">
+            <form action="/kaprodi/penetapan-penguji/pilih-penguji/<%= mhs.npm %>" method="POST">
+  <!-- input hidden atau data lain kalau perlu -->
+  <input type="hidden" name="jadwalId" value="<%= mhs.id %>">
+  
+        <div class="form-group">
+
+          <div class="row h3 mb-2">
+            <div class="col-5">Nama</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= mhs.nama %></div>
+          </div>
+
+          <div class="row h3 mb-2">
+            <div class="col-5">NPM</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= mhs.npm %></div>
+          </div>
+
+          <div class="row h3 mb-2 align-items-center">
+            <div class="col-5">Dosen Pembimbing 1</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= mhs.dosbing1 %></div>
+          </div>
+
+          <div class="row h3 mb-2 align-items-center">
+            <div class="col-5">Dosen Pembimbing 2</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= mhs.dosbing2 %></div>
+          </div>
+
+          <div class="row h3 mb-2 align-items-center">
+            <div class="col-5">Hari/Tanggal</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= tanggal %></div>
+          </div>
+
+          <div class="row h3 mb-2 align-items-center">
+            <div class="col-5">Waktu</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= waktu %></div>
+          </div>
+
+          <div class="row h3 mb-2 align-items-center">
+            <div class="col-5">Tempat</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= mhs.tempat %></div>
+          </div>          
+          
+          <div class="row h3 mb-2 align-items-center">
+            <div class="col-5">Pelaksanaan</div>
+            <div class="col-1">:</div>
+            <div class="col-6 text-black-50"><%= mhs.pelaksanaan %></div>
+          </div>
+
+          <div class="row h3 mb-3 align-items-center">
+            <div class="col-5">Dosen Penguji</div>
+            <div class="col-1">:</div>
+            <div class="col-6">
+              
+              <select class="form-select" name="dosenIds" required>
+                <option value="">-- Pilih Dosen Penguji --</option>
+                
+                <% daftarDosen.forEach(d => { %>
+                  <option value="<%= d.id %>">
+                    <%= d.kode_dosen ? '[' + d.kode_dosen + ']' + ' - '  : '' %><%= d.nama %>
+                  </option>
+                <% }) %>
+                
+              </select>
+
+            </div>
+          </div>
+          </div>
+
+          <div class="text-end mt-4">
+  <div class="text-end">
+    <%- include('../partials/button', { 
+          buttonType: 'submit', 
+          buttonLabel: 'Menetapkan', 
+          buttonTarget: '', 
+          buttonStatus: '' 
+    }) %>
+  </div>
+</form>
+
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <%- include('../partials/button', {
+      buttonType: 'back',
+      buttonLabel: 'Kembali',
+      buttonTarget: '/kaprodi/penetapan-penguji',
+      buttonStatus: ''
+    }) %>
+  </div>
+</div>

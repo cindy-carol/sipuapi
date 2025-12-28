@@ -1,0 +1,223 @@
+
+  <div>
+  <%
+    const type = buttonType || 'redirect'; // back, submit, redirect, download, modal, status, upload, statusLabel, edit, acc
+    const label = buttonLabel || 'Tombol';
+    const target = buttonTarget || '#';
+    const status = buttonStatus || 'enable'; // success, disabled, warning, enable
+  %>
+
+  <% if (type === 'back') { %>
+    <button class="btn btn-secondary btn-back mb-4" data-target="<%= target %>"><%= label %></button>
+
+  <% } else if (type === 'submit') { %>
+    <div class="text-end mt-auto">
+      <button type="submit" class="btn btn-info <%= status === 'disabled' ? 'disabled' : '' %>" <%= status === 'disabled' ? 'disabled' : '' %>>
+        <%= label %>
+      </button>
+    </div>
+
+<% } else if (type === 'redirect') { %>
+    <button 
+      class="btn btn-primary btn-redirect <%= status === 'disabled' ? 'disabled' : '' %>" 
+      data-target="<%= target %>"
+      <%= status === 'disabled' ? 'disabled' : '' %> 
+      style="<%= status === 'disabled' ? 'pointer-events: none; opacity: 0.6;' : '' %>"
+    >
+      <%= label %>
+    </button>
+
+<% } else if (buttonType === 'download') { %>
+  
+  <a href="/admin/verifikasi/surat-undangan/<%= buttonTarget %>/generate" 
+     class="btn <%= buttonStatus %> position-relative">
+    
+    <%= buttonLabel %>
+    
+    <% if (typeof isNew !== 'undefined' && isNew) { %>
+        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+            <span class="visually-hidden">New Alert</span>
+        </span>
+    <% } %>
+
+  </a>
+  
+<% } else if (type === 'downloadSurat') { %>
+  <% if (target && target !== '#') { %>
+      <% 
+        // Mengambil NPM dari target path (asumsi path mengandung NPM) 
+        // atau gunakan variabel npm jika Anda mengirimkannya lewat include
+        const namaFileDownload = (typeof npm !== 'undefined') ? `Surat_Undangan_${npm}.pdf` : 'Surat_Undangan.pdf';
+      %>
+      <a href="<%= target %>" 
+         download="<%= namaFileDownload %>" 
+         class="btn btn-primary">
+         <i class="bi bi-file-earmark-arrow-down-fill"></i> <%= label %>
+      </a>
+      
+      <small class="text-success fst-italic d-block text-center mt-1" style="font-size: 0.8rem;">
+         <i class="bi bi-check-all"></i> Surat siap diunduh.
+      </small>
+
+<% } else { %>
+
+    <button class="btn btn-primary" disabled>
+       <i class="bi bi-hourglass-split"></i> Menunggu Terbit
+    </button>
+    
+    <small class="text-muted fst-italic d-block text-center mb-2" style="font-size: 0.8rem;">
+       *Admin belum upload surat.
+    </small>
+
+<% } %>
+
+
+  <% } else if (type === 'modal' || type === 'upload') { %>
+    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="<%= target %>"><%= label %></button>
+
+    <% } else if (type === 'add') { %>
+    <button type="button" class="btn btn-info btn-sm " data-bs-toggle="modal" data-bs-target="<%= target %>">
+    <i class="bi bi-plus-circle"></i> <%= label %>
+  </button>
+    
+    
+  <% } else if (type === 'editInfo') { %>
+  <!-- Tombol Edit (Versi Compact) -->
+  <button type="button" class="btn btn-info btn-sm text-white btn-edit-rincian shadow-sm px-3" title="Edit">
+     <i class="bi bi-pencil-square"></i>
+  </button>
+  <button type="button" class="btn btn-success btn-sm text-white btn-save-rincian d-none shadow-sm px-3" title="Simpan">
+     <i class="bi bi-check-lg"></i>
+  </button>
+  <button type="button" class="btn btn-secondary btn-sm text-white btn-cancel-rincian d-none shadow-sm px-3" title="Batal">
+     <i class="bi bi-x-lg"></i>
+  </button>  
+  
+  
+<% } else if (type === 'editDosen') { %>
+  <button type="button" class="btn btn-info btn-sm text-white btn-edit-dosen shadow-sm px-3" 
+          data-id="<%= dosen.id %>" title="Edit">
+     <i class="bi bi-pencil-square"></i>
+  </button>
+  
+  <button type="button" class="btn btn-success btn-sm text-white btn-save-dosen d-none shadow-sm px-3" 
+          data-id="<%= dosen.id %>" title="Simpan">
+     <i class="bi bi-check-lg"></i>
+  </button>
+  
+  <button type="button" class="btn btn-secondary btn-sm text-white btn-cancel-dosen d-none shadow-sm px-3" 
+          title="Batal">
+     <i class="bi bi-x-lg"></i>
+  </button>
+
+
+    <% } else if (type === 'editMhs') { %>
+  <button type="button" class="btn btn-info btn-sm text-white btn-edit-mhs shadow-sm px-3" title="Edit">
+     <i class="bi bi-pencil-square"></i>
+  </button>
+  <button type="button" class="btn btn-success btn-sm text-white btn-save-mhs d-none shadow-sm px-3" title="Simpan">
+     <i class="bi bi-check-lg"></i>
+  </button>
+  <button type="button" class="btn btn-secondary btn-sm text-white btn-cancel-mhs d-none shadow-sm px-3" title="Batal">
+     <i class="bi bi-x-lg"></i>
+  </button>
+
+      <% } else if (type === 'editDosbing') { %>
+  <button type="button" class="btn btn-info btn-sm text-white btn-edit-dosbing shadow-sm px-3" title="Edit">
+     <i class="bi bi-pencil-square"></i>
+  </button>
+  <button type="button" class="btn btn-success btn-sm text-white btn-save-dosbing d-none shadow-sm px-3" title="Simpan">
+     <i class="bi bi-check-lg"></i>
+  </button>
+  <button type="button" class="btn btn-secondary btn-sm text-white btn-cancel-dosbing d-none shadow-sm px-3" title="Batal">
+     <i class="bi bi-x-lg"></i>
+  </button>
+
+
+<% } else if (type === 'done') { %>
+<button 
+  type="button"
+  class="btn btn-mini btn-done"
+  data-id="<%= mhs.id %>"
+  data-target="#modalConfirm">
+  Tandai Selesai <i class="bi bi-check2-circle me-1"></i>
+</button>
+
+  <% } else if (type === 'editSurat') { %>
+    <button 
+      type="button" 
+      class="btn btn-sm btn-secondary btn-edit-surat"
+      data-npm="<%= target %>"
+    >
+      <i class="bi bi-pencil-square"></i> <%= label %>
+    </button>
+
+
+<%- include('modal', {
+  id: 'modalConfirm',
+  type: 'confirm',
+  title: 'Konfirmasi',
+  body: 'Apakah Anda yakin ingin menandai ujian selesai?',
+  catatan: '',
+  src: ''
+}) %>
+
+    
+    <% } else if (type === 'export') { %>
+<a href="/admin/monitoring/export?<%= selectedTahunId ? 'tahun_ajaran=' + selectedTahunId : '' %>" class="btn btn-info">
+  <i class="bi bi-file-earmark-excel"></i> Export Excel
+</a>
+
+    
+    
+  <% } else if (type === 'delete') { %>
+    <button class="btn btn-danger btn-sm btn-delete">
+      <i class="bi bi-trash"></i>
+    </button>
+
+
+<% } else if (type === 'status') { %>
+  <%
+    const berkasId = berkas?.id || '';
+    // Gunakan status_verifikasi dari database (true/false/null)
+    const verif = berkas?.status_verifikasi; 
+    
+    let val = ''; 
+    let btnClass = 'btn-info'; // Default abu-abu/biru muda (Menunggu)
+
+    if (verif === true) {
+        val = 'true';
+        btnClass = 'btn-success';
+    } else if (verif === false) {
+        val = 'false';
+        btnClass = 'btn-danger';
+    }
+  %>
+  
+  <select 
+    id="status-<%= berkasId %>"
+    class="status-select btn <%= btnClass %> dropdown-toggle my-2"
+    data-id="<%= berkasId %>"
+  >
+    <option value="" <%= (val === '') ? 'selected' : '' %>>Status</option>
+    
+    <option value="true" <%= (val === 'true') ? 'selected' : '' %>>Disetujui</option>
+    
+    <option value="false" <%= (val === 'false') ? 'selected' : '' %>>Tidak Disetujui</option>
+  </select>
+
+
+  <% } else if (type === 'statusLabel') { %>
+    <button class="btn
+      <% if (status === 'success') { %> btn-success
+      <% } else if (status === 'disabled') { %> btn-info disabled
+      <% } else if (status === 'warning') { %> btn-warning
+      <% } else if (status === 'empty') { %> btn-outline border-0 fw-bold fs-6
+      <% } else { %> btn-info <% } %>"
+      <% if (status !== 'disabled' && target) { %>
+        onclick="window.location.href='<%= target %>'"
+      <% } %>>
+      <%= label %>
+    </button>
+  <% } %>
+  </div>

@@ -1,0 +1,90 @@
+<div class="end-0">
+  <% 
+    // ==========================================
+    // 1. LOGIKA DETEKSI ROLE & USER
+    // ==========================================
+    let userRole = '';
+    let userName = '';
+    let isUserLoggedIn = false;
+
+    if (typeof user !== 'undefined' && user && user.id) {
+        isUserLoggedIn = true;
+        userName = user.nama || ''; 
+        
+        if (user.role) {
+            userRole = user.role.toString().toLowerCase();
+        }
+    } 
+  %>
+
+  <% if (isUserLoggedIn) { %>
+      
+      <% if (userRole === 'mahasiswa') { %>
+        
+        <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center me-3">
+                <i class="bi bi-person-circle fs-4 me-2"></i>
+                <span class="fw-bold text-capitalize">
+                    <%= userName || 'Mahasiswa' %>
+                </span>
+            </div>
+
+            <div class="vr me-3" style="height: 25px;"></div>
+
+            <a href="/logout" class="btn btn-outline-danger btn-sm border-0" title="Keluar">
+                <i class="bi bi-power fs-4"></i>
+            </a>
+        </div>
+
+      <% } else { %>
+
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none text-dark dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-person-circle fs-4 me-2"></i>
+              <span class="me-2 fw-bold text-capitalize">
+                
+                <%# 🔥 LOGIKA BARU: JIKA KAPRODI TAMPILKAN 'KAPRODI', SELAIN ITU NAMA ASLI %>
+                <% if (userRole === 'kaprodi') { %>
+                    Kaprodi
+                <% } else { %>
+                    <%= userName || userRole || 'User' %>
+                <% } %>
+
+              </span>
+            </a>
+        
+            <ul class="dropdown-menu dropdown-menu-end shadow animate slideIn" aria-labelledby="userDropdown">
+              <li>
+                <button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#modalProfile">
+                  <i class="bi bi-person-gear me-2 text-primary"></i> Pengaturan Akun
+                </button>
+              </li>
+              
+              <li><hr class="dropdown-divider"></li>
+              
+              <li>
+                <a class="dropdown-item py-2 text-danger" href="/logout">
+                  <i class="bi bi-power me-2"></i> Keluar
+                </a>
+              </li>
+            </ul>
+        </div>
+
+        <%- include('modal', { 
+            id: 'modalProfile', 
+            type: 'profile', 
+            title: 'Pengaturan Akun', 
+            body: '', 
+            src: '', 
+            catatan: '', 
+            customData: { 
+                nama: userName, 
+                username: user.username,
+                role: userRole
+            } 
+        }) %>
+
+      <% } %>
+
+  <% } %> 
+</div>

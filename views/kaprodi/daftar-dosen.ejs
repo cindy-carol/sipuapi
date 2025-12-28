@@ -1,0 +1,36 @@
+<h1 class="mb-4">Daftar Dosen</h1>
+<!-- Tabel Dosen -->
+<div class="table-responsive mt-3">
+  <table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th scope="col" style="width:1%">No.</th>
+        <th scope="col" style="width: 1%;">NIP</th>
+        <th scope="col" style="width: 20%;">Nama Dosen</th>
+        <th scope="col" style="width: 5%;">Status</th>
+        <th scope="col" style="width: 5%;">Jabatan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (dosen && dosen.length > 0) { %>
+        <% dosen.forEach((d, index) => { %>
+          <tr>
+            <th scope="row"><%= index + 1 %></th>
+            <td class="editable" data-field="nip_dosen"><%= d.nip_dosen %></td>
+            <td class="editable text-start" data-field="nama"><%= d.nama %></td>
+            <td class="editable" data-field="status_aktif">
+              <%= d.status_aktif ? "Aktif" : "Non Aktif" %>
+            </td>
+            <td class="editable" data-field="jabatan" data-options='["Kaprodi","Dosen"]'>
+              <%= d.jabatan %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="7" class="text-muted py-4">Tidak ada data dosen</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Admin</title>
+<link href="/css/bootstrap.css" rel="stylesheet">
+<style>
+    body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  min-height: 100vh;
+}
+</style>
+</head>
+<body>
+
+<!-- Toggle button -->
+<button class="btn bg-white" id="toggleSidebar">☰</button>
+
+<% if (role === 'admin') { %>
+<!-- Sidebar -->
+<div class="sidebar">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+     <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/<%= role %>/dashboard">Beranda</a>
+
+<li class="nav-item">
+  <!-- Tombol utama daftar -->
+  <a id="toggleDaftar" 
+     class="nav-link d-flex justify-content-between align-items-center <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'active' : '' %>" 
+     href="#">
+
+     <span>Dosen & Mahasiswa</span>
+     <!-- Icon dropdown -->
+     <i id="iconDropdown" 
+        class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %>">
+     </i>
+  </a>
+
+  <!-- Submenu daftar dosen & mahasiswa -->
+  <ul class="nav flex-column ms-3" id="daftarSubmenu" 
+      style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;">
+    <li>
+      <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/<%= role %>/daftar-dosen">
+        Daftar Dosen
+      </a>
+    </li>
+    <li>
+      <a class="nav-link <%= activePage === 'daftar-mahasiswa' ? 'active' : '' %>" href="/<%= role %>/daftar-mahasiswa">
+        Daftar Mahasiswa
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'bagi-dosbing' ? 'active' : '' %>" href="/<%= role %>/bagi-dosbing">Dosen Pembimbing</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'verifikasi' ? 'active' : '' %>" href="/<%= role %>/verifikasi">Verifikasi Pendaftaran</a>
+    </li>            
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'jadwal-ujian' ? 'active' : '' %>" href="/<%= role %>/jadwal-ujian">Jadwal Ujian</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'monitoring' ? 'active' : '' %>" href="/<%= role %>/monitoring">Monitoring</a>
+    </li>    
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'kelola-akun' ? 'active' : '' %>" href="/<%= role %>/kelola-akun">Kelola Akun</a>
+    </li>
+
+  </ul>
+</div>
+<% } %>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleDaftar = document.getElementById('toggleDaftar');
+  const daftarSubmenu = document.getElementById('daftarSubmenu');
+
+  toggleDaftar.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (daftarSubmenu.style.display === 'none') {
+      daftarSubmenu.style.display = 'block';
+    } else {
+      daftarSubmenu.style.display = 'none';
+    }
+  });
+});
+</script>
+</body>
+</html>

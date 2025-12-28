@@ -1,0 +1,78 @@
+<style>
+  /* --- Style Header Bersih --- */
+  .header-clean {
+    background-color: #fff; /* Putih Bersih */
+    border-top: 5px solid #003875; /* Topi Biru Unila (Penanda Identitas) */
+    border-bottom: 3px solid #e0e0e0; /* Garis tipis di bawah biar ada batesnya */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+  }
+
+  /* Logo PPI jadi ga perlu aneh-aneh, cukup pastiin ukurannya pas */
+  .logo-ppi-clean {
+    height: 55px;
+    width: auto;
+    /* Ga perlu background white lagi karena headernya udah putih! */
+  }
+
+
+  /* ... Style yang sudah ada ... */
+
+  /* Judul Utama: Menggunakan clamp agar ukuran font dinamis tapi punya batas */
+  .text-judul-utama {
+    color: #003875;
+    font-weight: 700;
+    /* Font akan fleksibel antara 0.8rem sampai 1.1rem tergantung lebar layar */
+    font-size: clamp(0.8rem, 2.5vw, 1.1rem); 
+    line-height: 1.2;
+  }
+  
+  /* Sub Judul: Disesuaikan agar sedikit lebih kecil dari judul utama */
+  .text-sub-judul {
+    color: #444;
+    font-weight: 400;
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    line-height: 1.2;
+  }
+
+  /* Responsif khusus layar sangat kecil (Mobile Portrait) */
+  @media (max-width: 576px) {
+    .logo-ppi-clean {
+      height: 40px; /* Perkecil logo sedikit di HP */
+    }
+    .header-clean img[alt="Logo Unila"] {
+      height: 40px !important;
+    }
+    .gap-3 {
+      gap: 0.5rem !important; /* Rapatkan jarak antar logo dan teks */
+    }
+  }
+</style>
+
+<div class="container-fluid mb-0 shadow-sm header-clean"> 
+  <div class="container mb-0 py-2 d-flex align-items-center justify-content-between">
+      
+      <div class="d-flex align-items-center gap-3">
+          <img src="/images/unila.png" 
+               style="height: 50px; width: auto;" 
+               alt="Logo Unila">
+          
+          <img src="/images/psppi.png" class="logo-ppi-clean" alt="Logo PPI">
+          
+          <div class="lh-sm"> 
+            <h3 class="mb-0 text-judul-utama">
+                Sistem Informasi Pendaftaran Ujian Akhir Profesi
+            </h3>
+            <h4 class="mb-0 text-sub-judul">
+                Program Profesi Insinyur Universitas Lampung
+            </h4>
+          </div>
+      </div>
+
+      <div class="ms-2">
+          <%- include('../partials/card-role', { 
+              role: (typeof role !== 'undefined' ? role : ''), 
+              user: (typeof user !== 'undefined' ? user : null) 
+          }) %>
+      </div>
+  </div>
+</div>

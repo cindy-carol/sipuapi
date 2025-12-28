@@ -1,0 +1,72 @@
+<h1 class="mb-4">Daftar Penetapan Dosen Penguji</h1>
+<div class="row flex-nowrap overflow-auto">
+  <% quickView.forEach((p) => { %>
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <!-- Bagian judul -->
+          <h3 class="mb-3 fw-bold text-center">
+            <%= p.nama_tahun %> - <%= p.semester %>
+          </h3>
+
+          <!-- Bagian badge -->
+<div class="d-flex flex-column gap-1">
+  <div class="d-flex justify-content-between align-items-center p-1 rounded border border-danger-subtle bg-danger-subtle bg-opacity-10" style="font-size: 0.9rem;">
+    <small class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i> Belum Daftar</small>
+    <span class="badge rounded-pill bg-danger"><%= p.belum %></span>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center p-2 rounded border border-warning-subtle bg-warning-subtle bg-opacity-10" style="font-size: 0.9rem;">
+    <small class="text-warning-emphasis fw-bold"><i class="bi bi-hourglass-split me-1"></i> Menunggu Penguji</small>
+    <span class="badge rounded-pill bg-warning text-dark"><%= p.menunggu %></span>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center p-2 rounded border border-success-subtle bg-success-subtle bg-opacity-10" style="font-size: 0.9rem;">
+    <small class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i> Sudah Dapat Penguji</small>
+    <span class="badge rounded-pill bg-success"><%= p.dapat %></span>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+
+<div class="table-responsive">
+  <table class="table table-bordered h4 text-center fw-medium">
+    <thead>
+      <tr>
+        <th>No.</th>
+        <th>NPM</th>
+        <th>Nama Mahasiswa</th>
+        <th>Tahun Ajaran</th>
+        <th>Status Validasi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (mahasiswaBelum && mahasiswaBelum.length > 0) { %>
+        <% mahasiswaBelum.forEach((mhs, index) => { %>
+          <tr>
+            <th scope="row"><%= index + 1 %></th>
+            <td><%= mhs.npm %></td>
+            <td class="text-start"><%= mhs.nama %></td>
+            <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
+            <td>
+              <%- include('../partials/button', { 
+                buttonType: 'statusLabel', 
+                buttonLabel: 'Pilih Dosen Penguji', 
+                buttonTarget: `/kaprodi/penetapan-penguji/pilih-penguji/${mhs.npm}`, 
+                buttonStatus: '' 
+              }) %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="text-center">Belum ada data mahasiswa</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

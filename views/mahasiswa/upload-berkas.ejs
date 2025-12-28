@@ -1,0 +1,202 @@
+<div class="mobile-spacer d-block d-md-none" style="height: 3.5rem;"></div>
+
+<div class="container" style="width: 95%">
+<% 
+  const data = (typeof berkasMahasiswa !== 'undefined' && berkasMahasiswa) ? berkasMahasiswa : {};
+
+  const rpl = data.dokumen_rpl || {};
+  const artikel = data.draft_artikel || {};
+  const asistensi = data.kartu_asistensi || {};
+
+  // --- 🔥 LOGIKA KUNCI GLOBAL DI SINI ---
+  // 1. Cek syarat wajib utama
+  const isRplAcc = rpl.status === true;
+  const isArtikelAcc = artikel.status === true;
+
+  // 2. Cek semua file asistensi yang diupload harus sudah ACC (seperti diskusi kita sebelumnya)
+  const listAsistensiData = [asistensi1, asistensi2, asistensi3];
+  const uploadedAsistensi = listAsistensiData.filter(a => a && a.path);
+  const isAsistensiClear = uploadedAsistensi.length > 0 && uploadedAsistensi.every(a => a.status === true);
+
+  // 3. Gabungkan: Kunci jika syarat utama ACC DAN semua asistensi yang ada sudah ACC
+  const isGlobalLocked = isRplAcc && isArtikelAcc && isAsistensiClear;
+%>
+
+<h1 class="mb-4">Halaman Upload Berkas Ujian Akhir Profesi</h1>
+<%- include('../partials/card-mahasiswa') %>
+
+<h3 class="fw-bold mb-3">Silakan upload berkas di sini</h3>
+
+<table class="table table-bordered text-center fw-semibold align-middle">
+  <thead class="table-light">
+    <tr>
+      <th scope="col">No.</th>
+      <th scope="col">Syarat Berkas</th>
+      <th scope="col" style="width: 33%">Upload</th>
+      <th scope="col" style="width: 30%;">Validasi</th> 
+    </tr>
+  </thead>
+<tbody>
+  <tr>
+    <th scope="row">1</th>
+    <td>Dokumen RPL</td>
+    <td class="align-middle text-center">
+      <div class="d-flex justify-content-center align-items-center w-100">
+        <%- include("../partials/upload", { 
+            namaFile: "dokumen_rpl", 
+            formAction: "/mahasiswa/upload-berkas/upload",
+            buttonLabel: "Upload Berkas",
+            existingFile: rpl.path,
+            statusVerifikasi: rpl.status,
+            locked: isGlobalLocked 
+        }) %>
+      </div>
+    </td>
+    <td class="align-middle">
+      <% if (rpl.path) { %>
+        <% if (rpl.status === true) { %>
+          <div class="alert alert-success p-2 mb-0 small"><i class="bi bi-check-circle-fill"></i> Disetujui</div>
+        <% } else if (rpl.status === false) { %>
+          <div class="alert alert-danger p-2 mb-0 small text-start">
+            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Perlu Revisi:</div>
+            <%= rpl.catatan || 'Mohon perbaiki berkas ini.' %>
+          </div>
+        <% } else { %>
+          <span class="badge bg-warning text-dark py-2 px-3"><i class="bi bi-hourglass-split"></i> Sedang Diperiksa</span>
+        <% } %>
+      <% } else { %><span class="text-muted">-</span><% } %>
+    </td>
+  </tr>
+
+  <tr>
+    <th scope="row">2</th>
+    <td>Draft Artikel</td>
+    <td class="align-middle text-center">
+      <div class="d-flex justify-content-center align-items-center w-100">
+        <%- include("../partials/upload", { 
+          namaFile: "draft_artikel", 
+          formAction: "/mahasiswa/upload-berkas/upload",
+          buttonLabel: "Upload Berkas",
+          existingFile: artikel.path,
+          statusVerifikasi: artikel.status,
+          locked: isGlobalLocked
+        }) %>
+      </div>
+    </td>
+    <td class="align-middle">
+      <% if (artikel.path) { %>
+        <% if (artikel.status === true) { %>
+          <div class="alert alert-success p-2 mb-0 small"><i class="bi bi-check-circle-fill"></i> Disetujui</div>
+        <% } else if (artikel.status === false) { %>
+          <div class="alert alert-danger p-2 mb-0 small text-start">
+            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Perlu Revisi:</div>
+            <%= artikel.catatan || 'Mohon perbaiki berkas ini.' %>
+          </div>
+        <% } else { %>
+          <span class="badge bg-warning text-dark py-2 px-3"><i class="bi bi-hourglass-split"></i> Sedang Diperiksa</span>
+        <% } %>
+      <% } else { %><span class="text-muted">-</span><% } %>
+    </td>
+  </tr>
+
+<tr>
+  <th scope="row" class="align-top text-center">
+    <div style="margin-top: 32px;"> 
+      3
+    </div>
+  </th>
+  
+  <td class="align-top fw-semibold">
+    <div style="margin-top: 32px;"> Kartu Asistensi / ACC
+    </div>
+  </td> 
+  
+  <td class="p-2 align-middle">
+    <div class="d-flex flex-column gap-3">
+        <% 
+            const listAsistensi = [
+                { data: asistensi1, key: "1" },
+                { data: asistensi2, key: "2" },
+                { data: asistensi3, key: "3" }
+            ];
+            listAsistensi.forEach((item, index) => { 
+        %>
+          <div class="p-2 border rounded-3 bg-white shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold text-dark" style="font-size: 0.95rem;">Bukti <%= item.key %></span>
+              <span class="badge <%= index === 0 ? 'bg-danger' : 'bg-secondary' %>" style="font-size: 0.75rem;"><%= index === 0 ? 'Wajib' : 'Opsional' %></span>
+            </div>
+            <div class="upload-wrapper-full d-flex justify-content-center align-items-center w-100">
+                <%- include("../partials/upload", { 
+                    namaFile: "kartu_asistensi_" + item.key, 
+                    formAction: "/mahasiswa/upload-berkas/upload",
+                    buttonLabel: item.data.path ? "Ganti File" : "Upload File",
+                    existingFile: item.data.path,
+                    statusVerifikasi: item.data.status,
+                    locked: isGlobalLocked
+                }) %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </td>
+<td class="text-start p-2 align-middle">
+  <div class="d-flex flex-column gap-3"> <% listAsistensi.forEach((item) => { %>
+      <div class="d-flex align-items-center" style="height: 82px;"> 
+        <% if (item.data.path) { %>
+          <% if (item.data.status === true) { %>
+            <div class="alert alert-success p-2 mb-0 small w-100 h-100 d-flex align-items-center justify-content-center">
+              <i class="bi bi-check-circle-fill me-2"></i> Disetujui
+            </div>
+          <% } else if (item.data.status === false) { %>
+            <div class="alert alert-danger p-2 mb-0 small text-start w-100 h-100 overflow-auto">
+              <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Revisi:</div> 
+              <%= item.data.catatan || 'Mohon perbaiki berkas ini.' %>
+            </div>
+          <% } else { %>
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+              <span class="badge bg-warning text-dark py-2 px-3 shadow-sm">
+                <i class="bi bi-hourglass-split"></i> Sedang Diperiksa
+              </span>
+            </div>
+          <% } %>
+        <% } else { %>
+          <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+            <span style="font-size: 1.2rem;">-</span>
+          </div>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</td>
+  </tr>
+</tbody>
+</table>
+  <div class="mt-3">
+    <%- include('../partials/button', { buttonType: 'back', buttonLabel: 'Kembali', buttonTarget: '/mahasiswa/dashboard', buttonStatus: '' }) %>
+  </div>
+</div>
+
+
+<script>
+async function hapusFile(jenis) {
+    if (!confirm('Yakin ingin menghapus file ini?')) return;
+
+    try {
+        const res = await fetch('/mahasiswa/upload-berkas/delete', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jenis_berkas: jenis })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            location.reload(); // Refresh biar tombol hapusnya ilang & status update
+        } else {
+            alert('Gagal: ' + data.message);
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan koneksi');
+    }
+}
+</script>

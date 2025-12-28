@@ -1,0 +1,22 @@
+<h1>Jadwal Ujian</h1>
+<div class="d-flex align-items-center gap-4 mt-3">
+
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-success p-2" style="pointer-events:none;"></button>
+    <span>Offline</span>
+  </div>
+
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-info p-2" style="pointer-events:none;"></button>
+    <span>Online</span>
+  </div>
+
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn" style="background-color: #8f979c; pointer-events:none;"></button>
+    <span>Menunggu Verifikasi</span>
+  </div>
+
+</div>
+
+  <%- include('../partials/calendar', {role: 'admin', events: events}) %>  
+

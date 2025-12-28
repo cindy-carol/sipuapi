@@ -1,0 +1,120 @@
+<h1 class="mb-4">Daftar Mahasiswa</h1>
+
+<div class="container d-flex align-items-center justify-content-between flex-wrap gap-3">
+  <!-- Grup kiri -->
+<%- include('../partials/tahun-ajaran', { targetUrl: '/admin/daftar-mahasiswa' }) %>
+
+  <!-- Grup kanan -->
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <!-- Upload Excel -->
+    <%- include('../partials/upload', { 
+      namaFile: "daftar_mahasiswa", 
+      formAction: "/admin/daftar-mahasiswa/upload",
+      buttonLabel: "Upload Excel"
+    }) %>
+
+        <%- include('../partials/button', {
+    buttonType: 'add',
+    buttonLabel: 'Tambah Mahasiswa',
+    buttonTarget: '#modalTambahMhs',
+    buttonStatus: ''
+  }) %>
+
+    <%- include('../partials/modal', {
+    id: 'modalTambahMhs',
+    type: 'tambahMhs',
+    title: 'Tambah Data Mahasiswa',
+    body: '',
+    catatan: '',
+    src: ''
+  }) %>
+
+    <!-- Tombol Hapus -->
+    <%- include('../partials/button', {
+      buttonType: 'delete',
+      buttonLabel: '',
+      buttonTarget: '#modalHapus',
+      buttonStatus: ''
+    }) %>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <%- include('../partials/modal', {
+      id: 'modalHapus',
+      type: 'confirm',
+      title: 'Konfirmasi Hapus Data',
+      body: 'Apakah kamu yakin ingin menghapus data yang dipilih?',
+      catatan: '',
+      src: ''
+    }) %>
+  </div>
+</div>
+
+<!-- Tabel Mahasiswa -->
+<div class="container table-responsive">
+  <table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th scope="col" style="width:1%">No.</th>
+        <th scope="col" style="width: 10%;">NPM</th>
+        <th scope="col" style="width: 20%;">Nama Mahasiswa</th>
+        <th scope="col" style="width: 15%">Tahun Ajaran</th>
+        <th scope="col" style="width:10%">Aksi</th>
+      </tr>
+    </thead>
+<tbody>
+      <% if (mahasiswa && mahasiswa.length > 0) { %>
+        <% mahasiswa.forEach((mhs, index) => { %>
+          <tr data-id="<%= mhs.npm %>" class="mahasiswa-row">
+            <th scope="row"><%= index + 1 %></th>
+            
+            <td class="editable-cell" data-field="npm">
+              <span class="view-content"><%= mhs.npm %></span>
+              <input type="text" class="edit-input d-none form-control form-control-sm" value="<%= mhs.npm %>">
+            </td>
+            
+            <td class="editable-cell text-start" data-field="nama">
+              <span class="view-content"><%= mhs.nama %></span>
+              <input type="text" class="edit-input d-none form-control form-control-sm" value="<%= mhs.nama %>">
+            </td>
+            
+            <td class="editable-cell" data-field="tahun_ajaran_id">
+              <span class="view-content"><%= mhs.nama_tahun %> <%= mhs.semester %></span>
+              <select class="edit-input d-none form-select form-select-sm">
+                <% tahunAjarList.forEach(ta => { %>
+                  <option value="<%= ta.id %>" <%= mhs.tahun_ajaran_id == ta.id ? 'selected' : '' %>>
+                    <%= ta.label %>
+                  </option>
+                <% }) %>
+              </select>
+            </td>
+            
+            <td>
+              <%- include('../partials/button', {
+                buttonType: 'editMhs',
+                buttonLabel: 'Edit',
+                buttonTarget: '',
+                buttonStatus: ''
+              }) %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="text-muted py-4">Tidak ada data mahasiswa</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+document.getElementById("tahun_ajaran").addEventListener("change", function() {
+  const filterValue = this.value;
+  const baseUrl = window.location.pathname;
+  const url = filterValue 
+    ? `${baseUrl}?tahun_ajaran=${encodeURIComponent(filterValue)}`
+    : baseUrl;
+
+  window.location.href = url;
+});
+</script>

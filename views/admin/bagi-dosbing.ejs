@@ -1,0 +1,180 @@
+<h1 class="mb-4 fw-bold">Pembagian Dosen Pembimbing</h1>
+
+<div class="container d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    
+    <form method="get" action="/admin/bagi-dosbing" class="d-flex align-items-center">
+      <input type="hidden" name="tab" value="<%= activeTab %>">
+      
+      <select name="tahun_ajaran" class="form-select form-select-sm shadow-sm border-secondary" 
+              style="width: auto; font-weight: 500;" 
+              onchange="this.form.submit()">
+        <% tahunAjarList.forEach(t => { %>
+          <option value="<%= t.id %>" <%= Number(selectedTahunId) === t.id ? 'selected' : '' %>>
+            <%= t.label %>
+          </option>
+        <% }) %>
+      </select>
+    </form>
+
+    <%- include('../partials/section', {
+      switchButtons: [
+        { 
+          label: 'Mahasiswa ke Dosen', 
+          href: `/admin/bagi-dosbing?tab=mahasiswa&tahun_ajaran=${selectedTahunId}`,
+          active: activeTab === 'mahasiswa' 
+        },
+        { 
+          label: 'Dosen ke Mahasiswa', 
+          href: `/admin/bagi-dosbing?tab=dosen&tahun_ajaran=${selectedTahunId}`,
+          active: activeTab === 'dosen' 
+        }
+      ]
+    }) %>
+  </div>
+
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <%- include('../partials/upload', { 
+      namaFile: "daftar_dosbing", 
+      formAction: "/admin/bagi-dosbing/upload",
+      buttonLabel: "Upload Excel",
+      existingFile: null, 
+      allowDelete: false
+    }) %>
+  </div>
+</div>
+
+<% if (activeTab === 'mahasiswa') { %>
+<div class="container mt-4 tab-content" id="dosen-ke-mhs">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-semibold m-0">Daftar Pembimbing Mahasiswa</h3>
+    <small class="text-muted"><i class="bi bi-info-circle"></i> Klik tombol pensil untuk mengubah pembimbing.</small>
+  </div>
+
+  <table class="table table-bordered table-striped align-middle text-center shadow-sm">
+    <thead class="table-warning">
+      <tr>
+        <th style="width:5%">No.</th>
+        <th style="width:10%">NPM</th>
+        <th style="width:20%">Nama Mahasiswa</th>
+        <th style="width:25%">Dosen Pembimbing 1</th>
+        <th style="width:25%">Dosen Pembimbing 2</th>
+        <th style="width:10%">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (dosbing && dosbing.length > 0) { %>
+        <% dosbing.forEach((m, i) => { %>
+
+          <tr data-id="<%= m.npm %>" class="dosbing-row">
+            <th scope="row"><%= i + 1 %></th>
+            <td><%= m.npm %></td>
+            <td class="text-start fw-bold"><%= m.nama %></td>
+
+            <td class="editable-cell text-start position-relative" data-field="dosbing1_id">
+              <span class="view-content"><%= m.dosbing1 || '-' %></span>
+              
+              <select class="edit-input d-none form-select form-select-sm shadow-sm">
+                <option value="">-- Pilih Dosen --</option>
+                <% if(dosenKeMahasiswa && dosenKeMahasiswa.length > 0) { %>
+                  <% dosenKeMahasiswa.forEach(d => { %>
+                     <option value="<%= d.dosen_id %>" <%= m.dosbing1_id == d.dosen_id ? 'selected' : '' %>>
+                       [<%= d.kode_dosen %>] <%= d.nama %>
+                     </option>
+                  <% }) %>
+                <% } %>
+              </select>
+            </td>
+
+            <td class="editable-cell text-start position-relative" data-field="dosbing2_id">
+              <span class="view-content"><%= m.dosbing2 || '-' %></span>
+              
+              <select class="edit-input d-none form-select form-select-sm shadow-sm">
+                <option value="">-- Pilih Dosen --</option>
+                <% if(dosenKeMahasiswa && dosenKeMahasiswa.length > 0) { %>
+                  <% dosenKeMahasiswa.forEach(d => { %>
+                     <option value="<%= d.dosen_id %>" <%= m.dosbing2_id == d.dosen_id ? 'selected' : '' %>>
+                       [<%= d.kode_dosen %>] <%= d.nama %>
+                     </option>
+                  <% }) %>
+                <% } %>
+              </select>
+            </td>
+
+            <td>
+              <%- include('../partials/button', {
+                buttonType: 'editDosbing', 
+                buttonLabel: '',
+                buttonTarget: '', 
+                buttonStatus: '' 
+              }) %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="6" class="text-muted fst-italic py-4">Belum ada data mahasiswa untuk tahun ajaran ini.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<% if (activeTab === 'dosen') { %>
+<div class="container mt-4 tab-content" id="mhs-ke-dosen">
+  <h3 class="fw-semibold mb-3">Rekap Beban Bimbingan Dosen</h3>
+
+  <table class="table table-bordered table-striped align-middle text-center shadow-sm">
+    <thead class="table-warning">
+      <tr>
+        <th style="width:5%">No.</th>
+        <th style="width:10%">Kode</th>
+        <th style="width:25%">Nama Dosen</th>
+        <th style="width:30%">Sebagai Pembimbing 1</th>
+        <th style="width:30%">Sebagai Pembimbing 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (dosenKeMahasiswa && dosenKeMahasiswa.length > 0) { %>
+        <% dosenKeMahasiswa.forEach((d, i) => { %>
+          <tr>
+            <th scope="row"><%= i + 1 %></th>
+            <td><span class="badge bg-secondary"><%= d.kode_dosen || '-' %></span></td>
+            <td class="text-start fw-bold"><%= d.nama %></td>
+
+            <td class="text-start align-top">
+              <% if (d.mahasiswa1 && d.mahasiswa1.length > 0) { %>
+                <ol class="mb-0 ps-3 small">
+                  <% d.mahasiswa1.forEach(m => { %>
+                    <li><%= m %></li>
+                  <% }) %>
+                </ol>
+              <% } else { %>
+                <span class="text-muted fst-italic small">-</span>
+              <% } %>
+            </td>
+
+            <td class="text-start align-top">
+              <% if (d.mahasiswa2 && d.mahasiswa2.length > 0) { %>
+                <ol class="mb-0 ps-3 small">
+                  <% d.mahasiswa2.forEach(m => { %>
+                    <li><%= m %></li>
+                  <% }) %>
+                </ol>
+              <% } else { %>
+                <span class="text-muted fst-italic small">-</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="text-muted fst-italic py-4">Belum ada data dosen aktif.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+<% } %>

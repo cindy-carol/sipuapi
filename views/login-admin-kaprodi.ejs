@@ -1,0 +1,85 @@
+<div class="mobile-spacer d-block d-md-none" style="height: 3.5rem;"></div>
+
+<h1>Login Admin / Kaprodi</h1>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+  <div class="card p-4 shadow-sm w-100" style="max-width: 400px;">
+    
+    <form action="/login-admin-kaprodi" method="POST" class="needs-validation" novalidate>
+      
+      <div class="mb-4">
+        <label for="username" class="form-label">Username</label>
+        <input name="username" 
+               type="text" 
+               class="form-control" 
+               id="username" 
+               required 
+               autocomplete="username">
+      </div>
+      
+      <div class="mb-4">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-group has-validation">
+            <input name="password" 
+                   type="password" 
+                   class="form-control" 
+                   id="password" 
+                   required 
+                   autocomplete="new-password"
+                   readonly 
+                   onfocus="this.removeAttribute('readonly');"
+                   placeholder="Masukkan Password">
+            
+            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                <i class="bi bi-eye" id="iconEye"></i>
+            </button>
+        </div>
+      </div>
+
+      <% if (error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+
+      <div class="text-end align-items-center mt-4">    
+        <button type="submit" class="btn btn-primary text-end" id="submitBtn" disabled>Login</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.getElementById('togglePassword');
+      const passInput = document.getElementById('password');
+      const userInput = document.getElementById('username');
+      const submitBtn = document.getElementById('submitBtn');
+      const iconEye = document.getElementById('iconEye');
+
+      // 1. LOGIC TOMBOL MATA
+      if(toggleBtn && passInput) {
+          toggleBtn.addEventListener('click', function() {
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                iconEye.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                iconEye.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+          });
+      }
+
+      // 2. LOGIC TOMBOL LOGIN
+      function checkInputs() {
+        if(userInput && passInput && submitBtn) {
+            submitBtn.disabled = !(userInput.value.trim() && passInput.value.trim());
+        }
+      }
+
+      if(userInput) userInput.addEventListener('input', checkInputs);
+      if(passInput) {
+          passInput.addEventListener('input', checkInputs);
+          passInput.addEventListener('change', checkInputs);
+      }
+  });
+</script>

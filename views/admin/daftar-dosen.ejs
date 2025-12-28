@@ -1,0 +1,118 @@
+<h1 class="mb-4">Daftar Dosen</h1>
+
+<div class="container mb-3 d-flex justify-content-end align-items-center gap-2">
+  <!-- Upload Excel -->
+  <%- include("../partials/upload", { 
+    namaFile: "daftar_dosen", 
+    formAction: "/admin/daftar-dosen/upload",
+    buttonLabel: "Upload Excel"
+  }) %>
+
+    <%- include('../partials/button', {
+    buttonType: 'add',
+    buttonLabel: 'Tambah Dosen',
+    buttonTarget: '#modalTambahDosen',
+    buttonStatus: ''
+  }) %>
+
+    <%- include('../partials/modal', {
+    id: 'modalTambahDosen',
+    type: 'tambahDosen',
+    title: 'Tambah Data Dosen',
+    body: '',
+    catatan: '',
+    src: ''
+  }) %>
+
+  <!-- Tombol Hapus Data -->
+  <%- include('../partials/button', {
+    buttonType: 'delete',
+    buttonLabel: 'Hapus Data',
+    buttonTarget: '#modalHapus',
+    buttonStatus: ''
+  }) %>
+
+  <!-- Modal Konfirmasi Hapus -->
+  <%- include('../partials/modal', {
+    id: 'modalHapus',
+    type: 'confirm',
+    title: 'Konfirmasi Hapus Data',
+    body: 'Apakah kamu yakin ingin menghapus data yang dipilih?',
+    catatan: '',
+    src: ''
+  }) %>
+</div>
+
+<!-- Tabel Dosen -->
+<div class="container table-responsive mt-3">
+  <table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th scope="col" style="width:1%">No.</th>
+        <th scope="col" style="width: 10%;">NIP</th>
+        <th scope="col" style="width: 20%;">Nama Dosen</th>
+        <th scope="col" style="width: 15%;">Status</th>
+        <th scope="col" style="width: 15%;">Jabatan</th>
+        <th scope="col" style="width: 10%;">Kode Dosen</th>
+        <th scope="col" style="width:10%;">Aksi</th>
+      </tr>
+    </thead>
+<tbody>
+      <% if (dosen && dosen.length > 0) { %>
+        <% dosen.forEach((d, index) => { %>
+          <tr data-id="<%= d.kode_dosen %>" class="dosen-row">
+            <th scope="row"><%= index + 1 %></th>
+        
+            <td class="editable-cell" data-field="nip_dosen">
+              <span class="view-content"><%= d.nip_dosen %></span>
+              <input type="text" class="edit-input d-none form-control form-control-sm" value="<%= d.nip_dosen %>">
+            </td>
+            
+            <td class="editable-cell text-start" data-field="nama">
+              <span class="view-content"><%= d.nama %></span>
+              <input type="text" class="edit-input d-none form-control form-control-sm" value="<%= d.nama %>">
+            </td>
+            
+            <td class="editable-cell" data-field="status_aktif">
+              <span class="view-content"><%= d.status_aktif ? "Aktif" : "Non Aktif" %></span>
+              <select class="edit-input d-none form-select form-select-sm">
+                <option value="true" <%= d.status_aktif ? 'selected' : '' %>>Aktif</option>
+                <option value="false" <%= !d.status_aktif ? 'selected' : '' %>>Non Aktif</option>
+              </select>
+            </td>
+            
+            <td class="editable-cell" data-field="jabatan">
+              <span class="view-content"><%= d.jabatan %></span>
+              <select class="edit-input d-none form-select form-select-sm">
+                <option value="Kaprodi" <%= d.jabatan === 'Kaprodi' ? 'selected' : '' %>>Kaprodi</option>
+                <option value="Dosen" <%= d.jabatan === 'Dosen' ? 'selected' : '' %>>Dosen</option>
+              </select>
+            </td>
+            
+            <td class="editable-cell" data-field="kode_dosen">
+              <span class="view-content"><%= d.kode_dosen %></span>
+              <input type="text" class="edit-input d-none form-control form-control-sm" value="<%= d.kode_dosen %>">
+            </td>
+
+            <td>
+              <button type="button" class="btn btn-info btn-sm text-white btn-edit-dosen shadow-sm px-3" title="Edit">
+                  <i class="bi bi-pencil-square"></i>
+              </button>
+              <button type="button" class="btn btn-success btn-sm text-white btn-save-dosen d-none shadow-sm px-3" title="Simpan">
+                  <i class="bi bi-check-lg"></i>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm text-white btn-cancel-dosen d-none shadow-sm px-3" title="Batal">
+                  <i class="bi bi-x-lg"></i>
+              </button>
+            </td>
+  
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="7" class="text-muted py-4">Tidak ada data dosen</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,21 @@
+<div id="calendarWrapper"
+     data-role="<%= role %>"
+
+     data-user-npm="<%= (typeof npm !== 'undefined' && npm) ? npm : '' %>"
+     
+     data-events='<%- events %>'
+     
+     <% /* Cek apakah myDosenIds ada? Kalau Admin, set array kosong */ %>
+     data-my-dosen='<%- (typeof myDosenIds !== 'undefined' && myDosenIds) ? JSON.stringify(myDosenIds) : "[]" %>'>
+     
+  <div id="calendar"></div>
+</div>
+
+<%- include('modal', {
+    id: 'modalCalendar', 
+    type: 'calendar', 
+    title: 'Informasi Ujian', 
+    body: '(isi rincian jadwal)',
+    catatan: '',
+    src: ''
+}) %>

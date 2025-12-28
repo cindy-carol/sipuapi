@@ -1,0 +1,655 @@
+<%
+  // --- 1. DEFINISI VARIABLE ---
+  const modalId = id || 'modalUniversal'; 
+  const modalBody = (body || '').replace(/\n/g, '<br>');
+  const modalTitle = title || 'Judul Isi Modal';
+  
+  // Default type
+  const modalType = type || 'info'; 
+  
+  const modalCatatan = catatan || 'Catatan Kesalahan';
+  const iframeSrc = src || '';
+  
+  // ✅ PENTING: Definisi fileUrl untuk Preview
+  const fileUrl = src || ''; 
+  
+  // ✅ EKSTRAK DATA KHUSUS (Untuk Form Reject)
+  const cData = (typeof customData !== 'undefined') ? customData : {};
+  const valBerkasId = cData.berkasId || '';
+  const valNpm = cData.npm || '';
+  const valCatatanLama = cData.catatan || '-';
+%>
+
+<% 
+  let dialogClass = '';
+  if (modalType === 'iframe') dialogClass = 'modal-xl';
+  else if (modalType === 'calendar') dialogClass = 'modal-calendar';
+  else if (modalType === 'preview') dialogClass = 'modal-lg modal-dialog-centered'; 
+%>
+
+<div class="modal fade <%= (modalType === 'iframe' || modalType === 'preview') ? 'modal-xl' : '' %>
+    <%= modalType === 'calendar' ? 'modal-calendar' : '' %>" id="<%= modalId %>" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog <%= dialogClass %>">
+    <div class="modal-content border-0 rounded-4 shadow">
+    
+      <div class="modal-header" style="background-color:#1e4380;">
+        <% if (modalType === 'form') { %>
+           <h6 class="modal-title fw-bold text-white"><%= modalTitle %></h6>
+        <% } else { %>
+           <h5 class="modal-title fw-bold text-white"><%= modalTitle %></h5>
+        <% } %>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <% if (modalType === 'preview') { %>
+        <div class="modal-body text-center p-0 bg-light">
+          <% if (fileUrl) { %>
+            <% if (fileUrl.endsWith('.pdf')) { %>
+              <iframe src="<%= fileUrl %>" width="100%" height="550px" style="border:none;"></iframe>
+            <% } else if (fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) { %>
+              <div class="p-3">
+                <img src="<%= fileUrl %>" alt="Preview" class="img-fluid rounded shadow-sm" style="max-height: 500px;" />
+              </div>
+            <% } else { %>
+              <div class="p-5">
+                <div class="alert alert-warning d-inline-block">
+                   <i class="bi bi-exclamation-triangle"></i> Preview tidak tersedia.
+                </div>
+                <br>
+                <a href="<%= fileUrl %>" target="_blank" class="btn btn-primary mt-2">
+                  <i class="bi bi-download"></i> Download File
+                </a>
+              </div>
+            <% } %>
+          <% } else { %>
+            <div class="p-5 text-muted">
+               <i class="bi bi-file-earmark-x" style="font-size: 2rem;"></i>
+               <p>Tidak ada file untuk ditampilkan.</p>
+            </div>
+          <% } %>
+        </div>
+
+      <% } else if (modalType === 'iframe') { %> 
+        <div class="modal-body">
+          <iframe src="<%= iframeSrc %>" style="border:none;width:100%;height:500px"></iframe>
+        </div>
+
+      <% } else if (modalType === 'form') { %>
+        <form action="/admin/verifikasi/update-status-reject" method="POST">
+            <div class="modal-body">
+              
+              <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
+              <input type="hidden" name="npm" value="<%= valNpm %>">
+
+              <label class="form-label fw-bold">Alasan Penolakan:</label>
+              <select class="form-select mb-2" name="alasan_kode" required>
+                <option value="" selected disabled>[ Pilih Alasan ]</option>
+                <option value="1">Berkas salah / tidak sesuai</option>
+                <option value="2">File buram / tidak terbaca</option>
+                <option value="3">Tanda tangan / stempel kurang</option>
+              </select>
+              
+              <div class="alert alert-light border small">
+                <strong>Catatan saat ini:</strong><br>
+                <%= valCatatanLama %>
+              </div>
+            </div>
+
+            <div class="modal-footer p-1">
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-sm btn-danger">Simpan Revisi</button>
+            </div>
+        </form>
+
+      <% } else if (modalType === 'sukses') { %>
+        <div class="modal-body py-4 px-3 text-center" style="height: 300px">
+          <i class="bi bi-check-circle-fill" style="color:#1e4380;font-size:8rem"></i>
+          <h2 class="fw-bold mt-3"><%= modalTitle %></h2>
+          <p class="fw-semibold"><%= modalBody %></p>
+        </div>
+
+      <% } else if (modalType === 'catatan') { %>
+        <div class="modal-body py-4 px-3 text-center" style="height: 300px">
+          <h2 class="fw-bold"><%= modalTitle %></h2>
+          <h4 class="fw-medium mt-2"><%= modalBody %></h4>
+          <div class="mt-4">
+            <div class="border p-2 rounded-3 d-inline-block mt-2">
+              <p class="fw-medium mb-0"><%= modalCatatan %></p>
+            </div>
+          </div>
+        </div>
+
+
+<% } else if (modalType === 'tambahDosen') { %>
+  <form id="formTambahDosen">
+    <input type="hidden" name="status_aktif" value="true">
+
+    <div class="modal-body">
+      <div class="mb-2">
+        <label for="nip_dosen_modal" class="form-label fs-5">NIP Dosen</label>
+        <input type="text" class="form-control" id="nip_dosen_modal" name="nip_dosen" required>
+      </div>
+      <div class="mb-2">
+        <label for="nama_modal" class="form-label fs-5">Nama Dosen</label>
+        <input type="text" class="form-control" id="nama_modal" name="nama" required>
+      </div>
+      <div class="mb-2">
+        <label for="kode_dosen_modal" class="form-label fs-5">Kode Dosen (Max 5 Karakter)</label>
+        <input type="text" class="form-control" id="kode_dosen_modal" name="kode_dosen" required maxlength="5">
+      </div>
+      <div class="mb-2">
+        <label for="jabatan_modal" class="form-label fs-5">Jabatan</label>
+        <select class="form-select" id="jabatan_modal" name="jabatan" required>
+          <option value="Dosen">Dosen</option>
+          <option value="Kaprodi">Kaprodi</option>
+        </select>
+      </div>
+
+      <div class="text-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-primary btn-submit-tambah-dosen">Simpan Data</button>
+      </div>
+    </div>
+  </form>    
+      
+      <% } else if (modalType === 'tambahMhs') { %>
+<form id="formTambahMhs"> <div class="modal-body">
+    
+    <div class="mb-3">
+      <label for="npm_modal" class="form-label fs-5">NPM Mahasiswa</label>
+      <input type="text" class="form-control form-control-sm" id="npm_modal" name="npm" required>
+    </div>
+    
+    <div class="mb-3">
+      <label for="nama_mhs_modal" class="form-label fs-5">Nama Mahasiswa</label>
+      <input type="text" class="form-control form-control-sm" id="nama_mhs_modal" name="nama" required>
+    </div>
+    
+<div class="mb-3">
+  <label for="tahun_ajaran_modal" class="form-label fs-5">Tahun Ajaran</label>
+  <select class="form-select form-select-sm" id="tahun_ajaran_modal" name="tahun_ajaran_id" required>
+    <option value="" disabled>-- Pilih Tahun Ajaran --</option>
+    
+    <% tahunAjarList.forEach((ta, index) => { %>
+      <option value="<%= ta.id %>" <%= index === 0 ? 'selected' : '' %>>
+        <%= ta.label %>
+      </option>
+    <% }) %>
+  </select>
+</div>
+    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+    <button type="submit" class="btn btn-primary btn-sm btn-submit-tambah-mahasiswa">Simpan Data</button>
+  </div>
+</form>
+
+      <% } else if (modalType === 'editSurat') { %>
+        <div class="modal-body py-4 px-3" style="overflow-y: auto; max-height: 400px;">
+          <form id="formEditSurat" data-npm="">
+            <!-- Hidden IDs -->
+            <input type="hidden" name="mahasiswaId" id="edit-mahasiswa-id">
+            <input type="hidden" name="jadwalId" id="edit-jadwal-id">
+            
+            <!-- Tanggal -->
+            <div class="mb-3">
+              <label class="form-label fs-5 fw-bold">Tanggal Ujian</label>
+              <input type="date" name="tanggal" id="edit-tanggal" class="form-control" required>
+            </div>
+
+            <!-- Jam -->
+            <div class="mb-3 d-flex gap-3">
+              <div class="flex-grow-1">
+                <label class="form-label fs-5 fw-bold">Jam Mulai</label>
+                <input type="time" name="jam_mulai" id="edit-jam-mulai" class="form-control" required>
+              </div>
+              <div class="flex-grow-1">
+                <label class="form-label fs-5 fw-bold">Jam Selesai</label>
+                <input type="time" name="jam_selesai" id="edit-jam-selesai" class="form-control" required>
+              </div>
+            </div>
+            
+            <!-- Pelaksanaan -->
+            <div class="mb-3">
+              <label class="form-label fs-5 fw-bold">Pelaksanaan</label>
+              <select name="pelaksanaan" id="edit-pelaksanaan" class="form-select" onchange="toggleTempatEdit(this)">
+                <option value="offline">Offline</option>
+                <option value="online">Online (Zoom/GMeet)</option>
+              </select>
+            </div>
+
+            <!-- Tempat Offline -->
+            <div id="tempat-offline-container" class="mb-3">
+              <label class="form-label fs-5 fw-bold">Tempat (Offline)</label>
+              <input type="text" name="tempat" id="edit-tempat" class="form-control" placeholder="Contoh: Ruang Sidang PSPPI">
+            </div>
+            
+            <!-- Detail Online (Zoom/Link) -->
+            <div id="tempat-online-container" class="mb-3 d-none p-3 bg-light rounded border">
+              <label class="form-label fs-5 fw-bold text-primary mb-2"><i class="bi bi-camera-video"></i> Detail Online Meeting</label>
+              
+              <div class="mb-2">
+                  <label class="form-label small text-muted mb-0">Link Zoom / GMeet</label>
+                  <input type="text" name="link_zoom" id="edit-link-zoom" class="form-control" placeholder="https://zoom.us/j/...">
+              </div>
+              
+              <div class="row g-2">
+                  <div class="col-6">
+                      <label class="form-label small text-muted mb-0">Meeting ID</label>
+                      <input type="text" name="meeting_id" id="edit-meeting-id" class="form-control" placeholder="123 456 789">
+                  </div>
+                  <div class="col-6">
+                      <label class="form-label small text-muted mb-0">Passcode</label>
+                      <input type="text" name="passcode" id="edit-passcode" class="form-control" placeholder="12345">
+                  </div>
+              </div>
+            </div>
+            
+            <!-- Dosen Penguji -->
+            <div class="mb-3">
+              <label class="form-label fs-5 fw-bold">Dosen Penguji</label>
+              <select name="dosen_penguji_id" id="edit-dosen-penguji" class="form-select" required>
+                <option value="">Memuat data...</option>
+              </select>
+            </div>
+            
+            <div class="text-end pt-3 border-top mt-4">
+                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary btn-simpan-surat-detail">Simpan Perubahan</button>
+            </div>
+          </form>
+        </div>
+
+<% } else if (modalType === 'aturTemplate') { %>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+          <form id="formAturTemplate">
+            
+            <div class="mb-3 p-2 bg-light border rounded">
+              <label class="form-label fw-bold">Kop Surat (Teks Utama)</label>
+              <textarea class="form-control" name="kop_surat_text" rows="4" placeholder="KEMENTERIAN..."></textarea>
+              <div class="form-text small text-muted">Gunakan tombol <b>Enter</b> untuk baris baru (Baris 1=Biasa, 2=Tebal, 3=Besar).</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Kalimat Pembuka</label>
+              <textarea id="editor-pembuka" class="form-control" name="pembuka" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Kalimat Penutup</label>
+              <textarea id="editor-penutup" class="form-control" name="penutup" rows="2"></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">Catatan Kaki (Default)</label>
+              <textarea id="editor-catatan" class="form-control" name="catatan_kaki" rows="2"></textarea>
+              <div class="form-text text-danger small">*Catatan ini muncul jika tidak ada catatan khusus.</div>
+            </div>
+
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="simpanTemplate()">
+            <i class="bi bi-save me-1"></i> Simpan Perubahan
+          </button>
+        </div>
+
+      <% } else if (modalType === 'confirm') { %>
+        <div class="modal-body py-4 px-3 text-center" style="height: 300px">
+          <i class="bi bi-exclamation-circle-fill" style="color:#1e4380;font-size:5rem"></i>
+          <h2 class="fw-bold mt-3"><%= modalTitle %></h2>
+          <p class="fw-medium"><%= modalBody %></p>
+        </div>      
+        
+      <% } else if (modalType === 'confirmDone') { %>
+        <div class="modal-body py-4 px-3 text-center" style="height: 300px">
+          <i class="bi bi-exclamation-circle-fill" style="color:#1e4380;font-size:5rem"></i>
+          <h2 class="fw-bold mt-3"><%= modalTitle %></h2>
+          <p class="fw-medium"><%= modalBody %></p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary btn-confirm-done" data-modal-id="<%= modalId %>">
+            Ya, Tandai Selesai
+          </button>
+        </div>
+
+      <% } else if (modalType === 'calendar') { %>
+        <div class="modal-body py-4 px-3" style="height: 400px;">
+          <h2 id="modalTitle" class="mt-0 text-center" style="font-size: clamp(1.375rem, 1.875vw, 1.875rem); padding: 10px;"></h2>
+          <div class="container-fluid mt-3">
+            <div class="row mb-2">
+              <div class="col-4 fw-bold">Tahun Ajaran:</div>
+              <div class="col-8" id="modalPeriode"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 fw-bold">Tanggal & Waktu:</div>
+              <div class="col-8" id="modalTime"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 fw-bold">Dosen Pembimbing 1:</div>
+              <div class="col-8" id="modalDospem1"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 fw-bold">Dosen Pembimbing 2:</div>
+              <div class="col-8" id="modalDospem2"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 fw-bold">Dosen Penguji:</div>
+              <div class="col-8" id="modalDospenguji"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 fw-bold">Tempat:</div>
+              <div class="col-8" id="modalPlace"></div>
+            </div>
+          </div>
+        </div>
+
+      <% } else if (modalType === 'hapusJadwal') { %>
+        
+        <div class="modal-body py-5 px-4 text-center">
+          <div class="mb-3">
+            <i class="bi bi-exclamation-circle-fill text-warning" style="font-size: 5rem;"></i>
+          </div>
+          
+          <h2 class="fw-bold mb-3"><%= modalTitle %></h2>
+          <p class="fs-5 text-muted mb-4"><%= modalBody %></p>
+
+          <div class="d-flex justify-content-center gap-3">
+            <button type="button" class="btn btn-light btn-lg px-4" data-bs-dismiss="modal">
+              Batal
+            </button>
+            
+            <button type="button" class="btn btn-danger btn-lg px-4" onclick="document.getElementById('formDelete').submit()">
+              Ya, Hapus Jadwal!
+            </button>
+          </div>
+        </div>
+
+      <% } else if (modalType === 'html') { %>
+        <div class="modal-body p-3" style="overflow-y:auto; max-height:600px;">
+          <%- include('surat-undangan', { 
+            tanggalSurat: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+            namaMahasiswa: nama,
+            npm: npm,
+            tipeUjian: jadwal?.pelaksanaan || 'offline',
+            tanggalUjian: jadwal?.tanggal || '',
+            waktuUjian: `${jadwal?.jam_mulai} - ${jadwal?.jam_selesai}` || '',
+            tempatUjian: jadwal?.tempat || '',
+            pembimbing1: dosbing1,
+            pembimbing2: dosbing2,
+            penguji: penguji
+          }) %>
+          <%- include('button', { 
+              buttonType: 'download', 
+              buttonLabel: 'Download Surat Undangan', 
+              buttonTarget: mhs.npm, 
+              buttonStatus: '' 
+            }) %>
+        </div>
+
+
+<% } else if (modalType === 'tambahAdmin') { %>
+        <form id="formTambahAdmin">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" name="nama" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Bisa pakai NIP atau nama unik" required>
+              </div>
+<div class="mb-3">
+  <label class="form-label">Password Awal</label>
+  <input type="text" name="password" class="form-control bg-light" 
+         value="<%= defaultPasswordAdmin %>" readonly>
+  <div class="form-text">
+    <i class="bi bi-info-circle"></i>
+  </div>
+</div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+        </form>
+
+      <% } else if (modalType === 'editAkun') { %>
+        <div class="modal-body">
+          <form id="formEditAkun">
+              <input type="hidden" id="editId" name="id">
+              
+              <div class="mb-3">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" id="editNama" name="nama" class="form-control" required>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Username / NIP</label>
+                <input type="text" id="editUsername" name="username" class="form-control" required>
+                <div class="form-text text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Hati-hati! Mengubah NIP akan mengubah akses login user ini.
+                </div>
+              </div>
+  
+              <div class="text-end">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                  <button type="submit" class="btn btn-primary">Lanjut Verifikasi</button>
+              </div>
+          </form>
+        </div>
+
+      <% } else if (modalType === 'verifikasiAdmin') { %>
+        <div class="modal-body">
+          <p>Anda sedang melakukan tindakan sensitif. Masukkan password Anda (Admin) untuk melanjutkan.</p>
+          
+          <div class="alert alert-danger d-none" id="alertWrongPass">Password Salah!</div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Password Admin Anda</label>
+            <div class="input-group">
+                <input type="password" id="adminPasswordInput" class="form-control" placeholder="Masukkan password login Anda..." required>
+                <button class="btn btn-outline-secondary" type="button" id="btnTogglePassword">
+                  <i class="bi bi-eye" id="iconEye"></i>
+                </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="submitVerifikasi()">Konfirmasi</button>
+        </div>
+
+      <% } else if (modalType === 'editAkun') { %>
+  <div class="modal fade" id="modalEditAkun" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Data Akun</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formEditAkun">
+              <input type="hidden" id="editId" name="id">
+              
+              <div class="mb-3">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" id="editNama" name="nama" class="form-control" required>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Username / NIP</label>
+                <input type="text" id="editUsername" name="username" class="form-control" required>
+                <div class="form-text text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Hati-hati! Mengubah NIP akan mengubah akses login user ini.
+                </div>
+              </div>
+  
+              <div class="text-end">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                  <button type="submit" class="btn btn-primary">Lanjut Verifikasi</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% } else if (modalType === 'profile') { %>
+        <div class="modal-body">
+          <form id="formUpdateProfile">
+            <div id="profileAlert" class="alert d-none small" role="alert"></div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted">NIP / Username</label>
+                <input type="text" class="form-control bg-light" value="<%= cData.username || '' %>" readonly disabled>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted">Nama Tampilan</label>
+                <div class="input-group">
+                    <input type="text" name="nama" id="inputNamaProfile" class="form-control" 
+                           value="<%= cData.nama || '' %>" 
+                           placeholder="Nama Lengkap" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="enableInput('inputNamaProfile')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+                <div class="form-text small text-muted">Klik ikon pensil untuk mengubah nama/gelar.</div>
+            </div>
+
+            <hr class="my-4">
+            <p class="fw-bold mb-3 small text-muted">GANTI PASSWORD</p>
+
+<div class="mb-2">
+    <label class="form-label small">Password Lama</label>
+    <div class="input-group">
+        <input type="password" name="currentPassword" id="currentPassword" class="form-control" placeholder="Password saat ini...">
+        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('currentPassword')">
+            <i class="bi bi-eye" id="icon-currentPassword"></i>
+        </button>
+    </div>
+</div>
+
+<div class="row g-2">
+    <div class="col-md-6">
+        <div class="mb-2">
+            <label class="form-label small">Password Baru</label>
+            <div class="input-group">
+                <input type="password" name="newPassword" id="newPassword" class="form-control">
+                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('newPassword')">
+                    <i class="bi bi-eye" id="icon-newPassword"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-2">
+            <label class="form-label small">Ulangi Password</label>
+            <div class="input-group">
+                <input type="password" name="confirmPassword" id="confirmPassword" class="form-control">
+                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('confirmPassword')">
+                    <i class="bi bi-eye" id="icon-confirmPassword"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+            
+            <div class="text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" id="btnSaveProfile">Simpan Perubahan</button>
+            </div>
+          </form>
+        </div>
+
+        <script>
+          function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById('icon-' + inputId);
+    
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+        </script>
+
+        <script>
+        // Fungsi buat aktifin input nama
+        function enableInput(id) {
+            const input = document.getElementById(id);
+            input.readOnly = false;
+            input.focus();
+            input.classList.remove('bg-light'); // Biar kelihatan aktif
+        }
+
+        // Script Submit AJAX (Sama kayak sebelumnya)
+        document.getElementById('formUpdateProfile').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveProfile');
+            const alertBox = document.getElementById('profileAlert');
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
+            alertBox.classList.add('d-none');
+
+            try {
+                const response = await fetch('/profile/update', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                alertBox.classList.remove('d-none', 'alert-success', 'alert-danger');
+                
+                if (result.success) {
+                    alertBox.classList.add('alert-success');
+                    alertBox.innerHTML = `<i class="bi bi-check-circle"></i> ${result.message}`;
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alertBox.classList.add('alert-danger');
+                    alertBox.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${result.message}`;
+                    btn.disabled = false;
+                    btn.innerText = 'Simpan Perubahan';
+                }
+            } catch (err) {
+                alertBox.classList.remove('d-none');
+                alertBox.classList.add('alert-danger');
+                alertBox.innerText = 'Gagal terhubung ke server.';
+                btn.disabled = false;
+                btn.innerText = 'Simpan Perubahan';
+            }
+        });
+        </script>
+
+
+
+
+
+      <% } else { %>
+        <div class="modal-body py-4 px-3 text-center" style="height: 300px">
+          <h2 class="fw-bold"><%= modalTitle %></h2>
+          <p><%= modalBody %></p>
+        </div>
+      <% } %>
+
+      <% if (modalType === 'confirm') { %>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary btn-confirm" data-modal-id="<%= modalId %>">
+            Ya, Kirim
+          </button>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>

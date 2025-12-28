@@ -1,0 +1,135 @@
+<div class="mobile-spacer d-block d-md-none" style="height: 3.5rem;"></div>
+
+<h1>Monitoring & Jadwal Ujian Akhir Profesi</h1>
+
+<div class="d-flex gap-2 mb-0 align-items-center">
+    <%- include('../partials/tahun-ajaran', { targetUrl: '/kaprodi/monitoring' }) %>
+<div class="mb-4">
+  <%- include('../partials/section', {
+    switchButtons: [
+      { 
+        id: 'btn-monitoring', 
+        label: 'Monitoring', 
+        href: '/kaprodi/monitoring?tab=monitoring&tahun_ajaran=' + selectedTahunId,
+        active: activeTab === 'monitoring'
+      },
+      { 
+        id: 'btn-jadwal', 
+        label: 'Pembagian Dosen dan Jadwal Ujian',
+        href: '/kaprodi/monitoring?tab=jadwal&tahun_ajaran=' + selectedTahunId,
+        active: activeTab === 'jadwal'
+      },
+    ]
+  }) %>
+</div>
+</div>
+
+<% if (activeTab === 'monitoring') { %>
+<div id="monitoring" class="table-responsive mb-4">
+  <div class="table-responsive">
+    <h2 class="mb-3">Monitoring Mahasiswa</h2>
+    <table class="table table-bordered table-striped text-center align-middle">
+      <thead class="table-light">
+        <tr>
+          <th rowspan="2">No.</th>
+          <th rowspan="2">NPM</th>
+          <th rowspan="2" class="text-start">Nama Mahasiswa</th>
+          <th colspan="2">Dokumen</th>
+          <th colspan="2">Jadwal Ujian</th>
+          <th colspan="2">Dosen Penguji & Surat</th>
+          <th rowspan="2">Sudah Ujian</th>
+        </tr>
+        <tr>
+          <th>Upload</th>
+          <th>Verifikasi</th>
+          <th>Upload</th>
+          <th>Jadwal</th>
+          <th>Penguji</th>
+          <th>Surat</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (mahasiswaList && mahasiswaList.length > 0) { %>
+          <% mahasiswaList.forEach((mhs, index) => { %>
+            <tr>
+              <th scope="row"><%= index + 1 %></th>
+              <td><%= mhs.npm %></td>
+              <td class="text-start"><%= mhs.nama %></td>
+
+              <td><% if (mhs.uploadBerkas) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
+              <td><% if (mhs.verifBerkas) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
+              
+              <td><% if (mhs.jadwalUjianDone) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
+              <td><%= mhs.jadwalUjian || '-' %></td>
+              
+              <td><% if (mhs.penguji) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
+              <td><% if (mhs.suratUndangan) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
+              
+              <td><% if (mhs.sudahUjian) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr><td colspan="10" class="text-muted py-4">Belum ada data mahasiswa</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<% if (activeTab === 'jadwal') { %><div id="jadwal" class="table-responsive">
+  <h2>Rekap Personel & Jadwal Ujian</h2>
+  <div class="table-responsive shadow-sm rounded">
+    <table class="table table-bordered align-middle">
+      <thead class="table-dark text-center">
+        <tr>
+          <th style="width: 1%;">No.</th>
+          <th style="width: 10%;">NPM</th>
+          <th style="width: 25%">Mahasiswa</th>
+          <th>Personel & Waktu Ujian</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (mahasiswaList && mahasiswaList.length > 0) { %>
+          <% mahasiswaList.forEach((mhs, i) => { %>
+<tr>
+  <th scope="row" class="text-center align-middle"><%= i + 1 %> </th>
+  <td class="text-center align-middle"><%= mhs.npm %> </td>
+  <td class="text-start align-middle">
+    <div class="fw-bold"><%= mhs.nama %> </div>
+  </td>
+  <td class="text-start p-3">
+    <div class="mb-2 d-flex align-items-center">
+      <span class="badge bg-info text-light border flex-shrink-0 me-3 text-center" style="min-width: 75px; font-size: 0.85rem;">Pbb 1 </span>
+      <span class="text-wrap"><%= mhs.dosbing?.[0] || '-' %> </span>
+    </div>
+
+    <div class="mb-2 d-flex align-items-center">
+      <span class="badge bg-info text-light border flex-shrink-0 me-3 text-center" style="min-width: 75px; font-size: 0.85rem;">Pbb 2 </span>
+      <span class="text-wrap"><%= mhs.dosbing?.[1] || '-' %> </span>
+    </div>
+
+    <div class="mb-2 d-flex align-items-center">
+      <span class="badge bg-info text-light flex-shrink-0 me-3 text-center" style="min-width: 75px; font-size: 0.85rem;">Penguji </span>
+      <span class="fw-semibold text-wrap"><%= mhs.pengujiNama || '-' %> </span>
+    </div>
+
+    <hr class="my-2 opacity-25"> 
+
+    <div class="text-muted mt-1 d-flex align-items-center">
+      <div class="flex-shrink-0 me-3 text-center" style="min-width: 75px;">
+        <i class="bi bi-calendar3 text-info"> Jadwal</i>
+      </div>
+      <span class="small"><%= mhs.jadwalUjian || 'Belum Dijadwalkan' %> </span>
+    </div>
+  </td>
+</tr>
+          <% }) %>
+        <% } else { %>
+          <tr><td colspan="4" class="text-center py-4">Belum ada data mahasiswa</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>

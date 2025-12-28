@@ -1,0 +1,213 @@
+<h1 class="mb-4 h3">Selamat Datang Admin</h1>
+
+
+<div class="container mb-0">
+  <%- include('../partials/tahun-ajaran', { targetUrl: '/kaprodi/dashboard' }) %>
+  <div class="row g-3 text-center">
+    <% 
+      const cards = [
+        { label: 'Jumlah Mahasiswa', key: 'total_mhs', val: jumlahMahasiswa },
+        { label: 'Belum Daftar', key: 'belum_daftar', val: belumDaftar },
+        { label: 'Menunggu Ujian', key: 'menunggu_ujian', val: menungguUjian },
+        { label: 'Sudah Ujian', key: 'sudah_ujian', val: sudahUjian }
+      ];
+    %>
+
+<% cards.forEach(card => { %>
+<div class="col-md-3">
+  <div class="card text-center shadow-sm border-0">
+    <div class="card-body p-2 d-flex flex-column">
+      <div class="text-center mb-1 mt-2">
+        <div><%= card.label %></div>
+        <div class="display-6 fw-bold text-dark"><%= card.val || 0 %></div>
+      </div>
+      
+      <% if (typeof breakdownTahun !== 'undefined' && breakdownTahun.length > 0) { %>
+        <div class="rounded border bg-light text-start mt-2" style="font-size: 0.75rem;">
+          <table class="table table-sm table-striped table-borderless mb-0 w-100">
+            <% breakdownTahun.forEach(th => { %>
+              <% if (Number(th.total_mhs) > 0) { %>
+                <% 
+                  // KUNCI: Samakan variabel dengan yang dikirim Controller (selectedTahunId)
+                  const isSelected = (typeof selectedTahunId !== 'undefined' && String(th.id) === String(selectedTahunId)); 
+                %>
+                <tr class="<%= isSelected ? 'bg-primary text-white shadow-sm' : '' %>">
+                  <td class="<%= isSelected ? 'bg-primary text-white' : 'text-muted' %> ps-2 py-1"><%= th.label %></td>
+                  <td class="text-end fw-bold pe-2 py-1 <%= isSelected ? 'bg-primary text-white' : '' %>">
+                    <%= th[card.key] %>
+                  </td>
+                </tr>
+              <% } %>
+            <% }) %>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<% }) %>
+  </div>
+</div>
+
+<div class="container mb-3">
+  <div class="row g-3 text-center">
+<% statistikRingkas.forEach(stat => { %>
+  <div class="col-md-3">
+    <div class="card text-white <%= stat.bg || 'bg-info' %> shadow-sm border-0">
+      <div class="card-body p-2 d-flex flex-column">
+        <div class="text-center mb-1 mt-2">
+          <div><%= stat.label || '-' %></div>
+          <div class="display-6 fw-bold"><%= stat.jumlah || 0 %></div>
+        </div>
+
+        <% if (typeof breakdownTahun !== 'undefined' && breakdownTahun.length > 0) { %>
+          <div class="rounded bg-white bg-opacity-25 text-start mt-2" style="font-size: 0.75rem;">
+            <table class="table table-sm table-borderless text-white mb-0 w-100" style="background: transparent;">
+<% breakdownTahun.forEach(th => { %>
+  <% 
+    // Pastikan pengambilan nilai dilakukan dengan benar
+    let nilaiTahun = Number(th[stat.key] || 0); 
+    // Logika perbandingan ID untuk sorotan
+    let isSelected = (typeof selectedTahunId !== 'undefined' && String(th.id) === String(selectedTahunId));
+  %>
+  <% if (Number(th.total_mhs) > 0) { %>
+    <% if (isSelected) { %>
+      <tr style="font-weight: bold;">
+        <td class="ps-2 py-1 text-dark" style="background-color: #f0f7ff;"><%= th.label %></td>
+        <td class="text-end pe-2 py-1 text-dark fw-bold" style="background-color: #f0f7ff;"><%= nilaiTahun %></td>
+      </tr>
+    <% } else { %>
+      <tr>
+        <td class="ps-2 py-1"><%= th.label %></td>
+        <td class="text-end pe-2 py-1 fw-bold"><%= nilaiTahun %></td>
+      </tr>
+    <% } %>
+  <% } %>
+<% }) %>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+<% }) %>
+  </div>
+</div>
+
+<div class="container mb-3">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header fw-bold">Statistik Pendaftaran Ujian</div>
+        <div class="card-body">   
+          <div style="position: relative; height: 300px; width: 100%;">
+             <%- include('../partials/chart', { showBarChart: true, showPieChart: false }) %>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header fw-bold">Progres Pendaftaran Ujian</div>
+        <div class="card-body">
+           <div style="position: relative; height: 380px; width: 100%;">
+             <%- include('../partials/chart', { showBarChart: false, showPieChart: true }) %>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container mb-5">
+  
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold m-0"><i class="bi bi-info-circle me-2"></i>Informasi & Pengumuman</h5>
+  </div>
+
+  <div class="accordion shadow-sm mb-4" id="accordionInfo">
+    <div class="accordion-item border-0">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button collapsed bg-white text-primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseForm" aria-expanded="false" aria-controls="collapseForm">
+          <i class="bi bi-plus-circle-fill me-2"></i> Tambah Informasi Baru
+        </button>
+      </h2>
+      <div id="collapseForm" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionInfo">
+        <div class="accordion-body bg-light">
+          
+          <form action="/admin/dashboard/add-rincian" method="POST">
+            <div class="row g-3">
+              <div class="col-md-12">
+                <label class="form-label small text-muted fw-bold">Judul Informasi</label>
+                <input type="text" name="title" class="form-control" placeholder="Contoh: Syarat Pendaftaran Ujian" required>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label small text-muted fw-bold">Isi Keterangan</label>
+                <textarea name="content" class="form-control" rows="4" placeholder="Tulis isi pengumuman disini..." required></textarea>
+              </div>
+              <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-send me-1"></i> Terbitkan Sekarang
+                </button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+      
+      <% if (editableCards.length === 0) { %>
+          <div class="col-12">
+            <div class="alert alert-light border text-center text-muted small py-4">
+               <i class="bi bi-clipboard-x display-6 d-block mb-2"></i>
+               Belum ada informasi yang diterbitkan. Klik "Tambah Informasi Baru" di atas.
+            </div>
+          </div>
+      <% } else { %>
+          
+          <% editableCards.forEach(card => { %>
+            <div class="col-12 col-md-4"> 
+              <div class="card shadow-sm border-0 h-100 editable-container" data-id="<%= card.id %>">
+                <div class="card-body p-3 d-flex flex-column">
+                  
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    
+                    <h5 class="card-title fw-bold text-dark content-view w-75">
+                      <%= card.title %>
+                    </h5>
+    
+                    <input type="text" 
+                           class="form-control fw-bold editor-view d-none rincian-title-input mb-2" 
+                           value="<%= card.title %>">
+    
+                    <div class="d-flex gap-2">
+                      <%- include('../partials/button', {
+                          buttonType: 'editInfo',
+                          buttonLabel: 'edit',
+                          buttonTarget: '',
+                          buttonStatus: ''
+                      }) %>
+                    </div>
+                  </div>
+    
+                  <hr class="my-2">
+    
+                  <p class="card-text text-muted content-view" style="white-space: pre-wrap;"><%= card.content %></p>
+                  
+                  <textarea class="form-control editor-view d-none rincian-content-input" rows="10"><%= card.content %></textarea>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+
+      <% } %>
+    
+  </div>
+</div>
+
+<input type="hidden" id="chartBaseUrl" value="/admin/dashboard/chart">
+<input type="hidden" id="selectedTahunId" value="<%= selectedTahunId %>">

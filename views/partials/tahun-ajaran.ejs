@@ -1,0 +1,29 @@
+<div class="mb-4">
+  <% const actionUrl = (typeof targetUrl !== 'undefined') ? targetUrl : ''; %>
+
+  <form method="get" action="<%= actionUrl %>">
+    <select name="tahun_ajaran" id="tahun_ajaran" 
+            class="form-select form-select-sm w-auto shadow-sm border-secondary" 
+            style="min-width: 150px;"
+            onchange="this.form.submit()">
+      
+      <option value="" <%= (typeof selectedTahunId === 'undefined' || !selectedTahunId) ? 'selected' : '' %>>
+        Semua Tahun
+      </option>
+      
+      <% if (typeof tahunAjarList !== 'undefined' && tahunAjarList.length > 0) { %>
+        <% tahunAjarList.forEach(t => { %>
+          
+          <option value="<%= t.id %>" 
+            <%= (typeof selectedTahunId !== 'undefined' && t.id == selectedTahunId) ? 'selected' : '' %>>
+            
+            <%= t.label %> 
+
+          </option>
+
+        <% }) %>
+      <% } %>
+
+    </select>
+  </form>
+</div>

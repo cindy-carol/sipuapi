@@ -1,0 +1,49 @@
+{
+  "name": "express",
+  "version": "1.0.0",
+  "description": "web daftar ujian akhir profesi insinyur",
+  "keywords": [],
+  "license": "ISC",
+  "author": "Cindy Carolline",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.6.1",
+    "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.2",
+    "express-validator": "^7.2.1",
+    "express.js": "^1.0.0",
+    "method-override": "^3.0.0",
+    "module-alias": "^2.2.3",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "nodemon": "^3.1.10",
+    "pdf-lib": "^1.17.1",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
+    "puppeteer": "^24.30.0",
+    "sequelize": "^6.37.7",
+    "sharp": "^0.34.5",
+    "xlsx": "^0.18.5"
+  },
+  "_moduleAliases": {
+    "@controllers": "controllers",
+    "@routes": "router",
+    "@models": "models",
+    "@middlewares": "middlewares",
+    "@config": "config",
+    "@utils": "utils"
+  }
+}

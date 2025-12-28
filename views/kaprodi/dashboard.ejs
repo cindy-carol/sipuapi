@@ -1,0 +1,264 @@
+<h1 class="mb-4 text-center">Selamat Datang Kaprodi</h1>
+
+<!-- Ringkasan Mahasiswa -->
+<div class="mb-0">
+  <%- include('../partials/tahun-ajaran', { targetUrl: '/kaprodi/dashboard' }) %>
+  <div class="row g-3 text-center">
+    <% 
+      const cards = [
+        { label: 'Jumlah Mahasiswa', key: 'total_mhs', val: jumlahMahasiswa },
+        { label: 'Belum Daftar', key: 'belum_daftar', val: belumDaftar },
+        { label: 'Menunggu Ujian', key: 'menunggu_ujian', val: menungguUjian },
+        { label: 'Sudah Ujian', key: 'sudah_ujian', val: sudahUjian }
+      ];
+    %>
+
+<% cards.forEach(card => { %>
+<div class="col-md-3">
+  <div class="card text-center shadow-sm border-0">
+    <div class="card-body p-2 d-flex flex-column">
+      <div class="text-center mb-1 mt-2">
+        <div><%= card.label %></div>
+        <div class="display-6 fw-bold text-dark"><%= card.val || 0 %></div>
+      </div>
+      
+      <% if (typeof breakdownTahun !== 'undefined' && breakdownTahun.length > 0) { %>
+        <div class="rounded border bg-light text-start mt-2" style="font-size: 0.75rem;">
+          <table class="table table-sm table-striped table-borderless mb-0 w-100">
+            <% breakdownTahun.forEach(th => { %>
+              <% if (Number(th.total_mhs) > 0) { %>
+                <% 
+                  // KUNCI: Samakan variabel dengan yang dikirim Controller (selectedTahunId)
+                  const isSelected = (typeof selectedTahunId !== 'undefined' && String(th.id) === String(selectedTahunId)); 
+                %>
+                <tr class="<%= isSelected ? 'bg-primary text-white shadow-sm' : '' %>">
+                  <td class="<%= isSelected ? 'bg-primary text-white' : 'text-muted' %> ps-2 py-1"><%= th.label %></td>
+                  <td class="text-end fw-bold pe-2 py-1 <%= isSelected ? 'bg-primary text-white' : '' %>">
+                    <%= th[card.key] %>
+                  </td>
+                </tr>
+              <% } %>
+            <% }) %>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<% }) %>
+  </div>
+</div>
+
+<div class="mb-3">
+  <div class="row g-3 text-center">
+<% statistikRingkas.forEach(stat => { %>
+  <div class="col-md-3">
+    <div class="card text-white <%= stat.bg || 'bg-info' %> shadow-sm border-0">
+      <div class="card-body p-2 d-flex flex-column">
+        <div class="text-center mb-1 mt-2">
+          <div><%= stat.label || '-' %></div>
+          <div class="display-6 fw-bold"><%= stat.jumlah || 0 %></div>
+        </div>
+
+        <% if (typeof breakdownTahun !== 'undefined' && breakdownTahun.length > 0) { %>
+          <div class="rounded bg-white bg-opacity-25 text-start mt-2" style="font-size: 0.75rem;">
+            <table class="table table-sm table-borderless text-white mb-0 w-100" style="background: transparent;">
+<% breakdownTahun.forEach(th => { %>
+  <% 
+    // Pastikan pengambilan nilai dilakukan dengan benar
+    let nilaiTahun = Number(th[stat.key] || 0); 
+    // Logika perbandingan ID untuk sorotan
+    let isSelected = (typeof selectedTahunId !== 'undefined' && String(th.id) === String(selectedTahunId));
+  %>
+  <% if (Number(th.total_mhs) > 0) { %>
+    <% if (isSelected) { %>
+      <tr style="font-weight: bold;">
+        <td class="ps-2 py-1 text-dark" style="background-color: #f0f7ff;"><%= th.label %></td>
+        <td class="text-end pe-2 py-1 text-dark fw-bold" style="background-color: #f0f7ff;"><%= nilaiTahun %></td>
+      </tr>
+    <% } else { %>
+      <tr>
+        <td class="ps-2 py-1"><%= th.label %></td>
+        <td class="text-end pe-2 py-1 fw-bold"><%= nilaiTahun %></td>
+      </tr>
+    <% } %>
+  <% } %>
+<% }) %>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+<% }) %>
+  </div>
+</div>
+
+<div class="mb-4">
+  <div class="row g-3">
+    
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 fw-bold text-primary">
+              <i class="bi bi-people-fill me-2"></i>Rekap Pembagian Dosen Pembimbing Per Mahasiswa
+            </h6>
+            <span class="badge bg-light text-dark border"><%= rekapPerDosen ? rekapPerDosen.length : 0 %> Dosen Aktif</span>
+          </div>
+          
+          <div class="card-body p-3" style="max-height: 500px; overflow-y: auto;">
+            <div class="row g-2">
+              <% if (rekapPerDosen && rekapPerDosen.length > 0) { %>
+                <% rekapPerDosen.forEach((d) => { 
+                    const total = parseInt(d.jumlah_pbb1) + parseInt(d.jumlah_pbb2);
+                    
+                    // Logic Warna Badge Total
+                    let badgeColor = 'bg-info';
+                %>
+                <div class="col-12 col-md-6">
+                  <div class="border rounded p-2 h-100 d-flex flex-column justify-content-between hover-shadow transition bg-white">
+                    
+<div class="card-header text-white p-2 d-flex justify-content-between align-items-center border-0" style="background-color: #407bd8;">
+      <span class="fw-semibold text-truncate" style="max-width: 80%; font-size: 0.8rem;" title="<%= d.nama %>">
+        <%= d.nama %>
+      </span>
+      <small class="badge bg-white bg-opacity-25 border border-white border-opacity-50" style="font-size: 0.7rem;">
+        <%= d.kode_dosen || '-' %>
+      </small>
+    </div>
+
+<% if (d.history && d.history.length > 0) { %>
+    <div class="rounded border" style="max-height: 120px; overflow-y: auto; font-size: 0.75rem;">
+        <table class="table table-sm table-borderless mb-0 w-100">
+            <% d.history.forEach(h => { 
+                // Cek apakah ID tahun di riwayat sama dengan tahun yang dipilih di filter
+                const isSelected = selectedTahunId && parseInt(selectedTahunId) === h.th_id;
+                
+                // Gunakan table-primary (biru) jika terpilih, jika tidak gunakan border standar
+                const rowClass = isSelected ? 'table-primary fw-bold bg-primary' : 'border-bottom';
+                // Warna teks khusus jika terpilih agar serasi dengan background biru muda
+                const textClass = isSelected ? 'text-dark' : '';
+                const textStyle = isSelected ? 'background-color: #f0f7ff' : '';
+            %>
+                <tr class="<%= rowClass %>">
+                    <td class="ps-2 py-1 <%= textClass %>" style="<%= textStyle %>"><%= h.label %></td>
+                    <td class="text-end pe-2 py-1 <%= textClass %>" style="<%= textStyle %>">
+                        <span class="<%= textClass %>">
+                            Pbb 1: <span class="fw-bold"><%= h.p1 %></span>
+                        </span> 
+                        <span class="<%= textClass %>">
+                            Pbb 2: <span class="fw-bold"><%= h.p2 %></span>
+                        </span>
+                    </td>
+                </tr>
+            <% }) %>
+        </table>
+    </div>
+<% } else { %>
+    <div class="text-center text-muted py-2" style="font-size: 0.7rem;">Belum ada riwayat.</div>
+<% } %>
+
+                  </div>
+                </div>
+                <% }) %>
+              <% } else { %>
+                <div class="col-12 text-center text-muted py-4"><small>Belum ada data dosen.</small></div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+    </div>
+
+<div class="col-lg-4">
+  <div class="card shadow-sm border-0 h-100">
+    <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center py-3">
+      <span><i class="bi bi-clock-history me-2 text-info"></i>Antrean Penguji</span>
+      <span class="badge bg-danger rounded-pill"><%= totalAntrean || 0 %></span>
+    </div>
+
+    <div class="list-group list-group-flush overflow-auto" style="max-height: 450px;">
+      <% if (mahasiswaBelum && mahasiswaBelum.length > 0) { %>
+        <% mahasiswaBelum.forEach(m => { %>
+          <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+            <div>
+              <div class="fw-bold text-dark small"><%= m.nama %></div>
+              <small class="text-muted" style="font-size: 0.75em;"><%= m.npm %></small>
+            </div>
+            <a href="/kaprodi/penetapan-penguji/pilih-penguji/<%= m.npm %>" class="btn btn-sm btn-light text-primary border rounded-circle shadow-sm">
+               <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+        <% }) %>
+        
+        <% if (totalAntrean > 5) { %>
+          <a href="/kaprodi/penetapan-penguji" class="list-group-item-action text-center py-3 text-primary fw-bold small">
+            Lihat Semua Antrean (<%= totalAntrean - 5 %> lainnya)
+          </a>
+        <% } %>
+
+      <% } else { %>
+        <div class="text-center py-5 text-muted"><small>Tidak ada antrean.</small></div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+<div class="mb-5">
+  <div class="row g-3">
+    
+    <div class="col-lg-6">
+       <div class="card shadow-sm border-0 h-100">
+         <div class="card-body">
+            <h6 class="card-title text-center fw-bold mb-3 small text-uppercase text-muted">Monitoring Kelulusan</h6>
+            <div style="position: relative; height: 300px; width: 100%;">
+               <%- include('../partials/chart', { showBarChart: true, showPieChart: false }) %>
+            </div>
+         </div>
+       </div>
+    </div>
+
+    <div class="col-lg-6">
+       <div class="card shadow-sm border-0 h-100">
+         <div class="card-body">
+            <h6 class="card-title text-center fw-bold mb-3 small text-uppercase text-muted">Detail Sebaran Status</h6>
+            <div style="position: relative; height: 250px; width: 100%;">
+               <%- include('../partials/chart', { showBarChart: false, showPieChart: true }) %>
+            </div>
+         </div>
+       </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .hover-shadow:hover {
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.1)!important;
+    background-color: #f8f9fa;
+    cursor: default;
+    transform: translateY(-2px);
+  }
+  .transition { transition: all 0.2s ease-in-out; }
+</style>
+
+<!-- Input Hidden & Script Chart -->
+<input type="hidden" id="chartBaseUrl" value="/kaprodi/dashboard/chart">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="/js/chart.js"></script>
+
+<!-- Input Hidden (Wajib) -->
+<input type="hidden" id="chartBaseUrl" value="/kaprodi/dashboard/chart">
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="/js/chart.js"></script>
+  </div>
+</div>
+
+<!-- Simpan Base URL untuk Kaprodi -->
+<input type="hidden" id="chartBaseUrl" value="/kaprodi/dashboard/chart">

@@ -1,0 +1,495 @@
+<div class="mobile-spacer d-block d-md-none" style="height: 3.5rem;"></div>
+
+<h1 class="mb-4 text-center">
+  <% if(activeTab == 'berkas') { %> Daftar Tunggu Verifikasi Berkas Syarat
+  <% } else if(activeTab == 'jadwal') { %> Verifikasi Jadwal Ujian
+  <% } else if(activeTab == 'surat') { %> Daftar Surat Undangan
+  <% } else { %> Konfirmasi Selesai Ujian <% } %>
+</h1>
+
+<div class="container mb-3">
+  <%- include('../partials/section', {
+    switchButtons: [
+      { 
+        label: '📋 Verifikasi Berkas', 
+        href: '/admin/verifikasi?tab=berkas',
+        active: activeTab === 'berkas' 
+      },
+      { 
+        label: '📅 Verifikasi Jadwal', 
+        href: '/admin/verifikasi?tab=jadwal',
+        active: activeTab === 'jadwal'
+      },
+      { 
+        label: '📩 Download Surat', 
+        href: '/admin/verifikasi?tab=surat',
+        active: activeTab === 'surat'
+      },
+      { 
+        label: '✅ Tandai Selesai', 
+        href: '/admin/verifikasi?tab=selesai',
+        active: activeTab === 'selesai'
+      }
+    ]
+  }) %>
+</div>
+
+<% if (activeTab === 'berkas') { %>
+<div class="container mb-4 tab-content" id="berkas">
+  <table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>No.</th>
+        <th>NPM</th>
+        <th class="text-start">Nama Mahasiswa</th>
+        <th>Tahun Ajaran</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (berkas && berkas.length > 0) { %>
+        <% berkas.forEach((mhs, index) => { %>
+          <tr>
+            <th scope="row"><%= index + 1 %></th>
+            <td><%= mhs.npm %></td>
+            <td class="text-start"><%= mhs.nama %></td>
+            <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
+            <td>
+              <%- include('../partials/button', { 
+                buttonType: 'statusLabel', 
+                buttonLabel: 'Cek Kelengkapan Berkas', 
+                buttonTarget: `/admin/verifikasi/cek-berkas/${mhs.npm}`, 
+                buttonStatus: '' 
+              }) %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="text-center text-muted py-3">Tidak ada antrean verifikasi berkas</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<% if (activeTab === 'jadwal') { %>
+<div class="container mb-4 tab-content" id="jadwal-ujian">
+  <table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th style="width:1%">No.</th>
+        <th style="width:1%">NPM</th>
+        <th style="width:1%" class="text-start">Nama Mahasiswa</th>
+        <th style="width:1%">Tahun Ajaran</th>
+        <th style="width:10%">Dosen Pembimbing</th>
+        <th style="width:10%">Jadwal</th>
+        <th style="width:1%">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (jadwal && jadwal.length > 0) { %>
+        <% jadwal.forEach((mhs, index) => { %>
+          <tr>
+            <th scope="row"><%= index + 1 %></th>
+            <td><%= mhs.npm %></td>
+            <td class="text-start"><%= mhs.nama %></td>
+            <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
+            <td class="text-start align-top">
+              <ol class="mb-0 ps-3">
+                <li><%= mhs.dosbing1 || '-' %></li>
+                <li><%= mhs.dosbing2 || '-' %></li>
+              </ol>
+            </td>
+            <td>
+              <%- mhs.jadwalUjian || '-' %>
+            </td>
+            <td>
+              <form action="/admin/verifikasi/oper-kaprodi" method="POST">
+                <input type="hidden" name="jadwalId" value="<%= mhs.id %>">
+                <div class="text-end">
+                  <%- include('../partials/button', { 
+                        buttonType: 'submit', 
+                        buttonLabel: 'Kirim ke Kaprodi', 
+                        buttonTarget: '', 
+                        buttonStatus: '' 
+                  }) %>
+                </div>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="7" class="text-center text-muted py-3">Tidak ada jadwal menunggu verifikasi</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<% if (activeTab === 'surat') { %>
+<div class="container mb-4 tab-content" id="surat-undangan">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Daftar Surat Undangan</h5>
+      <button type="button" class="btn btn-outline-secondary fw-bold" onclick="bukaModalTemplate()">
+          <i class="bi bi-gear-fill"></i> Atur Template Surat
+      </button>
+  </div>
+  <table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>No.</th>
+        <th>NPM</th>
+        <th class="text-start">Nama Mahasiswa</th>
+        <th>Tahun Ajaran</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+<tbody>
+  <% if (surat && surat.length > 0) { %>
+    <% surat.forEach((mhs, index) => { %>
+      <tr>
+        <th scope="row"><%= index + 1 %></th>
+        <td><%= mhs.npm %></td>
+        <td class="text-start"><%= mhs.nama %></td>
+        <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
+
+        <td class="p-0 align-middle position-relative">
+            <div class="d-flex flex-column justify-content-center align-items-center p-2" 
+                 style="border-bottom: 1px solid #dee2e6; min-height: 80px;">
+                
+                <div class="d-flex gap-1 align-items-center"> 
+                    
+<% if (mhs.last_download_at) { %>
+    
+    <%- include('../partials/button', { 
+        buttonType: 'download', 
+        buttonLabel: 'Download Ulang', 
+        buttonTarget: mhs.npm, 
+        buttonStatus: 'btn-outline-info border-2',
+        isNew: false
+    }) %>
+
+<% } else { %>
+
+    <%- include('../partials/button', { 
+        buttonType: 'download', 
+        buttonLabel: 'Download Draft', 
+        buttonTarget: mhs.npm, 
+        buttonStatus: 'btn-info',
+        isNew: true
+    }) %>
+
+<% } %>
+
+                    <%- include('../partials/button', {
+                        buttonType: 'editSurat',
+                        buttonLabel: 'Edit Surat',
+                        buttonTarget: mhs.npm, 
+                        buttonStatus: ''
+                    }) %>
+                </div>
+            </div>
+
+<div class="d-flex justify-content-center align-items-center gap-1 p-2">
+    <%- include("../partials/upload", { 
+        namaFile: `surat_${mhs.npm}`, 
+        fieldName: "surat_undangan", 
+        // 🔥 TAMBAHKAN NPM KE DALAM URL
+        formAction: `/admin/verifikasi/upload-surat/${mhs.npm}`, 
+        buttonLabel: "Upload TTD", 
+        existingFile: mhs.suratUndanganPath !== '#' ? mhs.suratUndanganPath : null,
+        allowDelete: true, 
+        customFields: { npm: mhs.npm } 
+    }) %>
+</div>
+        </td>
+      </tr>
+    <% }) %>
+  <% } else { %>
+    <tr>
+      <td colspan="5" class="text-center text-muted py-3">Belum ada surat siap download</td>
+    </tr>
+  <% } %> 
+</tbody>
+  </table>
+</div>
+<% } %>
+
+<% if (activeTab === 'selesai') { %>
+<div class="container mb-4 tab-content" id="selesai-ujian">
+  <table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>No.</th>
+        <th>NPM</th>
+        <th class="text-start">Nama Mahasiswa</th>
+        <th>Tahun Ajaran</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (selesai && selesai.length > 0) { %>
+        <% selesai.forEach((mhs, index) => { %>
+          <tr>
+            <th scope="row"><%= index + 1 %></th>
+            <td><%= mhs.npm %></td>
+            <td class="text-start"><%= mhs.nama %></td>
+            <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
+            <td>
+              <div class="mahasiswa-item" data-id="<%= mhs.id %>">
+                <button 
+                  type="button"
+                  class="btn btn-success btn-done"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalConfirmDone"
+                  data-id="<%= mhs.id %>">
+                  Tandai Selesai <i class="bi bi-check2-circle me-1"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="text-center text-muted py-3">Tidak ada data mahasiswa</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<%- include('../partials/modal', {
+  id: 'modalConfirmDone',
+  type: 'confirmDone',
+  title: 'Konfirmasi',
+  body: 'Apakah Anda yakin ingin menandai ujian selesai?',
+  catatan: '',
+  src: ''
+}) %>
+
+<%- include('../partials/modal', {
+  id: 'modalEditSurat',
+  type: 'editSurat',
+  title: 'Edit Detail Surat Undangan',
+  body: '', 
+  catatan: '',
+  src: ''
+}) %>
+
+<script>
+  // Script Hapus File
+  async function hapusFile(tipeFile, label, domId) {
+    if (!confirm(`Yakin ingin menghapus file ${label}?`)) return;
+    const npm = domId.replace('surat_', '');
+
+    try {
+      const response = await fetch('/admin/verifikasi/delete-surat', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ npm: npm })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        window.location.reload();
+      } else {
+        alert('Gagal menghapus: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Terjadi kesalahan koneksi.');
+    }
+  }
+
+  // Script Modal Selesai
+  const modalConfirmDone = document.getElementById('modalConfirmDone');
+  if (modalConfirmDone) {
+    modalConfirmDone.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget;
+      const id = button.getAttribute('data-id');
+      const btnYes = modalConfirmDone.querySelector('.btn-primary'); 
+      if(btnYes) {
+         btnYes.onclick = async () => {
+            try {
+               const res = await fetch('/admin/verifikasi/tandai-selesai', {
+                   method: 'POST',
+                   headers: {'Content-Type': 'application/json'},
+                   body: JSON.stringify({ mahasiswaId: id })
+               });
+               const json = await res.json();
+               if(json.success) window.location.reload();
+               else alert(json.message);
+            } catch(e) { alert('Error server'); }
+         }
+      }
+    });
+  }
+
+  // Helper Buka Modal Edit Surat (Perlu custom script ini biar tombol di tabel jalan)
+  async function bukaModalEditSurat(npm) {
+     const modalEl = document.getElementById('modalEditSurat');
+     const modal = new bootstrap.Modal(modalEl);
+     // Trigger event kustom untuk load data ke modal (sesuai logic partials kamu)
+     // Atau biarkan partials/modal.ejs yang handle listener-nya
+     modal.show();
+  }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+<div class="modal fade" id="modalAturTemplate" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #1e4380;">
+        <h5 class="modal-title fw-bold text-white"><i class="bi bi-file-earmark-word"></i> Atur Template Surat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <form id="formAturTemplate">
+          <div class="mb-3 p-3 bg-light rounded border">
+            <label class="form-label fw-bold">Kop Surat</label>
+            <textarea id="editor-kop" name="kop_surat_text"></textarea>
+          </div>
+          <div class="mb-3">
+             <label class="form-label fw-bold">Kalimat Pembuka</label>
+             <textarea id="editor-pembuka" name="pembuka"></textarea>
+          </div>          
+          <div>
+          <table style="border: none; margin-top: 10px;">
+            <tr>
+                <td style="width: 130px;">Hari / Tanggal</td>
+                <td style="width: 10px;">:</td>
+            </tr>
+            <tr>
+                <td>Waktu</td>
+                <td>:</td>
+            </tr>    
+            <tr>
+                <td style="vertical-align: top;">Tempat</td>
+                <td style="vertical-align: top;">:</td>
+                <td>
+                  Ruang Sidang PSPPI/Zoom Meeting <br>
+                  ID Rapat : <br>
+                  Kode Sandi :  <br>
+                  Link Zoom : <br>
+                  catatan: ID Rapat, Kode Sandi, dan Link Zoom diisi jika ujian dilakukan secara online.
+                </td>
+            </tr>
+          </table>          
+          <table style="border: none; margin-top: 10px;">
+            <tr>
+                <td style="width: 130px;">Pembimbing I</td>
+                <td style="width: 10px;">:</td>
+            </tr>
+            <tr>
+                <td>Pembimbing II</td>
+                <td>:</td>
+            </tr>    
+            <tr>
+                <td>Penguji</td>
+                <td>:</td>
+            </tr>
+          </table>
+          </div>
+          <div class="mb-3">
+             <label class="form-label fw-bold">Kalimat Isi</label>
+             <textarea id="editor-isi" name="isi"></textarea>
+          </div>
+          <div class="mb-3">
+             <label class="form-label fw-bold">Kalimat Penutup</label>
+             <textarea id="editor-penutup" name="penutup"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" onclick="simpanTemplate()">
+          <i class="bi bi-save me-1"></i> Simpan Perubahan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#editor-kop, #editor-pembuka, #editor-penutup').summernote({
+        placeholder: 'Sedang memuat data...',
+        tabsize: 2,
+        height: 150,
+        toolbar: [
+          ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+          ['font', ['strikethrough', 'superscript', 'subscript']],
+          ['fontsize', ['fontsize']], 
+          ['color', ['color']],
+          ['para', ['ul', 'ol', 'paragraph']], 
+          ['height', ['height']],
+          ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+});
+
+async function bukaModalTemplate() {
+  try {
+    $('#editor-kop').summernote('code', 'Sedang memuat...');
+    $('#editor-pembuka').summernote('code', 'Sedang memuat...');
+    $('#editor-isi').summernote('code', 'Sedang memuat...');
+    $('#editor-penutup').summernote('code', 'Sedang memuat...');
+
+    const res = await fetch('/admin/verifikasi/api/template-surat');
+    const json = await res.json();
+    
+    if (json.success) {
+      const data = json.data;
+      $('#editor-kop').summernote('code', data.kop_surat_text || ''); 
+      $('#editor-pembuka').summernote('code', data.pembuka || '');
+      $('#editor-isi').summernote('code', data.isi || '');
+      $('#editor-penutup').summernote('code', data.penutup || '');
+      
+      const modalEl = document.getElementById('modalAturTemplate');
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    } else {
+      alert('Gagal mengambil data: ' + json.message);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Terjadi kesalahan koneksi.');
+  }
+}
+
+async function simpanTemplate() {
+  if(!confirm("Simpan perubahan template?")) return;
+  const data = {
+    kop_surat_text: $('#editor-kop').summernote('code'), 
+    pembuka: $('#editor-pembuka').summernote('code'),
+    isi: $('#editor-isi').summernote('code'),
+    penutup: $('#editor-penutup').summernote('code'),
+  };
+  try {
+    const res = await fetch('/admin/verifikasi/api/template-surat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const hasil = await res.json();
+    if (hasil.success) {
+      alert('Berhasil disimpan!');
+      const modalEl = document.getElementById('modalAturTemplate');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      modal.hide();
+    } else {
+      alert('Gagal: ' + hasil.message);
+    }
+  } catch (err) {
+    alert('Error saat menyimpan.');
+  }
+}
+</script>

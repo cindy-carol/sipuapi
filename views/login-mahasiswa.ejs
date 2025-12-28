@@ -1,0 +1,44 @@
+<div class="mobile-spacer d-block d-md-none" style="height: 3.5rem;"></div>
+
+<h1 class="text-center mb-4">Login Mahasiswa</h1>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+  <div class="card p-4 shadow-sm w-100" style="max-width: 400px;">
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger text-center" role="alert">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <form action="/login" method="POST" class="needs-validation" novalidate>
+      <div class="mb-4">
+        <label for="npmMahasiswa" class="form-label">NPM Mahasiswa</label>
+        <input
+          name="npm"
+          type="text"
+          class="form-control"
+          id="npmMahasiswa"
+          placeholder="Masukkan NPM Anda"
+          required
+        >
+      </div>
+
+      <div class="text-end mt-4">
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>
+          Lanjut
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const npmInput = document.getElementById('npmMahasiswa');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function checkInputs() {
+    submitBtn.disabled = !npmInput.value.trim();
+  }
+
+  npmInput.addEventListener('input', checkInputs);
+</script>

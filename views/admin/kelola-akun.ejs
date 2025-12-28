@@ -1,0 +1,119 @@
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Kelola Akun</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/admin/dashboard">Home</a></li>
+        <li class="breadcrumb-item active">Kelola Akun</li>
+      </ol>
+    </nav>
+  </div>
+
+  <section class="section">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+            <h5 class="card-title p-0">Daftar Admin & Kaprodi</h5>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahAdmin">
+                <i class="bi bi-person-plus-fill"></i> Tambah Admin
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Username / NIP</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% listAkun.forEach((akun, index) => { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td>
+                            <span class="fw-bold"><%= akun.nama || '-' %></span>
+                            <% if (user.id === akun.id) { %> 
+                                <span class="badge bg-info text-dark ms-1">Saya</span> 
+                            <% } %>
+                        </td>
+                        <td><%= akun.username %></td>
+                        <td>
+                            <span class="badge <%= akun.role === 'admin' ? 'bg-primary' : 'bg-warning text-dark' %> text-uppercase">
+                                <%= akun.role %>
+                            </span>
+                        </td>
+                        <td>
+                            <% if (akun.status_aktif) { %>
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Aktif</span>
+                            <% } else { %>
+                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Terkunci</span>
+                            <% } %>
+                        </td>
+                        <td class="text-center">
+                            <% if (user.id !== akun.id) { %>
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-edit" 
+                                        data-id="<%= akun.id %>" 
+                                        data-nama="<%= akun.nama %>"
+                                        data-username="<%= akun.username %>"
+                                        title="Edit Data Akun">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+<button class="btn btn-sm btn-outline-secondary me-1" 
+        onclick="resetPassword('<%= akun.id %>', '<%= akun.nama %>')"
+        title="Reset Password ke Default"> <i class="bi bi-key"></i>
+</button>
+                                <% if (akun.status_aktif) { %>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="toggleStatus('<%= akun.id %>', false, '<%= akun.nama %>')"
+                                            title="Kunci Akun">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </button>
+                                <% } else { %>
+                                    <button class="btn btn-sm btn-outline-success" 
+                                            onclick="toggleStatus('<%= akun.id %>', true, '<%= akun.nama %>')"
+                                            title="Aktifkan Akun">
+                                        <i class="bi bi-unlock-fill"></i>
+                                    </button>
+                                <% } %>
+                            <% } else { %>
+                                <small class="text-muted">No Action</small>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<%- include('../partials/modal', { 
+    id: 'modalTambahAdmin', 
+    type: 'tambahAdmin', 
+    title: 'Tambah Admin Baru',
+    defaultPasswordAdmin: defaultPasswordAdmin, 
+    body: '', src: '', catatan: '' 
+}) %>
+
+  <%- include('../partials/modal', { 
+      id: 'modalEditAkun', 
+      type: 'editAkun', 
+      title: 'Edit Data Akun',
+      body: '', src: '', catatan: '' 
+  }) %>
+
+  <%- include('../partials/modal', { 
+      id: 'modalVerifikasi', 
+      type: 'verifikasiAdmin', 
+      title: 'Verifikasi Keamanan',
+      body: '', src: '', catatan: '' 
+  }) %>
+
+</main>
+

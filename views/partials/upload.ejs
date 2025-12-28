@@ -1,0 +1,62 @@
+<% 
+  const fileUrl = (typeof existingFile !== 'undefined' && existingFile) ? existingFile : null; 
+  const domId = namaFile; 
+  const inputName = (typeof fieldName !== 'undefined') ? fieldName : namaFile;
+  const readableName = inputName.replace(/_/g, ' ').toUpperCase(); 
+  const showDelete = (typeof allowDelete !== 'undefined') ? allowDelete : true;
+
+  // Gabungkan status verifikasi individual dan status kunci global
+  const isLockedStatus = (typeof statusVerifikasi !== 'undefined' && statusVerifikasi === true) || (typeof locked !== 'undefined' && locked === true);
+%>
+
+<form id="uploadForm-<%= domId %>" action="<%= formAction %>" method="POST" enctype="multipart/form-data">
+  <input type="file" id="fileInput-<%= domId %>" name="<%= inputName %>" accept="application/pdf, image/*" hidden />
+  
+  <% if (typeof customFields !== 'undefined' && customFields) { %>
+    <% Object.keys(customFields).forEach(key => { %>
+      <input type="hidden" name="<%= key %>" value="<%= customFields[key] %>">
+    <% }); %>
+  <% } %>
+</form>
+
+<div class="d-flex align-items-center gap-1">
+  <% if (fileUrl) { %>
+    <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#previewModal-<%= domId %>" title="Lihat File">
+      <i class="bi bi-eye"></i> Lihat
+    </button>
+
+    <% if (!isLockedStatus) { %>
+        <button type="button" id="uploadBtn-<%= domId %>" class="btn btn-sm btn-outline-info" title="Ganti File">
+          <i class="bi bi-pencil-square"></i> Ubah
+        </button>
+        <% if (showDelete) { %>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="hapusFile('<%= inputName %>', '<%= readableName %>', '<%= domId %>')" title="Hapus File">
+              <i class="bi bi-trash"></i> Batal
+            </button>
+        <% } %>
+    <% } else { %>
+        <span class="badge bg-light text-success border ms-1" title="Berkas sudah disetujui">
+            <i class="bi bi-lock-fill"></i> ACC
+        </span>
+    <% } %>
+
+  <% } else { %>
+    <% if (typeof locked !== 'undefined' && locked === true) { %>
+        <span class="text-muted small italic py-2"><i class="bi bi-lock-fill"></i> Selesai (ACC)</span>
+    <% } else { %>
+        <button type="button" id="uploadBtn-<%= domId %>" class="btn btn-sm btn-primary">
+          <i class="bi bi-cloud-upload"></i> <%= buttonLabel || "Upload" %>
+        </button>
+    <% } %>
+  <% } %>
+</div>
+
+<%- include('modal', {
+  id: `previewModal-${domId}`,
+  type: 'preview',
+  title: `Preview File: ${buttonLabel || 'Berkas'}`,
+  src: fileUrl, 
+  body: '', 
+  catatan: ''
+}) %>
+

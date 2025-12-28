@@ -1,0 +1,57 @@
+<div class="text-start">
+  <% const buttons = switchButtons || []; %>
+
+  <div class="d-inline-flex align-items-center gap-2" role="group">
+    <% buttons.forEach((btn, index) => { %>
+      
+      <% if (btn.href) { %>
+        <a 
+          href="<%= btn.href %>" 
+          class="btn btn-sm <%= btn.active ? 'btn-primary shadow-sm' : 'btn-outline-primary' %> fw-bold text-nowrap"
+          style="border-radius: 5px; padding: 8px 20px; min-width: fit-content; display: inline-block;">
+          <%= btn.label %>
+        </a>
+
+      <% } else { %>
+        <button 
+          type="button" 
+          class="btn btn-sm <%= btn.active ? 'btn-primary shadow-sm' : 'btn-outline-primary' %> tab-btn fw-bold text-nowrap" 
+          data-target="<%= btn.id %>"
+          style="border-radius: 5px; padding: 8px 20px; min-width: fit-content;">
+          <%= btn.label %>
+        </button>
+      <% } %>
+
+    <% }) %>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+
+    if(tabs.length === 0) return; // Kalau Mode Link, JS ini stop (aman)
+
+    function switchTab(targetId) {
+        contents.forEach(content => content.classList.add('d-none'));
+        tabs.forEach(btn => btn.classList.remove('active'));
+
+        const targetContent = document.getElementById(targetId);
+        if (targetContent) targetContent.classList.remove('d-none');
+
+        const activeBtn = document.querySelector(`.tab-btn[data-target="${targetId}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // Optional: Simpan state kalau perlu
+        // localStorage.setItem('activeTabGlobal', targetId);
+    }
+
+    tabs.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            switchTab(target);
+        });
+    });
+});
+</script>

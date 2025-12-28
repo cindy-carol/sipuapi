@@ -1,0 +1,209 @@
+<div class="mobile-spacer d-block d-md-none" style="height: 3.5rem;"></div>
+
+<h1 class="mb-4 text-center">Cek Kelengkapan Berkas</h1>
+
+<div class="container">
+  <!-- Info Mahasiswa -->
+  <%- include('../partials/card-mahasiswa', { mahasiswa }) %>
+
+  <!-- Tabel Berkas -->
+  <div class="table-responsive mt-4">
+    <table class="table table-bordered text-center align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>No.</th>
+          <th>Syarat Berkas</th>
+          <th>Berkas</th>
+          <th>Status Validasi</th>
+          <th>Catatan Kesalahan</th>
+        </tr>
+      </thead>
+<tbody>
+  <% 
+     // 1. KITA PILAH DULU DATANYA BIAR GAMPANG DIATUR
+     // Cari file RPL & Artikel (bisa undefined kalo belum upload)
+     const fileRPL = berkasList.find(b => b.jenis_berkas === 'dokumen_rpl');
+     const fileArtikel = berkasList.find(b => b.jenis_berkas === 'draft_artikel');
+     
+     // Cari file Asistensi (Filter & Urutkan nama biar _1, _2, _3 rapi)
+     const listAsistensi = berkasList
+        .filter(b => b.jenis_berkas.includes('kartu_asistensi'))
+        .sort((a, b) => a.jenis_berkas.localeCompare(b.jenis_berkas));
+  %>
+
+  <!-- ==================================================== -->
+  <!-- BARIS 1: DOKUMEN RPL -->
+  <!-- ==================================================== -->
+  <tr>
+    <th scope="row">1</th>
+    <td>Dokumen RPL</td>
+    
+    <!-- KOLOM FILE -->
+    <td>
+       <% if (fileRPL && fileRPL.path_file) { %>
+           <%- include('../partials/button', { 
+               buttonType: 'modal', 
+               buttonLabel: 'Lihat Berkas', 
+               buttonTarget: '#modalBerkas' + fileRPL.id, 
+               buttonStatus: '' 
+           }) %>
+           <%- include('../partials/modal', { 
+               id: 'modalBerkas' + fileRPL.id, 
+               type: 'preview', 
+               title: 'Preview RPL', 
+               src: fileRPL.path_file, 
+               body: '', catatan: '' 
+           }) %>
+       <% } else { %>
+           <span class="text-muted small">-</span>
+       <% } %>
+    </td>
+
+    <!-- KOLOM STATUS (Ini yang direquest: Cek dulu ada file gak) -->
+    <td>
+       <% if (fileRPL && fileRPL.path_file) { %>
+           <%- include('../partials/button', { 
+               buttonType: 'status', 
+               buttonLabel: fileRPL.status, 
+               buttonTarget: '', 
+               buttonStatus: '', 
+               berkas: fileRPL 
+           }) %>
+       <% } else { %>
+           <span class="text-muted">-</span>
+       <% } %>
+    </td>
+
+    <!-- KOLOM CATATAN -->
+    <td>
+       <% if (fileRPL && fileRPL.status_verifikasi === false) { %>
+          <%- include('../partials/button', { 
+              buttonType: 'modal', 
+              buttonLabel: 'Edit Catatan', 
+              buttonTarget: '#modalRevisi-' + fileRPL.id, 
+              buttonStatus: 'warning' 
+          }) %>
+          <%- include('../partials/modal', { 
+              id: 'modalRevisi-' + fileRPL.id, 
+              type: 'form', 
+              title: 'Revisi RPL', 
+              body: '', catatan: '', src: '', 
+              customData: { berkasId: fileRPL.id, npm: mahasiswa.npm, catatan: fileRPL.catatan_kesalahan } 
+          }) %>
+       <% } else { %>
+          <span class="text-muted">-</span>
+       <% } %>
+    </td>
+  </tr>
+
+  <!-- ==================================================== -->
+  <!-- BARIS 2: DRAFT ARTIKEL -->
+  <!-- ==================================================== -->
+  <tr>
+    <th scope="row">2</th>
+    <td>Draft Artikel</td>
+
+    <!-- KOLOM FILE -->
+    <td>
+       <% if (fileArtikel && fileArtikel.path_file) { %>
+           <%- include('../partials/button', { buttonType: 'modal', buttonLabel: 'Lihat Berkas', buttonTarget: '#modalBerkas' + fileArtikel.id, buttonStatus: '' }) %>
+           <%- include('../partials/modal', { id: 'modalBerkas' + fileArtikel.id, type: 'preview', title: 'Preview Artikel', src: fileArtikel.path_file, body: '', catatan: '' }) %>
+       <% } else { %>
+           <span class="text-muted small">-</span>
+       <% } %>
+    </td>
+
+    <!-- KOLOM STATUS -->
+    <td>
+       <% if (fileArtikel && fileArtikel.path_file) { %>
+           <%- include('../partials/button', { buttonType: 'status', buttonLabel: fileArtikel.status, buttonTarget: '', buttonStatus: '', berkas: fileArtikel }) %>
+       <% } else { %>
+           <span class="text-muted">-</span>
+       <% } %>
+    </td>
+
+    <!-- KOLOM CATATAN -->
+    <td>
+       <% if (fileArtikel && fileArtikel.status_verifikasi === false) { %>
+          <%- include('../partials/button', { buttonType: 'modal', buttonLabel: 'Edit Catatan', buttonTarget: '#modalRevisi-' + fileArtikel.id, buttonStatus: 'warning' }) %>
+          <%- include('../partials/modal', { id: 'modalRevisi-' + fileArtikel.id, type: 'form', title: 'Revisi Artikel', body: '', catatan: '', src: '', customData: { berkasId: fileArtikel.id, npm: mahasiswa.npm, catatan: fileArtikel.catatan_kesalahan } }) %>
+       <% } else { %>
+          <span class="text-muted">-</span>
+       <% } %>
+    </td>
+  </tr>
+
+  <!-- ==================================================== -->
+  <!-- BARIS 3: KARTU ASISTENSI (LOOPING & ROWSPAN) -->
+  <!-- ==================================================== -->
+  <% if (listAsistensi.length > 0) { %>
+      
+      <% listAsistensi.forEach((berkas, i) => { %>
+        <tr>
+            <!-- LOGIC ROWSPAN: Cuma render kolom No & Nama di putaran pertama -->
+            <% if (i === 0) { %>
+                <th scope="row" rowspan="<%= listAsistensi.length %>" class="align-middle bg-white">3</th>
+                <td rowspan="<%= listAsistensi.length %>" class="align-middle fw-bold bg-white">
+                    Kartu Asistensi
+                    <div class="small fw-normal text-muted mt-1"><%= listAsistensi.length %> Bukti Upload</div>
+                </td>
+            <% } %>
+
+            <!-- KOLOM FILE -->
+            <td>
+                <div class="badge bg-light text-dark border mb-1">Bukti <%= i + 1 %></div><br>
+                <%- include('../partials/button', { buttonType: 'modal', buttonLabel: 'Lihat Berkas', buttonTarget: '#modalBerkas' + berkas.id, buttonStatus: '' }) %>
+                <%- include('../partials/modal', { id: 'modalBerkas' + berkas.id, type: 'preview', title: 'Preview Asistensi ' + (i+1), src: berkas.path_file, body: '', catatan: '' }) %>
+            </td>
+
+            <!-- KOLOM STATUS (Aman dari null) -->
+            <td>
+                <% if (berkas.path_file) { %>
+                    <%- include('../partials/button', { buttonType: 'status', buttonLabel: berkas.status, buttonTarget: '', buttonStatus: '', berkas: berkas }) %>
+                <% } else { %>
+                    <span class="text-muted">-</span>
+                <% } %>
+            </td>
+
+            <!-- KOLOM CATATAN -->
+            <td>
+                <% if (berkas.status_verifikasi === false) { %>
+                    <%- include('../partials/button', { buttonType: 'modal', buttonLabel: 'Edit Catatan', buttonTarget: '#modalRevisi-' + berkas.id, buttonStatus: 'warning' }) %>
+                    <%- include('../partials/modal', { id: 'modalRevisi-' + berkas.id, type: 'form', title: 'Revisi Bukti ' + (i+1), body: '', catatan: '', src: '', customData: { berkasId: berkas.id, npm: mahasiswa.npm, catatan: berkas.catatan_kesalahan } }) %>
+                <% } else { %>
+                    <span class="text-muted">-</span>
+                <% } %>
+            </td>
+        </tr>
+      <% }) %>
+
+  <% } else { %>
+      <!-- Kalo belum upload asistensi sama sekali -->
+      <tr>
+          <th scope="row">3</th>
+          <td>Kartu Asistensi</td>
+          <td colspan="3" class="text-muted small fst-italic">Belum ada bukti yang diupload</td>
+      </tr>
+  <% } %>
+
+</tbody>
+    </table>
+    
+  </div>
+  
+
+  <!-- Tombol Aksi -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 gap-3">
+    <%- include('../partials/button', { 
+      buttonType: 'back', 
+      buttonLabel: 'Kembali', 
+      buttonTarget: '/admin/verifikasi', 
+      buttonStatus: '' 
+    }) %>
+
+
+<div class="d-flex gap-3">
+
+    </div>
+  </div>
+</div>

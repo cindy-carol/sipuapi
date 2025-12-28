@@ -1,0 +1,189 @@
+<h1 class="mb-4 text-center text-md-start">Selamat Datang di Sistem Informasi Pendaftaran Ujian Akhir Profesi</h1>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm" style="border-top: 5px solid #1e4380;">
+      <div class="card-header bg-white fw-bold">
+        <i class="bi bi-person-vcard me-2 text-primary"></i>Informasi Mahasiswa
+      </div>
+      <div class="card-body px-4">
+        <div class="row mb-2">
+          <div class="col-5 fw-medium"><i class="bi bi-person me-2 text-secondary"></i>Nama</div>
+          <div class="col-7">: <%= nama %></div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-5 fw-medium"><i class="bi bi-card-heading me-2 text-secondary"></i>NPM</div>
+          <div class="col-7">: <%= npm %></div>
+        </div>          
+        <div class="row mb-2">
+          <div class="col-5 fw-medium"><i class="bi bi-calendar3 me-2 text-secondary"></i>Th. Ajaran</div>
+          <div class="col-7">: <%= thajaran %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm" style="border-top: 5px solid #1e4380;">
+      <div class="card-header bg-white fw-bold">
+        <i class="bi bi-people-fill me-2 text-primary"></i>Informasi Dosen Pembimbing
+      </div>
+      <div class="card-body px-4">
+        <h4 class="fw-bold"><i class="bi bi-person-badge me-1"></i> Dosen Pembimbing 1</h4>
+        <h3 class="fw-normal mb-3"><%= dosbing1 %></h3>              
+        <h4 class="fw-bold"><i class="bi bi-person-badge me-1"></i> Dosen Pembimbing 2</h4>
+        <h3 class="fw-normal mb-0"><%= dosbing2 %></h3>  
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+  <h2 class="mb-0 flex-grow-1"><i class="bi bi-pencil-square me-2"></i>Pendaftaran Ujian Akhir Profesi</h2>
+  <div class="text-center">
+    <span class="badge <%= badge.color %> <%= badge.text %> px-3 py-2 rounded-pill fs-5">
+      <i class="bi <%= badge.icon %> me-1"></i> <%= statusOverall %>
+    </span>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white fw-bold">
+        <i class="bi bi-list-check me-2 text-primary"></i>Syarat Pendaftaran Ujian
+      </div>
+      <div class="card-body">
+        <%- syaratPendaftaran %> </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white fw-bold">
+        <i class="bi bi-cloud-upload me-2 text-primary"></i>Upload Dokumen
+      </div>
+      <div class="card-body d-flex flex-column">
+      
+      <% for (const [key, value] of Object.entries(statusBerkas)) { 
+           // 1. Skip Overall (Logic lama)
+           if (key === 'overall') continue; 
+
+           // 2. 🔥 LOGIC BARU TARUH DISINI 🔥
+           if (['asistensi_2', 'asistensi_3'].includes(key) && value.label === 'Belum Ada') {
+               continue; 
+           }
+
+           // 3. Bikin Label yang cantik
+           let displayLabel = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+           if (key.includes('asistensi_')) {
+               const num = key.split('_')[1];
+               displayLabel = `Asistensi (Bukti ${num})`;
+           }
+      %>
+
+        <div class="row mb-2 align-items-center">
+          <div class="col-5 fw-medium small">
+            <i class="bi bi-file-earmark-text me-1 text-secondary"></i><%= displayLabel %>
+          </div>
+          <div class="col-7">
+            <span class="badge w-75 <%= value.bg %> <%= value.text %>">
+              <%= value.label %>
+              <% if (value.icon) { %>
+                <i class="bi <%= value.icon %> ms-1" title="<%= value.title %>"></i>
+              <% } %>
+            </span>
+          </div>
+        </div>
+
+      <% } %>
+
+      <div class="text-end mt-auto pt-3">
+        <%- include('../partials/button', { buttonType: 'redirect', buttonLabel: 'Upload Berkas', buttonTarget: '/mahasiswa/upload-berkas', buttonStatus: '' }) %>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="row g-3">
+  
+  <div class="col-md-6 d-flex">
+    <div class="card shadow-sm w-100 d-flex flex-column">
+      
+      <div class="card-header bg-white py-3 fw-bold d-flex justify-content-between align-items-center">
+         <span><i class="bi bi-calendar-event me-2 text-primary"></i>Jadwal Ujian</span>
+         
+         <% if (!jadwalUjian.tanggal || jadwalUjian.tanggal === '-' || jadwalUjian.tanggal === null) { %>
+             <span class="badge bg-secondary text-white">Belum Diisi</span>
+         <% } else if (jadwalUjian.status_verifikasi === true) { %>
+             <span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i>Disetujui</span>
+         <% } else { %>
+             <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Menunggu Verifikasi</span>
+         <% } %>
+      </div>
+      
+      <div class="card-body d-flex flex-column flex-grow-1">
+        
+        <div class="row mb-2"><div class="col-4 text-muted"><i class="bi bi-calendar-date me-2"></i>Tanggal</div><div class="col-8 fw-medium">: <%= jadwalUjian.tanggal || '-' %></div></div>
+        <div class="row mb-2"><div class="col-4 text-muted"><i class="bi bi-clock me-2"></i>Waktu</div><div class="col-8 fw-medium">: <%= jadwalUjian.waktu || '-' %></div></div>
+        <div class="row mb-2"><div class="col-4 text-muted"><i class="bi bi-geo-alt me-2"></i>Tempat</div><div class="col-8 fw-medium">: <%= jadwalUjian.tempat || '-' %></div></div>        
+        <div class="row mb-2">
+          <div class="col-4 text-muted"><i class="bi bi-laptop me-2"></i>Mode</div>
+          <div class="col-8 fw-medium">
+            : 
+            <% if (jadwalUjian.pelaksanaan === 'offline') { %>
+              <span class="text-success fw-bold"><i class="bi bi-building-fill me-1"></i> Offline</span>
+            <% } else if (jadwalUjian.pelaksanaan === 'online') { %>
+              <span class="text-info fw-bold"><i class="bi bi-camera-video-fill me-1"></i> Online</span>
+            <% } else { %> - <% } %>
+          </div>
+        </div>
+
+        <div class="mt-auto text-end">
+          <% 
+             const statusTerkunci = ['Belum Mendaftar', 'Lengkapi Berkas', 'Menunggu Verifikasi Berkas', 'Perbaiki Berkas'];
+             const isLocked = statusTerkunci.includes(statusOverall);
+          %>
+          <%- include('../partials/button', { 
+            buttonType: 'redirect', 
+            buttonLabel: 'Isi / Edit Jadwal', 
+            buttonTarget: '/mahasiswa/isi-jadwal', 
+            buttonStatus: isLocked ? 'disabled' : '' 
+          }) %>
+
+          <% if (isLocked) { %>
+             <small class="text-danger d-block fst-italic" style="font-size: 0.8rem;">
+               <i class="bi bi-lock-fill"></i> Selesaikan verifikasi berkas untuk membuka akses jadwal.
+             </small>
+          <% } %>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 d-flex">
+    <div class="card shadow-sm d-flex flex-column">
+      
+      <div class="card-header bg-white fw-bold">
+        <i class="bi bi-briefcase me-2 text-primary"></i>Persyaratan Wajib Saat Ujian
+      </div>
+      
+      <div class="card-body d-flex flex-column">
+        <div><%- syaratBawa %></div></div>
+        <div class="mt-auto text-end">
+          <%- include('../partials/button', { 
+              buttonType: 'downloadSurat', 
+              buttonLabel: 'Download Surat Undangan', 
+              buttonTarget: pathSurat, 
+              buttonStatus: '' 
+          }) %>
+        </div>
+
+
+    </div>
+  </div>
+
+</div>
