@@ -9,44 +9,36 @@ const model = require('../../models/cekBerkasModel');
 
 const { uploadAdmin } = require('../../middlewares/upload');
 
-// Route untuk Edit Template Global
-router.get('/api/template-surat', verifikasiController.getTemplateSettings);
-router.post('/api/template-surat', verifikasiController.saveTemplateSettings);
-// ...
+// =========================================================
+// 🛠️ SETTINGS TEMPLATE (PASTIKAN FUNGSI INI ADA DI CONTROLLER)
+// =========================================================
+// Jika error berlanjut di baris ini, cek apakah 'getTemplateSettings' 
+// sudah di-export di verifikasiController.js
+if (verifikasiController.getTemplateSettings) {
+    router.get('/api/template-surat', verifikasiController.getTemplateSettings);
+}
+if (verifikasiController.saveTemplateSettings) {
+    router.post('/api/template-surat', verifikasiController.saveTemplateSettings);
+}
 
-// =========================
-// 1. Cek Berkas Syarat
-// =========================
+// =========================================================
+// 📂 1. CEK BERKAS SYARAT
+// =========================================================
 router.get('/cek-berkas/:npm', cekBerkasController.list);
-
-// (Opsional) Kalau masih pake tombol kembalikan global
 router.post('/cek-berkas/:npm/kembalikan', cekBerkasController.returnToMahasiswa);
-
-
-// =========================================================
-// ✅ ROUTE BARU: KHUSUS UNTUK MODAL REJECT (FORM SUBMIT)
-// =========================================================
-// Ini yang dipanggil sama form di dalam modal tabel tadi
-// Nanti lari ke controller 'rejectBerkas' terus redirect back
 router.post('/update-status-reject', cekBerkasController.rejectBerkas);
 
-
-// =========================================================
-// ✅ UPDATE ROUTE LAMA: UPDATE STATUS VIA AJAX/FETCH
-// =========================================================
+// Update status via AJAX/Fetch
 router.post('/update-status/:id', async (req, res) => {
   const { id } = req.params;
   const { status, catatan } = req.body; 
 
   try {
     const statusBool = status === 'true'; 
-    
-    // 🔥 AMBIL ID ADMIN DARI SESSION
     const adminId = req.session.user?.id || null;
 
-    // Panggil model dengan 4 parameter (ID, Status, Catatan, AdminID)
+    // Panggil model dengan 4 parameter
     await model.updateStatus(id, statusBool, catatan, adminId);
-
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Error update-status:', err);
@@ -54,32 +46,23 @@ router.post('/update-status/:id', async (req, res) => {
   }
 });
 
-
-// =========================
-// Route Lainnya (Tetap)
-// =========================
+// =========================================================
+// ⚖️ 2. WORKFLOW VERIFIKASI & SURAT
+// =========================================================
 router.post('/oper-kaprodi', verifikasiController.operKeKaprodi);
-
 router.get('/surat-undangan/:npm/generate', verifikasiController.generateUndanganPDF);
-
-// 2. 🔥 INI YANG KURANG: Route untuk ambil data JSON buat Modal
 router.get('/surat-detail/:npm', verifikasiController.getSuratDetail); 
-
-// 3. Route untuk Simpan Perubahan (Sudah ada)
 router.put('/update-surat-detail/:jadwalId', verifikasiController.updateSuratDetail);
-
 router.get('/api/dosen', verifikasiController.getDosenList);
 
+// Upload & Delete Surat TTD
 router.post('/upload-surat/:npm', uploadAdmin.single('surat_undangan'), verifikasiController.uploadSuratTTD);
 router.delete('/delete-surat', verifikasiController.deleteSuratTTD);
-// ...
 
-
+// =========================================================
+// 🏁 3. PENYELESAIAN & DASHBOARD
+// =========================================================
 router.post('/tandai-selesai', verifikasiController.tandaiSelesai);
-
-// =========================
-// 2. Verifikasi Mahasiswa
-// =========================
 router.get('/', verifikasiController.listAll);
 
 module.exports = router;
