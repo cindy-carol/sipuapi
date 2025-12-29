@@ -1,83 +1,80 @@
 // utils/scheduler.js
 const cron = require('node-cron');
-const pool = require('../config/db'); 
+const pool = require('../config/db'); // ⚠️ Cek path db config
 
 // ========================================================
-// 1. FUNGSI INTI (GENERATOR)
+// FUNGSI UTAMA (SESUAI STRUKTUR TABEL KAMU)
 // ========================================================
-const generateSemester = async (dateObj) => {
+const generateSemester = async (dateObj = new Date()) => {
   try {
-    const month = dateObj.getMonth(); 
+    const month = dateObj.getMonth(); // 0 = Jan, 11 = Des
     const year = dateObj.getFullYear();
     
     let namaTahun = ''; 
     let semester = '';  
 
-    // Tentukan Semester
+    // LOGIKA PENENTUAN:
     if (month < 6) { 
+      // Jan - Jun = GENAP (Tahunnya mundur 1. Cth: 2026 -> 2025/2026 Genap)
       semester = 'genap';
       namaTahun = `${year - 1}/${year}`;
     } else {
+      // Jul - Des = GANJIL (Tahunnya tetap. Cth: 2025 -> 2025/2026 Ganjil)
       semester = 'ganjil';
       namaTahun = `${year}/${year + 1}`;
     }
 
-    // Cek DB
+    // 1. CEK DATA (Pakai nama_tahun & semester, bukan label)
     const cek = await pool.query(
       "SELECT id FROM tahun_ajaran WHERE nama_tahun = $1 AND semester = $2", 
       [namaTahun, semester]
     );
     
+    // 2. INSERT JIKA BELUM ADA
     if (cek.rows.length === 0) {
-      // Matikan status tahun lain dulu
+      
+      // 🔥 LANGKAH PENTING: RESET STATUS LAMA
+      // Sebelum insert baru, setel semua tahun yang ada jadi FALSE (Non-Aktif)
+      // Biar cuma yang baru nanti yang statusnya TRUE
       await pool.query("UPDATE tahun_ajaran SET status = false");
 
-      // Insert tahun ini sebagai TRUE (Aktif)
-      // Nanti pas looping, yang 'True' bakal pindah-pindah sampai tahun terakhir.
+      // Insert Baru (Status = true)
+      // Perhatikan kolomnya: nama_tahun, semester, status
       await pool.query(
         "INSERT INTO tahun_ajaran (nama_tahun, semester, status) VALUES ($1, $2, true)", 
         [namaTahun, semester]
       );
-      console.log(`✅ GENERATED: ${namaTahun} ${semester}`);
+      
+      console.log(`✅ AUTO-GENERATE SUKSES: ${namaTahun} ${semester} (Aktif)`);
+    } else {
+       // console.log(`ℹ️ Info: Tahun ${namaTahun} ${semester} sudah ada.`);
     }
+
   } catch (err) {
-    console.error("❌ ERROR:", err.message); 
+    console.error("❌ ERROR Scheduler:", err.message); 
   }
 };
 
 // ========================================================
-// 2. 🔥 FUNGSI TIME TRAVEL (SEEDER)
-// ========================================================
-const runSeeder = async () => {
-  console.log("🚀 MEMULAI PROSES GENERATE HISTORY (2023 - SEKARANG)...");
-
-  // A. KITA MULAI DARI JULI 2023 (Biar dapet 2023/2024 Ganjil)
-  let currentDate = new Date('2023-07-01'); 
-  const today = new Date();
-
-  // B. LOOPING SAMPAI HARI INI
-  while (currentDate <= today) {
-    // Generate semester buat tanggal 'currentDate'
-    await generateSemester(currentDate);
-
-    // Maju 6 Bulan ke depan
-    currentDate.setMonth(currentDate.getMonth() + 6);
-  }
-
-  console.log("🏁 SELESAI! Database sudah terisi rapi.");
-};
-
-// ========================================================
-// 3. START SCHEDULER
+// JADWAL CRON JOB
 // ========================================================
 const startScheduler = () => {
   
-  // 🔥 JALANKAN SEEDER SEKALI AJA PAS SERVER NYALA
-  runSeeder();
+  // 1. CEK SAAT SERVER NYALA (Startup Check)
+  console.log('⏰ System Startup: Mengecek Tahun Ajaran...');
+  // ⚠️ Ganti tanggal ini ke new Date() kalau sudah selesai testing!
+  generateSemester(new Date()); 
 
-  // Jadwal Cron Job (Tetap dipasang buat masa depan)
-  cron.schedule('1 0 1 1 *', () => { generateSemester(new Date()); });
-  cron.schedule('1 0 1 7 *', () => { generateSemester(new Date()); });
+  // 2. JADWAL MASA DEPAN
+  cron.schedule('1 0 1 1 *', () => { // 1 Jan
+    console.log('⏰ Trigger Cron: Tahun Baru (Genap)!');
+    generateSemester(new Date()); 
+  });
+
+  cron.schedule('1 0 1 7 *', () => { // 1 Juli
+    console.log('⏰ Trigger Cron: Semester Baru (Ganjil)!');
+    generateSemester(new Date());
+  });
 };
 
 module.exports = startScheduler;
