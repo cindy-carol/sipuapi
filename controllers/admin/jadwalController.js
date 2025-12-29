@@ -1,93 +1,86 @@
+// controllers/admin/jadwalController.js
 const Jadwal = require('../../models/jadwalModel');
 
 const jadwalController = {
 
-  // =========================
-  // 1️⃣ Kalender untuk ADMIN
-  // =========================
+  // =========================================================================
+  // 📅 1. CALENDAR VIEW (ADMIN) - Melihat Semua Jadwal
+  // =========================================================================
   calendarView: async (req, res) => {
     try {
+      // Mengambil seluruh data jadwal dari database
       const jadwalList = await Jadwal.getAllJadwal();
 
       const events = jadwalList.map(j => {
-        // 🔥 FIX 1: Hapus toISOString(). Langsung ambil string tanggalnya.
+        // Ambil string tanggal (format YYYY-MM-DD) dan jam
         const tanggal = j.tanggal; 
-        const jamMulai = j.jam_mulai.slice(0, 5);
-        const jamSelesai = j.jam_selesai.slice(0, 5);
+        const jamMulai = j.jam_mulai ? j.jam_mulai.slice(0, 5) : '00:00';
+        const jamSelesai = j.jam_selesai ? j.jam_selesai.slice(0, 5) : '00:00';
 
         return {
-          title: `${j.nama} - ${j.npm} - (${j.pelaksanaan})`,
-          // 🔥 FIX 2: Langsung gabung string (YYYY-MM-DD + T + HH:mm)
-          start: `${tanggal}T${jamMulai}`,
-          end: `${tanggal}T${jamSelesai}`,
-          extendedProps: {
-            mode: j.pelaksanaan,
-            status: j.status_label,
-            tempat: j.tempat,
-
-            // Tahun ajaran
-            tahun_ajaran: `${j.nama_tahun} - ${j.semester}`,
-
-            // Dosen pembimbing
-            dosbing1: j.dosbing1,
-            dosbing2: j.dosbing2,
-
-            // Dosen penguji
-            penguji: j.dosen_penguji
-          }
-        };
-      });
-
-      res.render('admin/jadwal-ujian', {
-        title: 'Kalender Ujian',
-        currentPage: 'jadwal-ujian',
-        role: 'admin',
-        user: req.session.user,
-        events: JSON.stringify(events)
-      });
-
-    } catch (err) {
-      console.error('❌ Error ambil jadwal:', err);
-      res.status(500).send('Gagal menampilkan kalender.');
-    }
-  },
-
-
-  // =========================
-  // 2️⃣ Kalender Mahasiswa (Isi Jadwal)
-  // =========================
-  renderIsiJadwal: async (req, res) => {
-    try {
-      const npm = req.session.user.npm;
-      const jadwalList = await Jadwal.getJadwalByNPM(npm); 
-
-      const events = jadwalList.map(j => {
-        // 🔥 FIX 3: Di sini juga hapus toISOString()
-        const tanggal = j.tanggal;
-        const jamMulai = j.jam_mulai.slice(0, 5);
-        const jamSelesai = j.jam_selesai.slice(0, 5);
-
-        return {
-          title: 'Soft Booking (Anda)',
-          // 🔥 FIX 4: Langsung gabung string
+          // Label yang muncul di kotak kalender
+          title: `${j.nama} - (${j.pelaksanaan.toUpperCase()})`,
+          // Format standar ISO tanpa timezone untuk FullCalendar
           start: `${tanggal}T${jamMulai}`,
           end: `${tanggal}T${jamSelesai}`,
           extendedProps: {
             npm: j.npm,
             mode: j.pelaksanaan,
-            status: j.status_label, // Pastikan field ini ada di query getJadwalByNPM
+            status: j.status_label,
             tempat: j.tempat,
-
-            // Tahun ajaran
-            nama_tahun: j.nama_tahun,
-            semester: j.semester,
-
-            // Dosen pembimbing
+            tahun_ajaran: `${j.nama_tahun} - ${j.semester}`,
             dosbing1: j.dosbing1,
             dosbing2: j.dosbing2,
+            penguji: j.dosen_penguji || 'Belum Ditentukan'
+          }
+        };
+      });
 
-            // Dosen penguji
-            penguji: j.penguji
+      res.render('admin/jadwal-ujian', {
+        title: 'Kalender Ujian Akhir',
+        currentPage: 'jadwal-ujian',
+        role: 'admin',
+        user: req.session.user,
+        // Kirim data sebagai string JSON agar bisa dibaca script kalender
+        events: JSON.stringify(events) 
+      });
+
+    } catch (err) {
+      console.error('❌ Error ambil jadwal:', err);
+      res.status(500).send('Gagal menampilkan kalender admin.');
+    }
+  },
+
+
+  // =========================================================================
+  // 🎓 2. RENDER ISI JADWAL (MAHASISWA) - Booking & Status
+  // =========================================================================
+  renderIsiJadwal: async (req, res) => {
+    try {
+      const npm = req.session.user.npm;
+      // Mengambil jadwal spesifik mahasiswa yang sedang login
+      const jadwalList = await Jadwal.getJadwalByNPM(npm); 
+
+      const events = jadwalList.map(j => {
+        const tanggal = j.tanggal;
+        const jamMulai = j.jam_mulai ? j.jam_mulai.slice(0, 5) : '00:00';
+        const jamSelesai = j.jam_selesai ? j.jam_selesai.slice(0, 5) : '00:00';
+
+        return {
+          title: 'Jadwal Anda (Soft Booking)',
+          start: `${tanggal}T${jamMulai}`,
+          end: `${tanggal}T${jamSelesai}`,
+          color: j.status_label === 'Terverifikasi' ? '#28a745' : '#ffc107', // Hijau jika ACC, Kuning jika proses
+          extendedProps: {
+            npm: j.npm,
+            mode: j.pelaksanaan,
+            status: j.status_label,
+            tempat: j.tempat,
+            nama_tahun: j.nama_tahun,
+            semester: j.semester,
+            dosbing1: j.dosbing1,
+            dosbing2: j.dosbing2,
+            penguji: j.penguji || 'Menunggu Verifikasi'
           }
         };
       });
@@ -100,8 +93,8 @@ const jadwalController = {
       });
 
     } catch (err) {
-      console.error(err);
-      res.status(500).send('Gagal load halaman isi jadwal');
+      console.error('❌ Error load jadwal mahasiswa:', err);
+      res.status(500).send('Gagal memuat jadwal pendaftaran.');
     }
   }
 };

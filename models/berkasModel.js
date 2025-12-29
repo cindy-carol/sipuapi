@@ -1,5 +1,6 @@
 // models/berkasModel.js
 const pool = require('../config/db');
+const supabase = require('../config/supabaseClient'); // Pastikan path ini benar
 
 const Berkas = {
   // ===============================
@@ -26,13 +27,9 @@ const Berkas = {
       [mhs.rows[0].id]
     );
 
-    const baseUrl = '/upload';
-    return res.rows.map((b) => ({
-      ...b,
-      url_preview: b.path_file.startsWith('/upload')
-        ? b.path_file
-        : `${baseUrl}/${b.path_file}`,
-    }));
+    // Karena kita sudah menyimpan Full Public URL dari Supabase ke DB, 
+    // kita tidak perlu lagi menambahkan prefix manual
+    return res.rows;
   },
 
   // ===============================
@@ -70,7 +67,7 @@ const Berkas = {
       let berkas_id;
       if (cek.rows.length > 0) {
         // Update file lama
-const update = await client.query(
+        const update = await client.query(
           `UPDATE berkas
            SET 
              nama_berkas = $1, 
@@ -93,11 +90,9 @@ const update = await client.query(
       }
 
       // -------------------------------------------------------------
-      // 🔥 PERBAIKAN LOGIKA DAFTAR UJIAN DI SINI 🔥
+      // 🔥 LOGIKA OTOMATIS DAFTAR UJIAN 🔥
       // -------------------------------------------------------------
 
-      // A. Tentukan Syarat WAJIB (Agar masuk daftar ujian)
-      // Cukup cek 'kartu_asistensi_1' saja. 2 dan 3 itu opsional.
       const syaratWajib = ['dokumen_rpl', 'draft_artikel', 'kartu_asistensi_1'];
 
       const cekLengkap = await client.query(
@@ -107,13 +102,11 @@ const update = await client.query(
       );
 
       const uploadedJenis = cekLengkap.rows.map(r => r.jenis_berkas);
-      // Cek apakah semua syarat wajib ada di database
       const sudahLengkap = syaratWajib.every(j => uploadedJenis.includes(j));
 
       let daftar_ujian_id = null;
 
       if (sudahLengkap) {
-        // B. Buat/Ambil Daftar Ujian
         const daftar = await client.query(
           `SELECT id FROM daftar_ujian WHERE mahasiswa_id = $1 LIMIT 1`, [mahasiswa_id]
         );
@@ -127,8 +120,6 @@ const update = await client.query(
           daftar_ujian_id = daftar.rows[0].id;
         }
 
-        // C. Link-kan File ke berkas_ujian
-        // Masukkan SEMUA file yang relevan (termasuk asistensi 2 & 3 jika ada)
         const allExamFiles = [
             'dokumen_rpl', 
             'draft_artikel', 
@@ -138,7 +129,6 @@ const update = await client.query(
         ];
 
         for (const jenisFile of allExamFiles) {
-          // Cari ID berkasnya dulu
           const b = await client.query(
             `SELECT id FROM berkas WHERE mahasiswa_id = $1 AND jenis_berkas = $2`,
             [mahasiswa_id, jenisFile]
@@ -147,21 +137,19 @@ const update = await client.query(
           if (b.rows[0]) {
             const thisBerkasId = b.rows[0].id;
             
-            // Cek apakah sudah terhubung ke daftar_ujian?
             const linkExist = await client.query(
               `SELECT 1 FROM berkas_ujian WHERE daftar_ujian_id = $1 AND berkas_id = $2`,
               [daftar_ujian_id, thisBerkasId]
             );
 
             if (linkExist.rows.length === 0) {
-              // Hubungkan (Insert)
               await client.query(
                 `INSERT INTO berkas_ujian (daftar_ujian_id, berkas_id, status_verifikasi)
                  VALUES ($1, $2, null)`,
                 [daftar_ujian_id, thisBerkasId]
               );
             } else {
-              // Jika ini adalah file yang baru saja diupload (berkas_id sama dengan yang baru diproses), reset status
+              // Jika user ganti file, reset status verifikasi admin jadi NULL (perlu diperiksa ulang)
               if (thisBerkasId === berkas_id) {
                   await client.query(
                     `UPDATE berkas_ujian
@@ -176,12 +164,7 @@ const update = await client.query(
       }
 
       await client.query('COMMIT');
-
-      return {
-        success: true,
-        lengkap: sudahLengkap,
-        daftar_ujian_id,
-      };
+      return { success: true, lengkap: sudahLengkap, daftar_ujian_id };
 
     } catch (err) {
       await client.query('ROLLBACK');
@@ -191,19 +174,8 @@ const update = await client.query(
     }
   },
 
-  // ... (fungsi updateStatusUI & getStatusVerifikasiMahasiswa biarkan tetap sama) ...
-  updateStatusUI: async (daftarUjianId, berkasId, catatan) => {
-    return pool.query(
-      `UPDATE berkas_ujian
-       SET catatan_kesalahan = $1
-       WHERE daftar_ujian_id = $2 AND berkas_id = $3`,
-      [catatan, daftarUjianId, berkasId]
-    );
-  },
-
-
   // ===============================
-  // 🔧 Admin ubah status berkas ujian (UPDATE MODEL LAMA)
+  // 🔧 Update Status (Admin Side)
   // ===============================
   updateStatusUI: async (daftarUjianId, berkasId, catatan) => {
     return pool.query(
@@ -215,7 +187,7 @@ const update = await client.query(
   },
 
   // ===============================
-  // 📌 Ambil status verifikasi
+  // 📌 Ambil status verifikasi (Lock UI)
   // ===============================
   getStatusVerifikasiMahasiswa: async (npm) => {
     const res = await pool.query(
@@ -228,21 +200,16 @@ const update = await client.query(
     return res.rows;
   },
 
-// models/berkasModel.js
-
-  // ... kode sebelumnya ...
-
-  // 👇 PERBAIKAN FUNGSI DELETE
-// models/berkasModel.js
-
+  // ===============================
+  // 🗑️ PERBAIKAN FUNGSI DELETE (Cloud Sync)
+  // ===============================
   deleteBerkas: async (npm, jenis) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // 1. Cek Data DB
         const mhs = await client.query(`SELECT id FROM mahasiswa WHERE npm = $1`, [npm]);
-        if (!mhs.rows[0]) throw new Error("Mahasiswa not found");
+        if (!mhs.rows[0]) throw new Error("Mahasiswa tidak ditemukan");
         const mhsId = mhs.rows[0].id;
 
         const cekFile = await client.query(
@@ -257,31 +224,27 @@ const update = await client.query(
 
         const { id, path_file } = cekFile.rows[0];
 
-        // 2. Hapus Data DB (Prioritas Utama)
+        // 1. Hapus Data dari DB Relasi
         await client.query(`DELETE FROM berkas_ujian WHERE berkas_id = $1`, [id]);
         await client.query(`DELETE FROM berkas WHERE id = $1`, [id]);
 
-        // 3. Kunci Kemenangan (COMMIT)
-        // Begitu ini lewat, data di web dipastikan hilang.
         await client.query('COMMIT'); 
 
-        // 4. Hapus File Fisik (DIBUNGKUS TRY-CATCH SENDIRI)
-        // Biar kalau gagal hapus file (misal file udah ilang duluan), 
-        // dia TIDAK loncat ke catch utama dan tetap return success.
+        // 2. Hapus File Fisik dari Supabase Storage
         try {
-            // Bersihkan path (hilangkan slash depan kalau ada)
-            const cleanPath = path_file.startsWith('/') ? path_file.substring(1) : path_file;
-            const fullPath = path.join(__dirname, '../public', cleanPath);
-            
-            if (fs.existsSync(fullPath)) {
-                fs.unlinkSync(fullPath);
-            }
+            // Kita ambil path aslinya dari URL (menghapus domain dan nama bucket)
+            // URL: https://xxx.supabase.co/storage/v1/object/public/storage_sipuapi/berkas/2024/ganjil/NPM/file.pdf
+            const cleanPath = path_file.split('storage_sipuapi/').pop(); 
+
+            const { error: deleteError } = await supabase.storage
+                .from('storage_sipuapi')
+                .remove([cleanPath]);
+
+            if (deleteError) throw deleteError; 
         } catch (fileErr) {
-            // Cuma warning di terminal, jangan bikin user panik
-            console.warn("⚠️ Warning: Data DB terhapus, tapi file fisik gagal dihapus/tidak ditemukan.", fileErr.message);
+            console.warn("⚠️ Warning: Data DB terhapus, tapi file cloud gagal dihapus atau tidak ditemukan.", fileErr.message);
         }
 
-        // TETAP RETURN SUKSES
         return { success: true };
 
     } catch (err) {
@@ -289,7 +252,7 @@ const update = await client.query(
         console.error('❌ Error Delete Berkas:', err);
         return { success: false, message: err.message };
     } finally {
-        client.release();
+      client.release();
     }
   },
 };

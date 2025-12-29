@@ -1,124 +1,136 @@
-const pool = require('../../config/db'); // Sesuaikan path config DB kamu
+// controllers/admin/akunController.js
+const pool = require('../../config/db'); 
 const bcrypt = require('bcrypt');
 
-// 1. TAMPILKAN HALAMAN KELOLA AKUN
-const getHalamanKelolaAkun = async (req, res) => {
-    try {
-        // Ambil data akun (Kecuali Mahasiswa, karena katamu mahasiswa beda urusan)
-        // Kita urutkan biar Admin paling atas, lalu Kaprodi
-        const query = `
-            SELECT id, username, nama, role, status_aktif 
-            FROM akun 
-            WHERE role IN ('admin', 'kaprodi') 
-            ORDER BY role ASC, id ASC
-        `;
-        const result = await pool.query(query);
+const akunController = {
 
-        res.render('admin/kelola-akun', { 
-            title: 'Kelola Akun',
-            currentPage: 'kelola-akun',
-            user: req.session.user, // Data admin yg sedang login
-            listAkun: result.rows,   // Data untuk tabel
-            defaultPasswordAdmin: process.env.PASSWORD_DEFAULT_ADMIN_BARU, // Kirim password default admin baru ke view
-            defaultPasswordReset: process.env.PASSWORD_DEFAULT_RESET // Kirim password default reset ke view
-        });
+  // =========================================================================
+  // 👥 1. TAMPILKAN HALAMAN KELOLA AKUN
+  // =========================================================================
+  getHalamanKelolaAkun: async (req, res) => {
+    try {
+      // Mengambil data akun Admin dan Kaprodi
+      const query = `
+        SELECT id, username, nama, role, status_aktif 
+        FROM akun 
+        WHERE role IN ('admin', 'kaprodi') 
+        ORDER BY role ASC, id ASC
+      `;
+      const result = await pool.query(query);
+
+      res.render('admin/kelola-akun', { 
+        title: 'Kelola Akun Pengguna',
+        currentPage: 'kelola-akun',
+        user: req.session.user, 
+        listAkun: result.rows,
+        // Menggunakan environment variables untuk password default
+        defaultPasswordAdmin: process.env.PASSWORD_DEFAULT_ADMIN_BARU || 'admin123', 
+        defaultPasswordReset: process.env.PASSWORD_DEFAULT_RESET || '123456'
+      });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Terjadi kesalahan server');
+      console.error('❌ Error getHalamanKelolaAkun:', err);
+      res.status(500).send('Terjadi kesalahan server');
     }
-};
+  },
 
-// 2. TAMBAH ADMIN BARU
-const tambahAdmin = async (req, res) => {
+  // =========================================================================
+  // ➕ 2. TAMBAH ADMIN BARU
+  // =========================================================================
+  tambahAdmin: async (req, res) => {
     const { nama, username, password } = req.body;
     
     try {
-        // Cek username kembar
-        const cekUser = await pool.query('SELECT id FROM akun WHERE username = $1', [username]);
-        if (cekUser.rows.length > 0) {
-            return res.status(400).json({ success: false, message: 'Username sudah dipakai!' });
-        }
+      // Validasi duplikasi username
+      const cekUser = await pool.query('SELECT id FROM akun WHERE username = $1', [username]);
+      if (cekUser.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'Username sudah dipakai!' });
+      }
 
-        // Hash Password
-        const passwordAdmin = req.body.password || process.env.PASSWORD_DEFAULT_ADMIN_BARU;
-const salt = await bcrypt.genSalt(10);
-const hash = await bcrypt.hash(passwordAdmin, salt);
+      // Hashing password secara aman
+      const passwordAdmin = password || process.env.PASSWORD_DEFAULT_ADMIN_BARU;
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(passwordAdmin, salt);
 
-        // Insert ke DB (Default role: admin, status: aktif)
-        await pool.query(
-            'INSERT INTO akun (nama, username, password, role, status_aktif, tanggal_dibuat) VALUES ($1, $2, $3, $4, $5, NOW())',
-            [nama, username, hash, 'admin', true]
-        );
+      await pool.query(
+        'INSERT INTO akun (nama, username, password, role, status_aktif, tanggal_dibuat) VALUES ($1, $2, $3, $4, $5, NOW())',
+        [nama, username, hash, 'admin', true]
+      );
 
-        res.json({ success: true, message: 'Admin baru berhasil ditambahkan!' });
+      res.json({ success: true, message: 'Admin baru berhasil ditambahkan!' });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: 'Gagal menambah admin.' });
+      console.error('❌ Error tambahAdmin:', err);
+      res.status(500).json({ success: false, message: 'Gagal menambah admin.' });
     }
-};
+  },
 
-// Di controller akunController.js
-
-// Fungsi Bantuan: Cek Password Admin
-const verifikasiAdmin = async (adminId, inputPassword) => {
-    // Ambil password hash admin yang sedang login dari DB
+  // =========================================================================
+  // 🔑 3. HELPER: VERIFIKASI PASSWORD ADMIN (SECURITY CHECK)
+  // =========================================================================
+  verifikasiAdmin: async (adminId, inputPassword) => {
     const res = await pool.query('SELECT password FROM akun WHERE id = $1', [adminId]);
     if (res.rows.length === 0) return false;
     
     const hash = res.rows[0].password;
-    // Bandingkan password inputan modal dengan hash di DB
+    // Membandingkan input dengan hash di database
     return await bcrypt.compare(inputPassword, hash);
-};
+  },
 
-
-// UPDATE: RESET PASSWORD
-const resetPassword = async (req, res) => {
-    const { targetUserId, adminPassword } = req.body; // Terima adminPassword
+  // =========================================================================
+  // 🔄 4. RESET PASSWORD USER (ADMIN/KAPRODI)
+  // =========================================================================
+  resetPassword: async (req, res) => {
+    const { targetUserId, adminPassword } = req.body;
     const adminId = req.session.user.id;
 
     try {
-        // 1. VERIFIKASI DULU!
-        const isVerified = await verifikasiAdmin(adminId, adminPassword);
-        if (!isVerified) {
-            return res.status(401).json({ success: false, message: 'Password Admin Salah! Akses Ditolak.' });
-        }
+      // Verifikasi identitas admin sebelum melakukan tindakan sensitif
+      const isVerified = await akunController.verifikasiAdmin(adminId, adminPassword);
+      if (!isVerified) {
+        return res.status(401).json({ success: false, message: 'Password Admin Salah! Akses Ditolak.' });
+      }
 
-const passwordDefault = process.env.PASSWORD_DEFAULT_RESET; 
-const salt = await bcrypt.genSalt(10);
-const hash = await bcrypt.hash(passwordDefault, salt);
-        await pool.query('UPDATE akun SET password = $1 WHERE id = $2', [hash, targetUserId]);
+      const passwordDefault = process.env.PASSWORD_DEFAULT_RESET || '123456'; 
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(passwordDefault, salt);
+      
+      await pool.query('UPDATE akun SET password = $1 WHERE id = $2', [hash, targetUserId]);
 
-        res.json({ success: true, message: 'Password berhasil direset!' });
+      res.json({ success: true, message: 'Password berhasil direset ke default!' });
 
     } catch (err) {
-        // ... error handling ...
-        res.status(500).json({ success: false, message: 'Server Error' });
+      console.error('❌ Error resetPassword:', err);
+      res.status(500).json({ success: false, message: 'Gagal mereset password.' });
     }
-};
+  },
 
-
-// UPDATE: TOGGLE STATUS
-const toggleStatus = async (req, res) => {
-    const { targetUserId, statusBaru, adminPassword } = req.body; // Terima adminPassword
+  // =========================================================================
+  // 🔘 5. TOGGLE STATUS (AKTIF/NON-AKTIF)
+  // =========================================================================
+  toggleStatus: async (req, res) => {
+    const { targetUserId, statusBaru, adminPassword } = req.body;
     const adminId = req.session.user.id;
 
     try {
-        // 1. VERIFIKASI DULU!
-        const isVerified = await verifikasiAdmin(adminId, adminPassword);
-        if (!isVerified) {
-            return res.status(401).json({ success: false, message: 'Password Admin Salah! Gagal mengubah status.' });
-        }
+      // Proteksi: Admin tidak boleh menonaktifkan akunnya sendiri
+      if (parseInt(targetUserId) === parseInt(adminId)) {
+        return res.status(400).json({ success: false, message: 'Akses Ditolak: Anda tidak bisa menonaktifkan akun sendiri.' });
+      }
 
-        // ... Lanjut logika update status ...
-        await pool.query('UPDATE akun SET status_aktif = $1 WHERE id = $2', [statusBaru, targetUserId]);
-        res.json({ success: true, message: 'Status akun berhasil diubah.' });
+      const isVerified = await akunController.verifikasiAdmin(adminId, adminPassword);
+      if (!isVerified) {
+        return res.status(401).json({ success: false, message: 'Password Admin Salah! Gagal mengubah status.' });
+      }
+
+      await pool.query('UPDATE akun SET status_aktif = $1 WHERE id = $2', [statusBaru, targetUserId]);
+      res.json({ success: true, message: 'Status akun berhasil diperbarui.' });
 
     } catch (err) {
-         // ... error handling ...
-         res.status(500).json({ success: false, message: 'Server Error' });
+      console.error('❌ Error toggleStatus:', err);
+      res.status(500).json({ success: false, message: 'Server Error saat mengubah status.' });
     }
+  }
 };
 
-module.exports = { getHalamanKelolaAkun, tambahAdmin, resetPassword, toggleStatus };
+module.exports = akunController;

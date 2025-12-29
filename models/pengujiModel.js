@@ -1,7 +1,13 @@
+// models/pengujiModel.js
 const pool = require('../config/db');
 
+/**
+ * ============================================================
+ * 📋 1. AMBIL ANTREAN MAHASISWA (BELUM ADA PENGUJI)
+ * ============================================================
+ * Hanya mengambil mahasiswa yang jadwalnya sudah di-ACC Admin (status_verifikasi = TRUE)
+ */
 const getMahasiswaBelumPenguji = async () => {
-  // Menggunakan DISTINCT ON agar satu NPM hanya muncul satu kali di antrean
   let query = `
     SELECT DISTINCT ON (m.npm)
       m.id AS mahasiswa_id,
@@ -28,6 +34,11 @@ const getMahasiswaBelumPenguji = async () => {
   return rows;
 };
 
+/**
+ * ============================================================
+ * 📋 2. AMBIL RIWAYAT MAHASISWA (SUDAH ADA PENGUJI)
+ * ============================================================
+ */
 const getMahasiswaSudahPenguji = async (tahunId = null) => {
   const params = [];
   let query = `
@@ -45,11 +56,21 @@ const getMahasiswaSudahPenguji = async (tahunId = null) => {
   return rows;
 };
 
+/**
+ * ============================================================
+ * 🏫 3. DATA MASTER DOSEN (UNTUK DROPDOWN)
+ * ============================================================
+ */
 const getAllDosen = async () => {
   const result = await pool.query(`SELECT id, kode_dosen, nama FROM dosen ORDER BY id ASC`);
   return result.rows;
 };
 
+/**
+ * ============================================================
+ * 🔍 4. DETAIL MAHASISWA BY NPM
+ * ============================================================
+ */
 const getMahasiswaByNPM = async (npm) => {
   const result = await pool.query(`
     SELECT m.id, m.npm, m.nama, m.tahun_ajaran_id AS tahun_ajaran,
@@ -65,9 +86,12 @@ const getMahasiswaByNPM = async (npm) => {
   return result.rows[0];
 };
 
-// =========================================================
-// 🔥 VERSI AMAN: ASSIGN PENGUJI (Tanpa error Updated_At)
-// =========================================================
+/**
+ * ============================================================
+ * ⚖️ 5. ASSIGN PENGUJI (TRANSACTIONAL LOGIC)
+ * ============================================================
+ * Alur: Assign Penguji -> Sync Daftar Ujian -> Auto Create Draf Surat
+ */
 const assignPenguji = async (npm, dosenIds, kaprodiId, editorId) => {
   const client = await pool.connect(); 
   try {
@@ -84,31 +108,27 @@ const assignPenguji = async (npm, dosenIds, kaprodiId, editorId) => {
       [mahasiswaId]
     );
 
-    // 3. Loop Assign
+    // 3. Loop Assign (Update jika ada, Insert jika baru)
     for (let i = 0; i < dosenIds.length; i++) {
       const dosenId = dosenIds[i];
       
       if (pengujiLama[i]) {
-        // UPDATE
         await client.query(
           `UPDATE dosen_penguji 
-           SET dosen_id = $1, status_verifikasi = TRUE, kaprodi_id = $3, updated_by = $4, updated_at = NOW()
-           WHERE id = $2`,
+            SET dosen_id = $1, status_verifikasi = TRUE, kaprodi_id = $3, updated_by = $4, updated_at = NOW()
+            WHERE id = $2`,
           [dosenId, pengujiLama[i].id, kaprodiId, editorId]
         );
       } else {
-        // INSERT
         await client.query(
           `INSERT INTO dosen_penguji (mahasiswa_id, dosen_id, status_verifikasi, kaprodi_id, updated_by, created_at, updated_at)
-           VALUES ($1, $2, TRUE, $3, $4, NOW(), NOW())`, 
+            VALUES ($1, $2, TRUE, $3, $4, NOW(), NOW())`, 
           [mahasiswaId, dosenId, kaprodiId, editorId]
         );
       }
     }
 
-    // ===========================================================
-    // 🔥 SYNC DAFTAR UJIAN (VERSI AMAN - Hapus updated_at)
-    // ===========================================================
+    // 4. Sinkronisasi ke Tabel daftar_ujian
     const { rows: dpBaru } = await client.query(
         `SELECT id FROM dosen_penguji WHERE mahasiswa_id = $1 ORDER BY id DESC LIMIT 1`,
         [mahasiswaId]
@@ -116,22 +136,19 @@ const assignPenguji = async (npm, dosenIds, kaprodiId, editorId) => {
 
     if (dpBaru.length > 0) {
         const dpId = dpBaru[0].id;
-        // Update kolom dosen_penguji_id SAJA (Gak usah update timestamp dulu biar ga error)
         await client.query(
             `UPDATE daftar_ujian SET dosen_penguji_id = $1 WHERE mahasiswa_id = $2`,
             [dpId, mahasiswaId]
         );
     }
-    // ===========================================================
 
-    // 4. Logic Surat Otomatis
+    // 5. Logic Surat Otomatis (Dibuat saat semua penguji sudah di-plot)
     const { rows: cekPenguji } = await client.query(
       `SELECT COUNT(*) AS belum FROM dosen_penguji WHERE mahasiswa_id = $1 AND status_verifikasi = FALSE`,
       [mahasiswaId]
     );
 
     if (parseInt(cekPenguji[0].belum, 10) === 0) {
-      // a. Ambil Jadwal
       const { rows: jadwalRows } = await client.query(
         `SELECT id, pelaksanaan FROM jadwal WHERE mahasiswa_id = $1`, [mahasiswaId]
       );
@@ -141,13 +158,11 @@ const assignPenguji = async (npm, dosenIds, kaprodiId, editorId) => {
           const pelaksanaan = jadwalRows[0].pelaksanaan || 'offline'; 
           const dosenPengujiId = dpBaru[0]?.id; 
 
-          // b. Ambil Dosbing
           const mahasiswaData = await client.query(
             `SELECT dosbing1_id, dosbing2_id FROM mahasiswa WHERE id = $1`, [mahasiswaId]
           );
           const { dosbing1_id, dosbing2_id } = mahasiswaData.rows[0];
 
-          // c. Cek/Insert Surat
           const cekSurat = await client.query(`SELECT id FROM surat WHERE mahasiswa_id = $1`, [mahasiswaId]);
 
           let suratId;
@@ -166,7 +181,6 @@ const assignPenguji = async (npm, dosenIds, kaprodiId, editorId) => {
               );
           }
 
-          // d. Update Link Surat
           await client.query(
             `UPDATE daftar_ujian SET surat_id = $1 WHERE mahasiswa_id = $2`,
             [suratId, mahasiswaId]
@@ -177,13 +191,19 @@ const assignPenguji = async (npm, dosenIds, kaprodiId, editorId) => {
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK');
-    throw err; // Lempar error biar ditangkep controller
+    throw err; 
   } finally {
     client.release();
   }
 };
 
-// ... (getJadwalDosen TETAP SAMA KAYA YANG LAMA) ...
+/**
+ * ============================================================
+ * 🕒 6. DETEKSI BENTROK JADWAL DOSEN
+ * ============================================================
+ * Mencari dosen yang sudah terdaftar sebagai penguji atau 
+ * pembimbing pada slot waktu yang sama.
+ */
 const getJadwalDosen = async (tanggal, jamMulai, jamSelesai, excludeMahasiswaId) => {
   const query = `
     SELECT DISTINCT id FROM (

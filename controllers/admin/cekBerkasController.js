@@ -1,32 +1,33 @@
-// controllers/admin/cekBerkasController
+// controllers/admin/cekBerkasController.js
 const model = require("../../models/cekBerkasModel");
 const { Mahasiswa } = require('../../models/mahasiswaModel');
 const { Berkas } = require('../../models/berkasModel');
 
 const cekBerkasController = {
 
-  // ===== Halaman utama verifikasi berkas =====
-list: async (req, res) => {
+  // =========================================================================
+  // 🔍 1. RENDER HALAMAN CEK BERKAS (VIEWER)
+  // =========================================================================
+  list: async (req, res) => {
     try {
-      // 1. 🛑 FIX LOGIKA NPM: Ambil dari URL, bukan Session
+      // Ambil NPM dari parameter URL
       const { npm } = req.params; 
 
       if (!npm) {
           return res.status(400).send("Parameter NPM tidak ditemukan");
       }
 
-      // 2. Ambil Data Mahasiswa Target
+      // Ambil data profil mahasiswa target
       const mhs = await Mahasiswa.getMahasiswaByNPM(npm);
       
       if (!mhs) {
           return res.status(404).send(`Mahasiswa dengan NPM ${npm} tidak ditemukan.`);
       }
 
-      // 3. Ambil Berkas Mahasiswa Tersebut
-      // Gunakan fungsi model yang sudah kita update sebelumnya (yang return Array lengkap)
+      // Ambil semua berkas mahasiswa (URL dari Supabase sudah termasuk di sini)
       const rawBerkas = await Berkas.getBerkasByMahasiswa(npm);
       
-      // Mapping status UI (Opsional, tapi bagus buat konsistensi)
+      // Mapping untuk kebutuhan tampilan UI (Badge & Status)
       const berkasList = (rawBerkas || []).map(b => {
         let statusLabel = 'Menunggu';
         let statusClass = 'warning';
@@ -41,30 +42,30 @@ list: async (req, res) => {
 
         return {
             ...b,
-            status: statusLabel,     // Label Text
-            statusClass: statusClass // CSS Class
+            status: statusLabel,     
+            statusClass: statusClass,
+            // URL file langsung mengarah ke Supabase Storage
+            url_file: b.path_file 
         };
       });
 
-      // 4. Render View
-      // Kirim 'berkasList' yang sudah rapi
-          res.locals.hideSidebar = true;
+      // Render view admin/cek-berkas
+      res.locals.hideSidebar = true;
       res.render('admin/cek-berkas', {
-        title: 'Cek Berkas',
+        title: 'Cek Berkas Mahasiswa',
         currentPage: 'cek-berkas',
         role: 'admin',
         
         // Data Mahasiswa
-        mahasiswa: mhs, // Object mahasiswa lengkap
+        mahasiswa: mhs,
         nama: mhs.nama,
         npm: mhs.npm,
         thajaran: `${mhs.nama_tahun} ${mhs.semester}`,
         dosbing1: mhs.dosbing1,
         dosbing2: mhs.dosbing2,
         
-        // Data Berkas
-        berkasList: berkasList,
-        
+        // List Berkas untuk dalooping di EJS
+        berkasList: berkasList
       });
 
     } catch (err) {
@@ -73,23 +74,24 @@ list: async (req, res) => {
     }
   },
 
-  // Fungsi khusus menangani Form Modal (Supaya bisa redirect)
-// Fungsi khusus menangani Form Modal
-rejectBerkas: async (req, res) => {
+  // =========================================================================
+  // ❌ 2. REJECT BERKAS (SATU PER SATU VIA MODAL)
+  // =========================================================================
+  rejectBerkas: async (req, res) => {
     try {
       const { berkas_id, alasan_kode, npm } = req.body;
-      
-      // 🔥 AMBIL ID ADMIN
       const adminId = req.session.user?.id || null;
       
+      // Tentukan template pesan penolakan berdasarkan kode
       let pesan = 'Mohon perbaiki berkas ini.';
       if (alasan_kode === '1') pesan = 'Berkas yang diupload salah/tidak sesuai.';
-      else if (alasan_kode === '2') pesan = 'Scan berkas buram/tidak terbaca.';
-      else if (alasan_kode === '3') pesan = 'Tanda tangan/stempel belum lengkap.';
+      else if (alasan_kode === '2') pesan = 'Scan berkas buram atau tidak terbaca.';
+      else if (alasan_kode === '3') pesan = 'Tanda tangan atau stempel belum lengkap.';
       
-      // 🔥 Masukkan adminId sebagai parameter ke-4
+      // Update status ke FALSE (Ditolak) di database
       await model.updateStatus(berkas_id, false, pesan, adminId);
 
+      // Redirect kembali ke halaman cek berkas mahasiswa tersebut
       if (npm) {
         return res.redirect(`/admin/verifikasi/cek-berkas/${npm}`);
       } else {
@@ -102,44 +104,49 @@ rejectBerkas: async (req, res) => {
     }
   },
 
-  // ===== Kembalikan semua berkas ke mahasiswa =====
+  // =========================================================================
+  // 🔄 3. RETURN TO MAHASISWA (TOLAK SEMUA BERKAS SEKALIGUS)
+  // =========================================================================
   returnToMahasiswa: async (req, res) => {
     try {
       const { npm, catatan } = req.body; 
-      
-      // 🔥 AMBIL ID ADMIN
       const adminId = req.session.user?.id || null;
-
-      console.log(`🔄 Mengembalikan berkas NPM: ${npm} oleh Admin ID: ${adminId}`);
 
       const mahasiswa = await model.getMahasiswaByNpm(npm);
       if (!mahasiswa) return res.status(404).send("Mahasiswa tidak ditemukan!");
 
-      // Update DB
+      // Update status semua berkas menjadi FALSE
       await model.updateBerkasStatus({ 
           mahasiswaId: mahasiswa.id, 
           status: false, 
           catatan_kesalahan: catatan,
-          adminId: adminId // 🔥 Kirim adminId ke model
+          adminId: adminId 
       });
       
-      res.json({ success: true });
+      res.json({ success: true, message: "Semua berkas telah dikembalikan untuk revisi." });
 
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: "Server Error" });
+      console.error('❌ Error returnToMahasiswa:', err);
+      res.status(500).json({ success: false, message: "Gagal memproses pengembalian berkas." });
     }
   },
 
-  // ===== Update status verifikasi satu berkas =====
-  updateStatusById: async (id, status) => {
+  // =========================================================================
+  // ✅ 4. APPROVE BERKAS (BY ID)
+  // =========================================================================
+  updateStatusById: async (req, res) => {
     try {
+      const { id } = req.params;
+      const { status } = req.body; // Terima string 'true' atau 'false'
+      const adminId = req.session.user?.id || null;
+
       const statusBool = status === 'true';
-      await model.updateStatus(id, statusBool);
-      return true;
+      await model.updateStatus(id, statusBool, statusBool ? 'Lengkap' : null, adminId);
+      
+      res.json({ success: true, message: "Status berkas berhasil diperbarui." });
     } catch (err) {
       console.error('❌ Gagal update status berkas:', err);
-      return false;
+      res.status(500).json({ success: false, message: "Gagal update status." });
     }
   },
 };

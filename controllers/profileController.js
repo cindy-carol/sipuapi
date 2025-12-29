@@ -1,11 +1,11 @@
 // controllers/profileController.js
-const pool = require('../config/db'); // Sesuaikan path db kamu
+const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 
 const updateProfile = async (req, res) => {
     const { nama, currentPassword, newPassword, confirmPassword } = req.body;
     
-    // Pastikan user login
+    // 1. Proteksi Sesi: Pastikan user login
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'Sesi habis, silakan login ulang.' });
     }
@@ -13,36 +13,43 @@ const updateProfile = async (req, res) => {
     const userId = req.session.user.id;
 
     try {
-        // 1. Ambil data user
-        const userRes = await pool.query('SELECT * FROM akun WHERE id = $1', [userId]);
+        // 2. Ambil data user terbaru dari DB
+        const userRes = await pool.query('SELECT password FROM akun WHERE id = $1', [userId]);
         const user = userRes.rows[0];
 
-        // 2. Update Nama (Jika ada input nama)
-        if (nama && nama.trim() !== "") {
-            await pool.query('UPDATE akun SET nama = $1 WHERE id = $2', [nama, userId]);
-            req.session.user.nama = nama; // Update session biar header berubah realtime
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
         }
 
-        // 3. Update Password (Hanya jika kolom diisi)
-        if (newPassword || currentPassword) {
-            // Validasi kelengkapan
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                return res.status(400).json({ success: false, message: 'Form password tidak lengkap!' });
+        // 3. Update Nama (Hanya jika ada perubahan dan tidak kosong)
+        if (nama && nama.trim() !== "" && nama !== req.session.user.nama) {
+            await pool.query('UPDATE akun SET nama = $1 WHERE id = $2', [nama, userId]);
+            req.session.user.nama = nama; // Sinkronkan session
+        }
+
+        // 4. Update Password (Hanya jika kolom password lama diisi)
+        if (currentPassword) {
+            // Validasi Input
+            if (!newPassword || !confirmPassword) {
+                return res.status(400).json({ success: false, message: 'Lengkapi form password baru.' });
             }
             if (newPassword !== confirmPassword) {
                 return res.status(400).json({ success: false, message: 'Konfirmasi password baru tidak cocok.' });
             }
-
-            // Cek Password Lama (Bcrypt / Plaintext support)
-            let isMatch = false;
-            if (user.password.startsWith('$2b$')) {
-                isMatch = await bcrypt.compare(currentPassword, user.password);
-            } else {
-                isMatch = (user.password === currentPassword);
+            if (newPassword.length < 6) {
+                return res.status(400).json({ success: false, message: 'Password baru minimal 6 karakter.' });
             }
 
+            // Verifikasi Password Lama (Wajib Bcrypt)
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
             if (!isMatch) {
                 return res.status(400).json({ success: false, message: 'Password lama salah!' });
+            }
+
+            // Keamanan Tambahan: Cek jika password baru sama dengan yang lama
+            const isSame = await bcrypt.compare(newPassword, user.password);
+            if (isSame) {
+                return res.status(400).json({ success: false, message: 'Password baru tidak boleh sama dengan yang lama.' });
             }
 
             // Hash & Simpan
@@ -54,8 +61,8 @@ const updateProfile = async (req, res) => {
         res.json({ success: true, message: 'Profil berhasil diperbarui!' });
 
     } catch (err) {
-        console.error('Profile Update Error:', err);
-        res.status(500).json({ success: false, message: 'Terjadi kesalahan server.' });
+        console.error('❌ Profile Update Error:', err);
+        res.status(500).json({ success: false, message: 'Terjadi kesalahan sistem.' });
     }
 };
 

@@ -1,8 +1,11 @@
+// models/suratModel.js
 const pool = require('../config/db');
 
-//
-// 🔧 Utility Format Tanggal Indonesia
-//
+/**
+ * ============================================================
+ * 🔧 UTILITY: FORMAT TANGGAL INDONESIA
+ * ============================================================
+ */
 const formatTanggalIndonesia = (tanggal) => {
   if (!tanggal) return null;
 
@@ -14,9 +17,11 @@ const formatTanggalIndonesia = (tanggal) => {
   });
 };
 
-//
-// 🔎 1️⃣ Ambil Kaprodi (nama + NIP)
-//
+/**
+ * ============================================================
+ * 🔎 1. AMBIL DATA KAPRODI (Untuk TTD Surat)
+ * ============================================================
+ */
 const getKaprodi = async () => {
   const { rows } = await pool.query(`
     SELECT nama, nip_dosen
@@ -27,9 +32,15 @@ const getKaprodi = async () => {
   return rows[0] || null;
 };
 
-//
-// 📌 2️⃣ Ambil daftar mahasiswa yang memenuhi syarat dibuatkan surat
-//
+/**
+ * ============================================================
+ * 📌 2. DAFTAR ANTREAN SURAT (MAHASISWA SIAP SURAT)
+ * ============================================================
+ * Mengambil mahasiswa yang:
+ * - Berkas sudah ACC
+ * - Penguji sudah di-plot oleh Kaprodi
+ * - Surat belum diterbitkan
+ */
 const getMahasiswaBelumSurat = async (tahunId = null) => {
   const params = [];
   let query = `
@@ -78,9 +89,11 @@ const getMahasiswaBelumSurat = async (tahunId = null) => {
   return result.rows;
 };
 
-//
-// 📄 3️⃣ Ambil detail surat by NPM (lengkap untuk PDF/EJS)
-//
+/**
+ * ============================================================
+ * 📄 3. AMBIL DETAIL SURAT (Untuk View/Cetak)
+ * ============================================================
+ */
 const getSuratByMahasiswa = async (npm) => {
   const { rows } = await pool.query(`
     SELECT 
@@ -115,25 +128,16 @@ const getSuratByMahasiswa = async (npm) => {
 
   if (!rows[0]) return null;
 
-  // Ambil kaprodi
   const kaprodi = await getKaprodi();
 
   return {
     surat_id: rows[0].surat_id,
     nomor_surat: rows[0].nama_surat,
     tanggalSurat: formatTanggalIndonesia(rows[0].tanggal_dibuat),
-
     kaprodi: kaprodi || null,
-
-    mahasiswa: { 
-      npm: rows[0].npm, 
-      nama: rows[0].nama_mahasiswa 
-    },
-
+    mahasiswa: { npm: rows[0].npm, nama: rows[0].nama_mahasiswa },
     dosbing: [rows[0].dosbing1, rows[0].dosbing2],
-
     penguji: rows[0].penguji || [],
-
     jadwal: {
       tanggal: formatTanggalIndonesia(rows[0].tanggal),
       waktu: `${rows[0].jam_mulai?.slice(0,5)} - ${rows[0].jam_selesai?.slice(0,5)}`,
@@ -146,11 +150,11 @@ const getSuratByMahasiswa = async (npm) => {
   };
 };
 
-
-//
-// 📝 4️⃣ Insert surat baru (DRAFT AWAL)
-// path_file diset NULL karena belum ada file fisik
-//
+/**
+ * ============================================================
+ * 📝 4. INSERT SURAT (DRAFT)
+ * ============================================================
+ */
 const insertSurat = async ({
   mahasiswaId,
   dosbing1Id,
@@ -158,13 +162,9 @@ const insertSurat = async ({
   dosenPengujiId,
   jadwalId,
   namaSurat,
-  // pathFile, <-- Dihapus karena belum upload
   pelaksanaan = 'offline'
 }) => {
-
-  // Pakai 'new Date()' biar format timestamp database valid
   const tanggalDibuat = new Date();
-
   const { rows } = await pool.query(`
     INSERT INTO surat (
       mahasiswa_id, dosbing1_id, dosbing2_id, dosen_penguji_id, 
@@ -172,46 +172,23 @@ const insertSurat = async ({
     ) 
     VALUES ($1, $2, $3, $4, $5, $6, NULL, $7, $8)
     RETURNING *
-  `, [
-    mahasiswaId,
-    dosbing1Id,
-    dosbing2Id,
-    dosenPengujiId,
-    jadwalId,
-    namaSurat,
-    // parameter ke-7 (path_file) diisi NULL langsung di query
-    pelaksanaan,
-    tanggalDibuat
-  ]);
+  `, [mahasiswaId, dosbing1Id, dosbing2Id, dosenPengujiId, jadwalId, namaSurat, pelaksanaan, tanggalDibuat]);
 
   return rows[0];
 };
 
-//
-// 🔄 5️⃣ Update status diterbitkan (Manual Toggle jika perlu)
-//
-const updateStatusSurat = async (suratId, isDiterbitkan = true) => {
-  const { rows } = await pool.query(`
-    UPDATE surat 
-    SET is_diterbitkan = $1 
-    WHERE id = $2 
-    RETURNING *
-  `, [isDiterbitkan, suratId]);
-
-  return rows[0];
-};
-
-//
-// 🚀 6️⃣ Upload Surat Final (TTD)
-// Fungsi ini dipanggil setelah admin upload file scan
-//
-const uploadSuratFinal = async (npm, relativePath, editorId) => { // Tambahkan editorId
+/**
+ * ============================================================
+ * 🚀 5. UPLOAD SURAT FINAL (TTD/SCAN)
+ * ============================================================
+ */
+const uploadSuratFinal = async (npm, relativePath, editorId) => {
   const query = `
     UPDATE surat
     SET path_file = $1, 
         is_diterbitkan = TRUE,
         is_edited = TRUE, 
-        edited_by = $3, -- Masukkan ID Admin yang upload
+        edited_by = $3, 
         edited_at = CURRENT_TIMESTAMP
     WHERE mahasiswa_id = (SELECT id FROM mahasiswa WHERE npm = $2)
     RETURNING *
@@ -220,6 +197,11 @@ const uploadSuratFinal = async (npm, relativePath, editorId) => { // Tambahkan e
   return rows[0];
 };
 
+/**
+ * ============================================================
+ * 🗑️ 6. HAPUS FILE SURAT (RESET)
+ * ============================================================
+ */
 const deleteSuratFile = async (npm) => {
   const query = `
     UPDATE surat
@@ -230,8 +212,6 @@ const deleteSuratFile = async (npm) => {
     WHERE mahasiswa_id = (SELECT id FROM mahasiswa WHERE npm = $1)
     RETURNING path_file
   `;
-  
-  // Kita return data lama buat dihapus fisiknya di controller
   const { rows } = await pool.query(query, [npm]);
   return rows[0];
 };
@@ -242,7 +222,6 @@ module.exports = {
   getMahasiswaBelumSurat,
   getSuratByMahasiswa,
   insertSurat,
-  updateStatusSurat,
   uploadSuratFinal,
   deleteSuratFile
 };

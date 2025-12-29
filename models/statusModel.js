@@ -1,9 +1,13 @@
 // models/statusModel.js
 const pool = require('../config/db');
 
-// ==========================
-// Fungsi bantu status utama
-// ==========================
+/**
+ * ============================================================
+ * 🛠️ FUNGSI BANTU: LOGIKA STATUS UTAMA
+ * ============================================================
+ * Menentukan label status berdasarkan hirarki proses pendaftaran.
+ * Urutan pengecekan sangat penting (Waterfall Logic).
+ */
 function getOverallStatus(row) {
   if (!row.sudah_upload_berkas) {
     row.status = "Belum upload berkas";
@@ -26,94 +30,108 @@ function getOverallStatus(row) {
   return row;
 }
 
-// ==========================
-// Model utama Status
-// ==========================
+/**
+ * ============================================================
+ * 📊 MODEL UTAMA: STATUS
+ * ============================================================
+ */
 const Status = {
-  // =======================
-  // Status per mahasiswa
-  // =======================
-async getStatusMahasiswaByNPM(npm) {
-  const query = `
-    SELECT 
-      m.id AS mahasiswa_id,
-      m.npm,
-      m.nama,
-      COUNT(b.id) > 0 AS sudah_upload_berkas,
-      BOOL_OR(bu.status_verifikasi) AS berkas_verified,
-      COUNT(j.id) > 0 AS sudah_daftar_jadwal,
-      BOOL_OR(j.status_verifikasi) AS jadwal_verified,
-      COUNT(DISTINCT du.dosen_penguji_id) > 0 AS punya_penguji,
-      COUNT(DISTINCT du.surat_id) > 0 AS punya_surat,
-      BOOL_OR(du.ujian_selesai) AS ujian_selesai
-    FROM mahasiswa m
-    LEFT JOIN berkas b ON b.mahasiswa_id = m.id
-    LEFT JOIN berkas_ujian bu ON bu.berkas_id = b.id
-    LEFT JOIN jadwal j ON j.mahasiswa_id = m.id
-    LEFT JOIN daftar_ujian du ON du.mahasiswa_id = m.id
-    WHERE m.npm = $1
-    GROUP BY m.id;
-  `;
+  
+  /**
+   * 👤 1. STATUS PER MAHASISWA
+   * Mengambil status terbaru untuk satu mahasiswa dan mengupdate tabel daftar_ujian.
+   */
+  async getStatusMahasiswaByNPM(npm) {
+    try {
+      const query = `
+        SELECT 
+          m.id AS mahasiswa_id,
+          m.npm,
+          m.nama,
+          COUNT(b.id) > 0 AS sudah_upload_berkas,
+          BOOL_OR(bu.status_verifikasi) AS berkas_verified,
+          COUNT(j.id) > 0 AS sudah_daftar_jadwal,
+          BOOL_OR(j.status_verifikasi) AS jadwal_verified,
+          COUNT(DISTINCT du.dosen_penguji_id) > 0 AS punya_penguji,
+          COUNT(DISTINCT du.surat_id) > 0 AS punya_surat,
+          BOOL_OR(du.ujian_selesai) AS ujian_selesai
+        FROM mahasiswa m
+        LEFT JOIN berkas b ON b.mahasiswa_id = m.id
+        LEFT JOIN berkas_ujian bu ON bu.berkas_id = b.id
+        LEFT JOIN jadwal j ON j.mahasiswa_id = m.id
+        LEFT JOIN daftar_ujian du ON du.mahasiswa_id = m.id
+        WHERE m.npm = $1
+        GROUP BY m.id;
+      `;
 
-  const result = await pool.query(query, [npm]);
-  if (!result.rows.length) return null;
+      const result = await pool.query(query, [npm]);
+      if (!result.rows.length) return null;
 
-  const row = getOverallStatus(result.rows[0]);
+      // Jalankan logika penentuan label status
+      const row = getOverallStatus(result.rows[0]);
 
-  // 🔁 Update ke tabel daftar_ujian (bukan mahasiswa)
-  await pool.query(
-    `UPDATE daftar_ujian 
-     SET status_pendaftaran = $1 
-     WHERE mahasiswa_id = $2`,
-    [row.status, row.mahasiswa_id]
-  );
+      // 🔁 Sinkronisasi otomatis ke tabel daftar_ujian
+      await pool.query(
+        `UPDATE daftar_ujian 
+         SET status_pendaftaran = $1 
+         WHERE mahasiswa_id = $2`,
+        [row.status, row.mahasiswa_id]
+      );
 
-  return row;
-},
+      return row;
+    } catch (err) {
+      console.error('❌ Error getStatusMahasiswaByNPM:', err);
+      throw err;
+    }
+  },
 
+  /**
+   * 👥 2. STATUS SEMUA MAHASISWA (BULK)
+   * Digunakan untuk monitoring admin dan sinkronisasi massal.
+   */
+  async getAllStatusMahasiswa() {
+    try {
+      const query = `
+        SELECT 
+          m.id AS mahasiswa_id,
+          m.npm,
+          m.nama,
+          COUNT(b.id) > 0 AS sudah_upload_berkas,
+          BOOL_OR(bu.status_verifikasi) AS berkas_verified,
+          COUNT(j.id) > 0 AS sudah_daftar_jadwal,
+          BOOL_OR(j.status_verifikasi) AS jadwal_verified,
+          COUNT(DISTINCT du.dosen_penguji_id) > 0 AS punya_penguji,
+          COUNT(DISTINCT du.surat_id) > 0 AS punya_surat,
+          BOOL_OR(du.ujian_selesai) AS ujian_selesai
+        FROM mahasiswa m
+        LEFT JOIN berkas b ON b.mahasiswa_id = m.id
+        LEFT JOIN berkas_ujian bu ON bu.berkas_id = b.id
+        LEFT JOIN jadwal j ON j.mahasiswa_id = m.id
+        LEFT JOIN daftar_ujian du ON du.mahasiswa_id = m.id
+        GROUP BY m.id
+        ORDER BY m.npm ASC;
+      `;
 
-  // =======================
-  // Semua status mahasiswa
-  // =======================
-async getAllStatusMahasiswa() {
-  const query = `
-    SELECT 
-      m.id AS mahasiswa_id,
-      m.npm,
-      m.nama,
-      COUNT(b.id) > 0 AS sudah_upload_berkas,
-      BOOL_OR(bu.status_verifikasi) AS berkas_verified,
-      COUNT(j.id) > 0 AS sudah_daftar_jadwal,
-      BOOL_OR(j.status_verifikasi) AS jadwal_verified,
-      COUNT(DISTINCT du.dosen_penguji_id) > 0 AS punya_penguji,
-      COUNT(DISTINCT du.surat_id) > 0 AS punya_surat,
-      BOOL_OR(du.ujian_selesai) AS ujian_selesai
-    FROM mahasiswa m
-    LEFT JOIN berkas b ON b.mahasiswa_id = m.id
-    LEFT JOIN berkas_ujian bu ON bu.berkas_id = b.id
-    LEFT JOIN jadwal j ON j.mahasiswa_id = m.id
-    LEFT JOIN daftar_ujian du ON du.mahasiswa_id = m.id
-    GROUP BY m.id
-    ORDER BY m.npm ASC;
-  `;
+      const result = await pool.query(query);
+      const rows = result.rows.map(getOverallStatus);
 
-  const result = await pool.query(query);
-  const rows = result.rows.map(getOverallStatus);
+      // 🔁 Update semua status secara paralel (Optimasi Performa)
+      const updatePromises = rows.map((r) =>
+        pool.query(
+          `UPDATE daftar_ujian 
+           SET status_pendaftaran = $1 
+           WHERE mahasiswa_id = $2`,
+          [r.status, r.mahasiswa_id]
+        )
+      );
+      await Promise.all(updatePromises);
 
-  // 🔁 Update semua status ke tabel daftar_ujian
-  const updatePromises = rows.map((r) =>
-    pool.query(
-      `UPDATE daftar_ujian 
-       SET status_keseluruhan = $1 
-       WHERE mahasiswa_id = $2`,
-      [r.status, r.mahasiswa_id]
-    )
-  );
-  await Promise.all(updatePromises);
-
-  return rows;
-}
-
+      return rows;
+    } catch (err) {
+      console.error('❌ Error getAllStatusMahasiswa:', err);
+      throw err;
+    }
+  }
 };
 
 module.exports = { Status };

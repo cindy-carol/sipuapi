@@ -1,9 +1,12 @@
-const pool = require('../config/db'); // ⚠️ Pastikan path ini benar (sesuai lokasi file database.js kamu)
+// models/adminDashboardModel.js
+const pool = require('../config/db'); // ⚠️ Pastikan path ini sesuai lokasi file database.js kamu
 const bcrypt = require('bcrypt');
 
-// ====================================================================
-// 👤 MODEL: ADMIN LOGIN
-// ====================================================================
+/**
+ * ====================================================================
+ * 👤 MODEL: ADMIN LOGIN
+ * ====================================================================
+ */
 const Admin = {
   findByUsername: async (username) => {
     const res = await pool.query(
@@ -21,21 +24,18 @@ const Admin = {
   },
 };
 
-// ====================================================================
-// 📊 MODEL: DASHBOARD
-// ====================================================================
+/**
+ * ====================================================================
+ * 📊 MODEL: DASHBOARD (STATISTIK & RINCIAN)
+ * ====================================================================
+ */
 const Dashboard = {
 
-  /* =======================================================
-   * 1️⃣ CRUD INFORMASI / RINCIAN (YANG TADI ERROR)
+  /* --- 1️⃣ MANAJEMEN INFORMASI / RINCIAN --- */
 
-  /* ==========================================================
-   * 📢 FUNGSI BARU: AMBIL RINCIAN DARI ID TERTENTU (PERMANEN)
-   * (Digunakan untuk mengunci posisi Kiri Atas dan Kanan Bawah di Dashboard Mahasiswa)
-   * ========================================================== */
+  // Mengambil data untuk posisi spesifik (biasanya digunakan di Dashboard Mahasiswa)
   getRincianByIds: async (id1, id2) => {
     try {
-      // Mengambil data untuk ID1 dan ID2 sekaligus (Kunci Posisi)
       const res = await pool.query(
         `SELECT id, judul, keterangan FROM rincian WHERE id = $1 OR id = $2`,
         [id1, id2]
@@ -46,10 +46,10 @@ const Dashboard = {
       return [];
     }
   },
-  // ✅ GET ALL (Ini fungsi utama yang dipanggil Controller)
+
+  // Mengambil seluruh rincian untuk Dashboard Admin (Editable Cards)
   getAllRincian: async () => {
     try {
-      // Pakai SELECT * biar aman, semua kolom (id, judul, keterangan) keambil
       const result = await pool.query(`SELECT * FROM rincian ORDER BY id DESC`);
       return result.rows;
     } catch (error) {
@@ -58,7 +58,7 @@ const Dashboard = {
     }
   },
 
-  // ✅ ADD (Tambah Data)
+  // Menambah Rincian baru
   addRincian: async (judul, keterangan, userId) => {
     const query = `
       INSERT INTO rincian (judul, keterangan, lokasi_card, edited_by, edited_at)
@@ -67,7 +67,7 @@ const Dashboard = {
     return await pool.query(query, [judul, keterangan, userId]);
   },
 
-  // ✅ UPDATE (Edit Data)
+  // Mengubah data Rincian
   updateRincian: async (id, judul, keterangan, userId) => {
     const query = `
       UPDATE rincian 
@@ -78,9 +78,9 @@ const Dashboard = {
   },
 
 
-  /* =======================================================
-   * 2️⃣ CHART & STATISTIK (Logic Lama - Biarkan Saja)
-   * ======================================================= */
+  /* --- 2️⃣ STATISTIK UTAMA & RINGKASAN --- */
+
+  // Mendapatkan angka statistik utama (Angka di kartu putih atas)
   getRingkasanMahasiswa: async (tahunId = null) => {
     let query = `
       SELECT
@@ -106,6 +106,9 @@ const Dashboard = {
     };
   },
 
+  /* --- 3️⃣ DATA CHART (GRAFIK) --- */
+
+  // Data untuk Bar Chart (Status Pendaftaran)
   getBarChart: async (tahunId = null) => {
     let query = `
       SELECT 
@@ -132,6 +135,7 @@ const Dashboard = {
     ];
   },
 
+  // Data untuk Pie Chart (Tahapan Verifikasi)
   getPieChart: async (tahunId = null) => {
     const params = [];
     let whereClause = "";
@@ -140,7 +144,7 @@ const Dashboard = {
       params.push(tahunId);
     }
     
-    // Jalankan Query Paralel
+    // Eksekusi paralel agar lebih efisien
     const [berkasRes, jadwalRes, pengujiRes, suratRes] = await Promise.all([
       pool.query(`SELECT COUNT(DISTINCT bu.daftar_ujian_id) AS jumlah FROM berkas_ujian bu JOIN daftar_ujian du ON du.id = bu.daftar_ujian_id JOIN mahasiswa m ON m.id = du.mahasiswa_id WHERE 1=1 ${whereClause}`, params),
       pool.query(`SELECT COUNT(DISTINCT du.id) AS jumlah FROM daftar_ujian du JOIN jadwal j ON j.id = du.jadwal_id JOIN mahasiswa m ON m.id = du.mahasiswa_id WHERE 1=1 ${whereClause}`, params),
@@ -156,10 +160,10 @@ const Dashboard = {
     };
   },
 
-getStatistikRingkas: async (tahunId = null) => {
+  // Mendapatkan statistik warna-warni (Ringkasan Detail)
+  getStatistikRingkas: async (tahunId = null) => {
     const data = await Dashboard.getPieChart(tahunId);
     return [
-      // Tambahkan property 'key' yang sesuai dengan nama kolom query breakdown
       { label: "Upload Berkas", jumlah: data.upload_berkas, bg: "bg-danger", key: "upload_berkas" },
       { label: "Upload Jadwal", jumlah: data.upload_jadwal, bg: "bg-danger", key: "upload_jadwal" },
       { label: "Tunggu Verifikasi Penguji", jumlah: data.tunggu_penguji, bg: "bg-info", key: "tunggu_penguji" },
@@ -167,38 +171,31 @@ getStatistikRingkas: async (tahunId = null) => {
     ];
   },
 
-  // 🔥 FUNGSI BARU: Ambil Breakdown Statistik per Tahun Ajaran 🔥
-// ... di dalam object Dashboard ...
+  /* --- 4️⃣ BREAKDOWN DATA PER TAHUN AJARAN --- */
 
-// models/adminDashboardModel.js
-
-getStatistikLengkapPerTahun: async () => {
+  // Mendapatkan ringkasan statistik komprehensif untuk setiap tahun ajaran
+  getStatistikLengkapPerTahun: async () => {
     try {
       const query = `
         SELECT 
           ta.id,
           (ta.nama_tahun || ' ' || ta.semester) AS label,
           
-          -- 1. Data Kartu Putih
+          -- Data Kartu Utama
           COUNT(DISTINCT m.id) AS total_mhs,
           COUNT(DISTINCT CASE WHEN du.id IS NULL THEN m.id END) AS belum_daftar,
           COUNT(DISTINCT CASE WHEN du.surat_id IS NOT NULL THEN m.id END) AS menunggu_ujian,
           COUNT(DISTINCT CASE WHEN du.ujian_selesai = true THEN m.id END) AS sudah_ujian,
 
-          -- 2. Data Kartu Warna-Warni (Baru)
-          -- Upload Berkas (Ada di bu)
+          -- Data Tahapan Verifikasi
           COUNT(DISTINCT CASE WHEN bu.daftar_ujian_id IS NOT NULL THEN m.id END) AS upload_berkas,
-          -- Upload Jadwal (Ada di j)
           COUNT(DISTINCT CASE WHEN j.id IS NOT NULL THEN m.id END) AS upload_jadwal,
-          -- Tunggu Verifikasi (Ada di dp status false)
           COUNT(DISTINCT CASE WHEN dp.status_verifikasi = FALSE THEN m.id END) AS tunggu_penguji,
-          -- Surat Terbit (Ada di s)
           COUNT(DISTINCT s.id) AS surat_terbit
 
         FROM tahun_ajaran ta
         LEFT JOIN mahasiswa m ON m.tahun_ajaran_id = ta.id
         LEFT JOIN daftar_ujian du ON du.mahasiswa_id = m.id
-        -- Join tambahan untuk data rinci
         LEFT JOIN berkas_ujian bu ON bu.daftar_ujian_id = du.id
         LEFT JOIN jadwal j ON j.id = du.jadwal_id
         LEFT JOIN dosen_penguji dp ON dp.mahasiswa_id = m.id
@@ -213,10 +210,9 @@ getStatistikLengkapPerTahun: async () => {
       console.error("❌ Error getStatistikLengkapPerTahun:", err);
       return []; 
     }
-},
+  },
 
-// ...
-
+  // Mendapatkan daftar Tahun Ajaran untuk Dropdown Filter
   getTahunAjarList: async () => {
     const result = await pool.query(`SELECT id, nama_tahun || ' ' || semester AS label FROM tahun_ajaran ORDER BY id DESC`);
     return result.rows;

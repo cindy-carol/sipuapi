@@ -1,22 +1,29 @@
 // models/dosenModel.js
-const pool = require('../config/db');// Sesuaikan path config db kamu
+const pool = require('../config/db'); // Sesuaikan path config db kamu
 const xlsx = require('xlsx');
 const bcrypt = require('bcrypt');
 
+/**
+ * ============================================================
+ * 👨‍🏫 MODEL: DOSEN
+ * ============================================================
+ * Mengelola data dosen, import excel, serta sinkronisasi
+ * otomatis akun Kaprodi berdasarkan jabatan dosen.
+ */
 const Dosen = {
   // ===============================
-  // AMBIL SEMUA DATA
+  // 1. AMBIL SEMUA DATA
   // ===============================
   getAll: async () => {
     const res = await pool.query(
       `SELECT nip_dosen, nama, status_aktif, jabatan, kode_dosen FROM dosen 
-      ORDER BY status_aktif DESC, id ASC`
+       ORDER BY status_aktif DESC, id ASC`
     );
     return res.rows;
   },
 
   // ===============================
-  // CEK APAKAH NIP ADA
+  // 2. CEK APAKAH NIP ADA (Validasi Unik)
   // ===============================
   exists: async (nip, excludeId = null) => {
     let query = `SELECT id FROM dosen WHERE nip_dosen = $1`;
@@ -32,7 +39,7 @@ const Dosen = {
   },
 
   // ===============================
-  // CEK KODE DOSEN
+  // 3. CEK KODE DOSEN (Validasi Unik)
   // ===============================
   existsKode: async (kode, excludeId = null) => {
     let query = `SELECT id FROM dosen WHERE kode_dosen = $1`;
@@ -48,7 +55,7 @@ const Dosen = {
   },
 
   // ===============================
-  // INSERT MANUAL
+  // 4. INSERT MANUAL
   // ===============================
   insert: async ({ nip_dosen, nama, status_aktif = true, jabatan = '', kode_dosen = '' }) => {
     const res = await pool.query(
@@ -60,7 +67,7 @@ const Dosen = {
   },
 
   // ===============================
-  // UPDATE MANUAL
+  // 5. UPDATE MANUAL (Berdasarkan NIP)
   // ===============================
   update: async ({ nip_dosen, nama, status_aktif = true, jabatan = '', kode_dosen = '' }) => {
     await pool.query(
@@ -69,7 +76,10 @@ const Dosen = {
     );
   },
 
-updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, kode_dosen }) => {
+  // ===============================
+  // 6. UPDATE BERDASARKAN KODE DOSEN
+  // ===============================
+  updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, kode_dosen }) => {
     const res = await pool.query(
       `UPDATE dosen 
        SET nip_dosen=$1, nama=$2, status_aktif=$3, jabatan=$4, kode_dosen=$5
@@ -79,6 +89,9 @@ updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, ko
     return res.rowCount;
   },
 
+  // ===============================
+  // 7. GET BY KODE DOSEN
+  // ===============================
   getByKodeDosen: async (kode) => {
     const res = await pool.query(
       `SELECT id, nip_dosen, nama, status_aktif, jabatan, kode_dosen FROM dosen WHERE kode_dosen = $1`,
@@ -87,16 +100,16 @@ updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, ko
     return res.rows[0]; 
   },
 
-  // 🔥 PERBAIKAN FUNGSI SYNC
-
-
+  // ===============================
+  // 8. HAPUS BY KODE DOSEN
+  // ===============================
   removeByKodeDosen: async (kode) => {
     const res = await pool.query(`DELETE FROM dosen WHERE kode_dosen = $1`, [kode]);
     return res; 
   },
 
   // ===============================
-  // UPLOAD EXCEL
+  // 9. UPLOAD EXCEL (Parsing & Upsert)
   // ===============================
   uploadExcel: async (filePath) => {
     const workbook = xlsx.readFile(filePath);
@@ -124,11 +137,14 @@ updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, ko
     }
   },
 
+  // ===============================
+  // 10. SYNC AKUN KAPRODI (LOGIC UTAMA)
+  // ===============================
   syncKaprodiAccounts: async () => {
     try {
       console.log("🔄 --- MULAI SYNC STATUS & NAMA KAPRODI ---");
 
-      // Pastikan d.status_aktif diambil dari tabel dosen
+      // Mengambil relasi antara data dosen dan akun berdasarkan Username/NIP
       const { rows: dosenList } = await pool.query(`
         SELECT d.nip_dosen, d.nama, d.jabatan, d.status_aktif, 
                a.id as id_akun, a.role as role_akun, a.status_aktif as akun_aktif
@@ -140,18 +156,19 @@ updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, ko
       const hashedPassword = await bcrypt.hash('kaprodi123', salt);
 
       for (const d of dosenList) {
+        // Cek apakah dosen menjabat sebagai Kaprodi
         const isKaprodi = d.jabatan && String(d.jabatan).includes('Kaprodi'); 
         
         if (isKaprodi) {
           if (!d.id_akun) {
-            // Akun baru mengikuti status_aktif dosen
+            // Jika belum punya akun, buat akun baru dengan status aktif mengikuti data dosen
             await pool.query(
               `INSERT INTO akun (username, password, role, status_aktif, nama) 
                VALUES ($1, $2, 'kaprodi', $3, $4)`,
               [d.nip_dosen, hashedPassword, d.status_aktif, d.nama]
             );
           } else {
-            // 🔥 UPDATE: Akun WAJIB ikut status_aktif dosen (d.status_aktif)
+            // Update akun Kaprodi: Sinkronkan status_aktif dan nama dosen
             await pool.query(
               `UPDATE akun 
                SET role = 'kaprodi', status_aktif = $1, nama = $2 
@@ -160,7 +177,7 @@ updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, ko
             );
           }
           
-          // Matikan Kaprodi lain jika dosen ini adalah Kaprodi yang AKTIF
+          // Logika Keamanan: Hanya satu Kaprodi yang boleh AKTIF (opsional/tergantung kebijakan)
           if (d.status_aktif) {
             await pool.query(
               `UPDATE akun SET status_aktif = false 
@@ -169,7 +186,7 @@ updateByKodeDosen: async (kodeLama, { nip_dosen, nama, status_aktif, jabatan, ko
             );
           }
         } else {
-          // Jika bukan Kaprodi tapi punya akun role kaprodi, matikan akunnya
+          // Jika dosen tidak lagi menjabat Kaprodi, nonaktifkan akun role kaprodinya
           if (d.id_akun && d.role_akun === 'kaprodi' && d.akun_aktif === true) {
              await pool.query(`UPDATE akun SET status_aktif = false WHERE id = $1`, [d.id_akun]);
           }

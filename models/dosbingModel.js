@@ -1,7 +1,16 @@
+// models/dosbingModel.js
 const pool = require('../config/db');
 
+/**
+ * ============================================================
+ * 👨‍🏫 MODEL: DOSEN PEMBIMBING (DOSBING)
+ * ============================================================
+ * Mengelola relasi bimbingan antara dosen dan mahasiswa, 
+ * termasuk fitur rekapitulasi beban kerja dosen.
+ */
 const Dosbing = {
-  // 🔹 Ambil daftar mahasiswa + dosbing (dengan kode_dosen), bisa filter per tahun
+
+  // 🔹 1. Ambil daftar mahasiswa + dosbing (dengan kode_dosen), bisa filter per tahun
   getAll: async (tahunId = null) => {
     try {
       const params = [];
@@ -39,7 +48,7 @@ const Dosbing = {
     }
   },
 
-  // 🔹 Ambil data mahasiswa → dosbing (Simple list)
+  // 🔹 2. Ambil data mahasiswa → dosbing (Simple list)
   getMahasiswaKeDosen: async () => {
     const query = `
       SELECT 
@@ -56,16 +65,13 @@ const Dosbing = {
     return result.rows;
   },
 
-  // 🔹 Ambil data dosen → mahasiswa bimbingan (FILTERED BY YEAR)
-  // Used for: Tab "Dosen ke Mahasiswa" AND Dropdown population
+  // 🔹 3. Ambil data dosen → mahasiswa bimbingan (FILTERED BY YEAR)
+  // Digunakan untuk tab pemantauan beban kerja dosen
   getDosenKeMahasiswa: async (tahunId = null) => {
     try {
-        // Param management
         const params = [];
         let filterClause = "";
         
-        // If year is provided, we filter the JOIN condition
-        // This ensures we get ALL lecturers, but only attach students from the specific year
         if (tahunId) {
             filterClause = " AND m.tahun_ajaran_id = $1";
             params.push(tahunId);
@@ -76,13 +82,11 @@ const Dosbing = {
             d.id AS dosen_id,
             d.kode_dosen,
             d.nama,
-            -- Array of students where this docent is PBB1 (Filtered by year)
+            -- Array mahasiswa bimbingan 1 (Dihapus nilai NULL nya)
             ARRAY_REMOVE(ARRAY_AGG(CASE WHEN m.dosbing1_id = d.id THEN m.nama END), NULL) AS mahasiswa1,
-            -- Array of students where this docent is PBB2 (Filtered by year)
+            -- Array mahasiswa bimbingan 2
             ARRAY_REMOVE(ARRAY_AGG(CASE WHEN m.dosbing2_id = d.id THEN m.nama END), NULL) AS mahasiswa2
           FROM dosen d
-          -- Join with students, applying the year filter inside the join condition
-          -- This is crucial: it keeps the lecturer row even if no students match the year
           LEFT JOIN mahasiswa m ON (m.dosbing1_id = d.id OR m.dosbing2_id = d.id) ${filterClause}
           WHERE d.status_aktif = true
           GROUP BY d.id, d.kode_dosen, d.nama
@@ -97,7 +101,7 @@ const Dosbing = {
     }
   },
 
-  // 🔹 Insert/update dosen (by nip unik)
+  // 🔹 4. Insert/update dosen (Upsert berdasarkan NIP)
   upsertDosen: async ({ nip_dosen, nama, kode_dosen }) => {
     const query = `
       INSERT INTO dosen (nip_dosen, nama, kode_dosen)
@@ -111,14 +115,14 @@ const Dosbing = {
     return result.rows[0].id;
   },
 
-  // 🔹 Update mahasiswa → set dosbing1 / dosbing2 berdasarkan nama dosen
+  // 🔹 5. Update mahasiswa → set dosbing1 / dosbing2 berdasarkan nama
   updateMahasiswaDosbing: async ({ mahasiswaNama, dosbingId, slot }) => {
     const column = slot === 'dosbing1' ? 'dosbing1_id' : 'dosbing2_id';
     const query = `UPDATE mahasiswa SET ${column} = $1 WHERE nama = $2;`;
     await pool.query(query, [dosbingId, mahasiswaNama.trim()]);
   },
 
-  // 🔹 Ambil ID dosen berdasarkan kode_dosen
+  // 🔹 6. Ambil ID dosen berdasarkan kode_dosen
   getDosenIdByKode: async (kode_dosen) => {
     const result = await pool.query(
       'SELECT id FROM dosen WHERE kode_dosen = $1',
@@ -127,16 +131,13 @@ const Dosbing = {
     return result.rows[0]?.id || null;
   },
 
-  // 🔹 Update mahasiswa → set dosbing berdasarkan KODE dosen (buat pemetaan Excel)
+  // 🔹 7. Update dosbing via Kode Dosen (Cocok untuk fitur Import Excel)
   updateMahasiswaDosbingByKode: async ({ npm, pbb1, pbb2 }) => {
     try {
       const dosbing1Id = pbb1 ? await Dosbing.getDosenIdByKode(pbb1) : null;
       const dosbing2Id = pbb2 ? await Dosbing.getDosenIdByKode(pbb2) : null;
 
-      if (!dosbing1Id && !dosbing2Id) {
-        console.warn(`⚠️ Kode dosen tidak ditemukan untuk NPM ${npm}`);
-        return;
-      }
+      if (!dosbing1Id && !dosbing2Id) return;
 
       await pool.query(`
         UPDATE mahasiswa
@@ -149,6 +150,7 @@ const Dosbing = {
     }
   },
 
+  // 🔹 8. Update dosbing via ID langsung
   updateMahasiswaDosbingByIds: async ({ npm, dosbing1Id, dosbing2Id }) => {
     try {
       const result = await pool.query(`
@@ -166,16 +168,15 @@ const Dosbing = {
     }
   },
 
-  // =================================================================
-  // 🔥🔥🔥 FITUR BARU: REKAP DOSEN PEMBIMBING (DITAMBAHKAN) 🔥🔥🔥
-  // =================================================================
+  // 🔹 9. REKAP PEMBIMBING (DENGAN HISTORY TIAP TAHUN AJARAN)
+  // Menghasilkan data untuk dashboard pemantauan distribusi bimbingan
   getRekapPerDosen: async (tahunId = null) => {
     try {
       const query = `
         SELECT 
           d.id, d.kode_dosen, d.nama,
           
-          -- 1. STATISTIK UTAMA (IKUT FILTER TAHUN)
+          -- 1. Statistik berdasarkan tahun yang dipilih
           COUNT(DISTINCT CASE 
             WHEN m.dosbing1_id = d.id AND ($1::int IS NULL OR m.tahun_ajaran_id = $1) 
             THEN m.id END) AS jumlah_pbb1,
@@ -184,7 +185,7 @@ const Dosbing = {
             WHEN m.dosbing2_id = d.id AND ($1::int IS NULL OR m.tahun_ajaran_id = $1) 
             THEN m.id END) AS jumlah_pbb2,
 
-          -- 2. HISTORY LENGKAP (TETAP DIAMBIL SEMUA TAHUN)
+          -- 2. Historis data bimbingan tiap semester (Aggregasi JSON)
           (
               SELECT COALESCE(JSON_AGG(row_to_json(t)), '[]')
               FROM (

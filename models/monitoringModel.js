@@ -1,6 +1,13 @@
 // models/monitoringModel.js
 const pool = require('../config/db');
 
+/**
+ * ======================================================
+ * 🔍 1. GET ALL MAHASISWA MONITORING
+ * ======================================================
+ * Fungsi utama untuk tabel monitoring Kaprodi/Admin.
+ * Menggabungkan semua status pendaftaran dalam satu kueri.
+ */
 const getAllMahasiswaMonitoring = async (tahunAjaranFilter = null) => {
   let query = `
     SELECT
@@ -19,9 +26,7 @@ const getAllMahasiswaMonitoring = async (tahunAjaranFilter = null) => {
       BOOL_AND(bu.status_verifikasi) AS verif_berkas,
       BOOL_AND(p.status_verifikasi) AS status_penguji,
       
-      -- 🔥 UPDATE LOGIC SURAT:
-      -- Jangan cuma hitung ID, tapi cek status 'is_diterbitkan'
-      -- Kalau false (Draft), dianggap belum punya surat (0)
+      -- 🔥 LOGIC SURAT: Hanya hitung surat yang sudah diterbitkan (Bukan Draft)
       COUNT(s.id) FILTER (WHERE s.is_diterbitkan = TRUE) AS jumlah_surat_valid,
 
       BOOL_AND(du.status_keseluruhan) AS sudah_ujian,
@@ -54,6 +59,7 @@ const getAllMahasiswaMonitoring = async (tahunAjaranFilter = null) => {
   const rows = result.rows || [];
 
   return rows.map(row => {
+    // Formatting tanggal dan waktu untuk tampilan tabel yang manusiawi
     const jadwalUjian = row.tanggal_jadwal && row.jam_mulai_jadwal && row.jam_selesai_jadwal
       ? `${new Date(row.tanggal_jadwal).toLocaleDateString('id-ID', {
            weekday: 'long',
@@ -72,11 +78,7 @@ const getAllMahasiswaMonitoring = async (tahunAjaranFilter = null) => {
       verifBerkas: !!row.verif_berkas,
       penguji: !!row.status_penguji,  
       pengujiNama: row.penguji_nama.filter(n => n), 
-      
-      // 🔥 UPDATE MAPPING: 
-      // Cek jumlah surat yang valid saja
-      suratUndangan: row.jumlah_surat_valid > 0,
-
+      suratUndangan: row.jumlah_surat_valid > 0, // Boolean true jika ada surat terbit
       sudahUjian: !!row.sudah_ujian,
       jadwalUjian,
       jadwalUjianDone: !!row.status_jadwal
@@ -84,10 +86,11 @@ const getAllMahasiswaMonitoring = async (tahunAjaranFilter = null) => {
   });
 };
 
-/* ======================================================
-   SISANYA TETAP SAMA (copy function di bawah ini dari file lama kamu)
-   getStatistikPerAngkatan & getQuickViewStat GAK PERLU DIUBAH
-====================================================== */
+/**
+ * ======================================================
+ * 📊 2. GET STATISTIK PER ANGKATAN
+ * ======================================================
+ */
 const getStatistikPerAngkatan = async (tahunAjaranFilter = null) => {
   const semuaMahasiswa = await getAllMahasiswaMonitoring(tahunAjaranFilter);
   const statistik = {};
@@ -102,6 +105,12 @@ const getStatistikPerAngkatan = async (tahunAjaranFilter = null) => {
   }));
 };
 
+/**
+ * ======================================================
+ * ⚡ 3. GET QUICK VIEW STAT
+ * ======================================================
+ * Digunakan untuk dashboard penetapan penguji Kaprodi.
+ */
 const getQuickViewStat = async () => {
     try {
       const query = `

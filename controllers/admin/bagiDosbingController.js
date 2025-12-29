@@ -1,14 +1,14 @@
+// controllers/admin/bagiDosbingController.js
 const xlsx = require("xlsx");
 const pool = require("../../config/db");
-const path = require("path");
-const fs = require("fs"); 
+const supabase = require('../../config/supabaseClient'); // Import client Supabase
 const { Dosbing } = require('../../models/dosbingModel');
 const { TahunAjaran } = require('../../models/tahunAjaranModel');
 
 const dosbingController = {
 
   // =========================================================================
-  // 1. RENDER HALAMAN (SAFE MODE: DROPDOWN & FILTER AMAN ✅)
+  // 1. RENDER HALAMAN (Mendukung Filter Tahun Ajaran & Tab UI)
   // =========================================================================
   renderbagiDosbing: async (req, res) => {
     console.time('⏱️ Load Bagi Dosbing');
@@ -16,29 +16,21 @@ const dosbingController = {
     try {
       const tahunAjarList = await TahunAjaran.getListForSelect();
       
-      // Ambil Filter dari URL (Default ke sesi atau tahun pertama)
+      // Ambil Filter dari URL (Default ke tahun ajaran pertama jika tidak ada)
       let selectedTahunId = req.query.tahun_ajaran || req.selectedTahunId || (tahunAjarList[0]?.id);
       
       // Ambil Tab Aktif (Default 'mahasiswa')
       const activeTab = req.query.tab || 'mahasiswa';
 
-      // ============================================================
-      // 🔥 LOGIC FIX: DATA DOSEN SELALU DIPANGGIL
-      // ============================================================
-      // KOREKSI DI SINI BANG: Tambahin 'selectedTahunId' biar filternya jalan
-      // Model lo udah pinter kok, dia bakal tetep balikin semua dosen buat dropdown,
-      // tapi array mahasiswanya bakal difilter sesuai tahun ini.
+      // Mengambil data pemetaan dosen ke mahasiswa berdasarkan tahun ajaran terpilih
       const dosenKeMahasiswa = await Dosbing.getDosenKeMahasiswa(selectedTahunId); 
       
-      // Bikin list nama dosen juga (buat jaga-jaga kalau EJS lo butuh ini)
+      // List nama dosen untuk keperluan UI/Dropdown
       const daftarDosen = dosenKeMahasiswa.map(d => d.nama);
 
-      // ============================================================
-      // 🧊 LOGIC HEMAT: CUMA DATA MAHASISWA YANG DI-SWITCH
-      // ============================================================
-      let dosbing = []; // Default kosong biar enteng
+      let dosbing = []; 
 
-      // Cuma ambil data mahasiswa kalau user lagi buka tab 'mahasiswa'
+      // Hanya ambil data mahasiswa lengkap jika berada di tab 'mahasiswa' (optimasi performa)
       if (activeTab === 'mahasiswa') {
         dosbing = await Dosbing.getAll(selectedTahunId);
       }
@@ -51,15 +43,14 @@ const dosbingController = {
         currentPage: "bagi-dosbing",
         activePage: "bagi-dosbing",
         
-        // Kirim state Tab & Tahun biar UI gak bingung
         activeTab,       
         selectedTahunId,
         tahunAjarList,
 
         // Data Utama
-        dosbing,           // Isi: Data Mahasiswa (Array Kosong kalau lagi di tab dosen)
-        dosenKeMahasiswa,  // Isi: Data Dosen (SELALU ADA ✅)
-        daftarDosen        // Isi: List Nama Dosen (SELALU ADA ✅)
+        dosbing,           
+        dosenKeMahasiswa,  
+        daftarDosen        
       });
 
     } catch (err) {
@@ -69,18 +60,21 @@ const dosbingController = {
   },
 
   // =========================================================================
-  // 2. UPLOAD EXCEL (GAK DIUBAH)
+  // 2. UPLOAD EXCEL (VERSI VERCEL & SUPABASE STORAGE)
   // =========================================================================
   uploadDosbing: async (req, res) => {
+    // Mengambil file dari Multer memoryStorage
     const file = req.files?.["daftar_dosbing"]?.[0];
 
     if (!file) return res.status(400).send("File belum diupload!");
 
     try {
-      const workbook = xlsx.readFile(file.path);
+      // 1. BACA EXCEL DARI BUFFER (RAM) - Menghindari error sistem file di Vercel 
+      const workbook = xlsx.read(file.buffer, { type: 'buffer' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const data = xlsx.utils.sheet_to_json(sheet);
 
+      // 2. PARSING & UPDATE DATABASE
       const mahasiswaDosbingExcel = data.map(row => ({
         npm: row["NPM"]?.toString().trim() || "",
         nama: row["Nama"] || "",
@@ -97,28 +91,42 @@ const dosbingController = {
         });
       }
 
-      const adminId = req.session.user?.id || null;
-      // Gunakan filename dari Multer agar unik (ada timestampnya)
-      const relativePath = `/upload/admin/daftar/${file.filename}`; 
+      // 3. UPLOAD FILE ASLI KE SUPABASE STORAGE SEBAGAI ARSIP
+      const fileName = `dosbing-${Date.now()}-${file.originalname}`;
+      const filePath = `upload_excel/dosbing/${fileName}`; // Path folder di Supabase Bucket 
 
+      const { error: uploadError } = await supabase.storage
+        .from('storage_sipuapi')
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Ambil Public URL untuk disimpan di log database
+      const { data: urlData } = supabase.storage
+        .from('storage_sipuapi')
+        .getPublicUrl(filePath);
+
+      // 4. LOG KE TABEL UPLOAD_EXCEL
+      const adminId = req.session.user?.id || null;
       await pool.query(`
           INSERT INTO upload_excel (jenis_data, nama_file, path_file, tanggal_upload, admin_id)
           VALUES ($1, $2, $3, NOW(), $4)
-      `, ['dosbing', file.filename, relativePath, adminId]);
-
-      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      `, ['dosbing', fileName, urlData.publicUrl, adminId]);
 
       const currentTahun = req.body.tahun_ajaran || req.query.tahun_ajaran || '';
       res.redirect(`/admin/bagi-dosbing?tab=mahasiswa&tahun_ajaran=${currentTahun}&status=success`);
 
     } catch (err) {
       console.error("❌ Error uploadDosbing:", err);
-      res.status(500).send("Terjadi kesalahan: " + err.message);
+      res.status(500).send("Terjadi kesalahan proses Excel: " + err.message);
     }
   },
 
   // =========================================================================
-  // 3. EDIT DOSBING (GAK DIUBAH)
+  // 3. EDIT DOSBING (Update Manual per Mahasiswa)
   // =========================================================================
   editDosbing: async (req, res) => {
     const { npm } = req.params;
@@ -141,10 +149,11 @@ const dosbingController = {
       res.status(200).json({ success: true, message: 'Dosen Pembimbing berhasil diperbarui.' });
     } catch (err) {
       console.error('❌ Error editDosbing:', err);
+      // Handle error jika ID dosen tidak ditemukan di tabel master dosen
       if (err.code === '23503') { 
-          return res.status(400).json({ success: false, message: 'Dosen/NPM tidak valid.' });
+          return res.status(400).json({ success: false, message: 'ID Dosen atau NPM tidak valid.' });
       }
-      res.status(500).json({ success: false, message: 'Gagal memperbarui data.' });
+      res.status(500).json({ success: false, message: 'Gagal memperbarui data pembimbing.' });
     }
   }
 };
