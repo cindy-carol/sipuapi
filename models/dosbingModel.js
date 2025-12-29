@@ -1,4 +1,4 @@
-const pool = require('../config/db.js');
+const pool = require('../config/db');
 
 const Dosbing = {
   // 🔹 Ambil daftar mahasiswa + dosbing (dengan kode_dosen), bisa filter per tahun

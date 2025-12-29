@@ -1,7 +1,7 @@
 // ==========================================
 // 📁 models/dashboard/kaprodiDashboardModel.js
 // ==========================================
-const pool = require('../config/db.js');
+const pool = require('../config/db');
 
 // ====================================================================
 // 👤 MODEL: KAPRODI DATA

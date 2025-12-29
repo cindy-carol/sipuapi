@@ -5,7 +5,7 @@ const router = express.Router();
 // Import controller
 const cekBerkasController = require('../../controllers/admin/cekBerkasController');
 const verifikasiController = require('../../controllers/admin/verifikasiController');
-const model = require('../../models/cekBerkasModel.js'); 
+const model = require('../../models/cekBerkasModel'); 
 
 const { uploadAdmin } = require('../../middlewares/upload');
 

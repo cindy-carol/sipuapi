@@ -1,4 +1,4 @@
-const pool = require('../config/db.js');
+const pool = require('../config/db');
 
 const AturSurat = {
   // Ambil pengaturan surat (biasanya cuma ada 1 baris untuk jenis 'undangan')

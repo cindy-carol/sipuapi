@@ -1,5 +1,5 @@
 // models/dosenModel.js
-const pool = require('../config/db.js');// Sesuaikan path config db kamu
+const pool = require('../config/db');// Sesuaikan path config db kamu
 const xlsx = require('xlsx');
 const bcrypt = require('bcrypt');
 

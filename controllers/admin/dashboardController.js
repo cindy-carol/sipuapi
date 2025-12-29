@@ -1,6 +1,6 @@
-const { Dashboard } = require('../../models/adminDashboardModel.js');
-const { TahunAjaran } = require('../../models/tahunAjaranModel.js');
-const { Mahasiswa } = require('../../models/mahasiswaModel.js');
+const { Dashboard } = require('../../models/adminDashboardModel');
+const { TahunAjaran } = require('../../models/tahunAjaranModel');
+const { Mahasiswa } = require('../../models/mahasiswaModel');
 
 const dashboardController = {
 

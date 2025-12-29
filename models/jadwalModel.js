@@ -1,4 +1,4 @@
-const pool = require('../config/db.js');
+const pool = require('../config/db');
 
 /* =====================================================
     ADMIN & KALENDER: Ambil jadwal (Plus ID Dosen buat Validasi Frontend)

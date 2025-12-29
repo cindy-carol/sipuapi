@@ -1,5 +1,5 @@
-const { TahunAjaran } = require('../../models/tahunAjaranModel.js');
-const { getAllMahasiswaMonitoring, getStatistikPerAngkatan } = require('../models/monitoringModel.js');
+const { TahunAjaran } = require('../../models/tahunAjaranModel');
+const { getAllMahasiswaMonitoring, getStatistikPerAngkatan } = require('../../models/monitoringModel');
 
 // 🟢 TAMPIL HALAMAN MONITORING
 const getMonitoringMahasiswa = async (req, res) => {

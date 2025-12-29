@@ -1,6 +1,6 @@
-// controllers/mahasiswa/isiJadwalController.js
-const { Mahasiswa } = require('../../models/mahasiswaModel.js');
-const { getJadwalUjian, saveJadwalMahasiswa, deleteJadwalByNPM, getJadwalByNPM } = require('../../models/jadwalModel.js');
+// controllers/mahasiswa/isiJadwalController
+const { Mahasiswa } = require('../../models/mahasiswaModel');
+const { getJadwalUjian, saveJadwalMahasiswa, deleteJadwalByNPM, getJadwalByNPM } = require('../../models/jadwalModel');
 
 // Helper Format Tanggal
 const formatDateInput = (date) => {

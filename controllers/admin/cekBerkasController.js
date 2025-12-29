@@ -1,7 +1,7 @@
-// controllers/admin/cekBerkasController.js
-const model = require("../../models/cekBerkasModel.js");
-const { Mahasiswa } = require('../../models/mahasiswaModel.js');
-const { Berkas } = require('../../models/berkasModel.js');
+// controllers/admin/cekBerkasController
+const model = require("../../models/cekBerkasModel");
+const { Mahasiswa } = require('../../models/mahasiswaModel');
+const { Berkas } = require('../../models/berkasModel');
 
 const cekBerkasController = {
 

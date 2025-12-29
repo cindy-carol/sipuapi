@@ -1,9 +1,9 @@
-const pool = require('../config/db.js');
+const pool = require('../config/db');
 const bcrypt = require('bcrypt');
-const { TahunAjaran } = require('../models/tahunAjaranModel.js');
-const Penguji = require('../models/pengujiModel.js');
-const { Dashboard: AdminDashboard } = require('../models/adminDashboardModel.js');
-const { Dashboard: KaprodiDashboard } = require('../models/kaprodiDashboardModel.js');
+const { TahunAjaran } = require('../models/tahunAjaranModel');
+const Penguji = require('../models/pengujiModel');
+const { Dashboard: AdminDashboard } = require('../models/adminDashboardModel');
+const { Dashboard: KaprodiDashboard } = require('../models/kaprodiDashboardModel');
 
 // ============================================================================
 // 1. LOGIN

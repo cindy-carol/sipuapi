@@ -1,6 +1,6 @@
-// controllers/mahasiswa/dashboardController.js
-const { Mahasiswa } = require('../../models/mahasiswaModel.js');
-const { Status } = require('../../models/statusModel.js');
+// controllers/mahasiswa/dashboardController
+const { Mahasiswa } = require('../../models/mahasiswaModel');
+const { Status } = require('../../models/statusModel');
 
 const showDashboard = async (req, res) => {
   try {

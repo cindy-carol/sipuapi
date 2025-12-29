@@ -1,14 +1,14 @@
-// controllers/admin/verifikasiController.js
+// controllers/admin/verifikasiController
 
-const Verifikasi = require('../../models/verifikasiModel.js');
+const Verifikasi = require('../../models/verifikasiModel');
 const puppeteer = require('puppeteer');
-const SuratModel = require('../../models/suratUndanganModel.js'); 
-const AturSurat = require('../../models/aturSuratModel.js'); 
-const { Dosen } = require('../../models/dosenModel.js');
+const SuratModel = require('../../models/suratUndanganModel'); 
+const AturSurat = require('../../models/aturSuratModel'); 
+const { Dosen } = require('../../models/dosenModel');
 const path = require('path');
 const fs = require('fs');
 const pool = require('../../config/db'); 
-const { Mahasiswa } = require('../../models/mahasiswaModel.js'); // Untuk catatan kaki
+const { Mahasiswa } = require('../../models/mahasiswaModel'); // Untuk catatan kaki
 
 const verifikasiController = {
   

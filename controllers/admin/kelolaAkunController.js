@@ -1,4 +1,4 @@
-const pool = require('../../config/db.js'); // Sesuaikan path config DB kamu
+const pool = require('../../config/db'); // Sesuaikan path config DB kamu
 const bcrypt = require('bcrypt');
 
 // 1. TAMPILKAN HALAMAN KELOLA AKUN

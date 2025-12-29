@@ -1,12 +1,12 @@
-// controllers/admin/daftarMahasiswaController.js
-const db = require('../../config/db.js');
+// controllers/admin/daftarMahasiswaController
+const db = require('../../config/db');
 const path = require('path');
 const fs = require('fs');
 const xlsx = require('xlsx');
 
-const { Mahasiswa } = require('@models/mahasiswaModel.js');
-const { TahunAjaran } = require('@models/tahunAjaranModel.js');
-const { syncMahasiswaAccounts } = require('@models/akunModel.js');
+const { Mahasiswa } = require('@models/mahasiswaModel');
+const { TahunAjaran } = require('@models/tahunAjaranModel');
+const { syncMahasiswaAccounts } = require('@models/akunModel');
 
 /* ============================================================
    🔹 RENDER: Halaman Daftar Mahasiswa
