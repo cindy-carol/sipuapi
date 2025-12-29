@@ -1,5 +1,5 @@
 // controllers/admin/daftarMahasiswaController.js
-const db = require('@config/db.js');
+const db = require('../../config/db.js');
 const path = require('path');
 const fs = require('fs');
 const xlsx = require('xlsx');

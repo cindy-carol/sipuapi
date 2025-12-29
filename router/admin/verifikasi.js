@@ -3,11 +3,11 @@ const express = require('express');
 const router = express.Router();
 
 // Import controller
-const cekBerkasController = require('@controllers/admin/cekBerkasController');
-const verifikasiController = require('@controllers/admin/verifikasiController');
-const model = require('@models/cekBerkasModel.js'); 
+const cekBerkasController = require('../../controllers/admin/cekBerkasController');
+const verifikasiController = require('../../controllers/admin/verifikasiController');
+const model = require('../../models/cekBerkasModel.js'); 
 
-const { uploadAdmin } = require('@middlewares/upload');
+const { uploadAdmin } = require('../../middlewares/upload');
 
 // Route untuk Edit Template Global
 router.get('/api/template-surat', verifikasiController.getTemplateSettings);

@@ -1,4 +1,4 @@
-const pool = require('@config/db.js'); // ⚠️ Pastikan path ini benar (sesuai lokasi file database.js kamu)
+const pool = require('../config/db.js'); // ⚠️ Pastikan path ini benar (sesuai lokasi file database.js kamu)
 const bcrypt = require('bcrypt');
 
 // ====================================================================

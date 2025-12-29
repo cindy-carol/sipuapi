@@ -1,5 +1,5 @@
 // models/statusModel.js
-const pool = require('@config/db');
+const pool = require('../config/db.js');
 
 // ==========================
 // Fungsi bantu status utama

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { uploadMahasiswa } = require('@middlewares/upload');
-const uploadBerkasController = require('@controllers/mahasiswa/uploadBerkasController');
-const { ensureAuthenticated, onlyMahasiswa } = require('@middlewares/auth'); // ambil middleware auth
+const { uploadMahasiswa } = require('../../middlewares/upload');
+const uploadBerkasController = require('../../controllers/mahasiswa/uploadBerkasController');
+const { ensureAuthenticated, onlyMahasiswa } = require('../../middlewares/auth'); // ambil middleware auth
 
 // Halaman upload berkas
 router.get(

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuthenticated, onlyMahasiswa } = require('@middlewares/auth');
-const dashboardController = require('@controllers/mahasiswa/dashboardController');
+const { ensureAuthenticated, onlyMahasiswa } = require('../../middlewares/auth');
+const dashboardController = require('../../controllers/mahasiswa/dashboardController');
 
 // Route dashboard mahasiswa
 router.get('/', ensureAuthenticated, onlyMahasiswa, dashboardController.showDashboard);

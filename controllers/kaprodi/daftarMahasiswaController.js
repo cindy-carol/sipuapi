@@ -1,5 +1,5 @@
-const { Mahasiswa } = require('@models/mahasiswaModel.js');
-const { TahunAjaran } = require('@models/tahunAjaranModel.js');
+const { Mahasiswa } = require('../../models/mahasiswaModel.js');
+const { TahunAjaran } = require('../../models/tahunAjaranModel.js');
 
 /* ============================================================
 🔹 RENDER: Halaman Daftar Mahasiswa

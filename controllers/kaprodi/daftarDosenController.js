@@ -1,5 +1,5 @@
-// controllers/admin/daftarDosenController.js
-const { Dosen } = require('@models/dosenModel.js');
+// controllers/kaprodi/daftarDosenController.js
+const { Dosen } = require('../../models/dosenModel.js');
 
 // ===============================
 // RENDER: Halaman Daftar Dosen

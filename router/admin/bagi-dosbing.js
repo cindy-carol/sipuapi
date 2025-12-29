@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { uploadAdmin } = require('@middlewares/upload');
+const { uploadAdmin } = require('../../middlewares/upload');
 
 // Controller
-const bagiDosbingController = require('@controllers/admin/bagiDosbingController');
+const bagiDosbingController = require('../../controllers/admin/bagiDosbingController');
 
 // Halaman pembagian dosbing
 router.get('/', bagiDosbingController.renderbagiDosbing); 

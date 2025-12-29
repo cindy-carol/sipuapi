@@ -5,7 +5,7 @@ const ejs = require('ejs');
 const puppeteer = require('puppeteer');
 
 // Controller
-const verifikasiController = require('@controllers/admin/verifikasiController');
+const verifikasiController = require('../../controllers/admin/verifikasiController');
 
 // -----------------------------------------------------------------------------
 // 🧩 1️⃣ Route: Tampilkan daftar/preview surat undangan (di halaman web)

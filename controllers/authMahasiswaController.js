@@ -1,7 +1,7 @@
 // controllers/authMahasiswaController.js
-const pool = require('@config/db');
-const { Mahasiswa } = require('@models/mahasiswaModel.js');
-const { getUserByUsername } = require('@models/akunModel.js');
+const pool = require('../config/db');
+const { Mahasiswa } = require('../models/mahasiswaModel.js');
+const { getUserByUsername } = require('../models/akunModel.js');
 
 const authMahasiswaController = {
   // ==========================

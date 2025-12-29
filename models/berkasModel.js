@@ -1,5 +1,5 @@
 // models/berkasModel.js
-const pool = require('@config/db.js');
+const pool = require('../config/db.js');
 
 const Berkas = {
   // ===============================

@@ -1,11 +1,11 @@
 // controllers/kaprodi/dashboardKaprodiController.js
 
-const { Dashboard } = require('@models/adminDashboardModel.js'); 
-const { TahunAjaran } = require('@models/tahunAjaranModel.js');
-const { Mahasiswa } = require('@models/mahasiswaModel.js');
-const { Dosbing } = require('@models/dosbingModel.js');
+const { Dashboard } = require('../../models/adminDashboardModel.js'); 
+const { TahunAjaran } = require('../../models/tahunAjaranModel.js');
+const { Mahasiswa } = require('../../models/mahasiswaModel.js');
+const { Dosbing } = require('../../models/dosbingModel.js');
 // 🔥 PASTIKAN IMPORT MODEL PENGUJI SUDAH BENAR
-const Penguji = require('@models/pengujiModel.js'); 
+const Penguji = require('../../models/pengujiModel.js'); 
 
 const dashboardKaprodiController = {
 

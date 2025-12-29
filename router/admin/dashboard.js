@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Controller
-const dashboardController = require('@controllers/admin/dashboardController');
+const dashboardController = require('../../controllers/admin/dashboardController');
 
 // Render dashboard
 router.get('/', dashboardController.renderDashboard);

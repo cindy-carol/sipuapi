@@ -1,5 +1,5 @@
 // models/monitoringModel.js
-const pool = require('@config/db.js');
+const pool = require('../config/db.js');
 
 const getAllMahasiswaMonitoring = async (tahunAjaranFilter = null) => {
   let query = `

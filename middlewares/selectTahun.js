@@ -1,6 +1,6 @@
 // middleware/globalDataMiddleware.js
 
-const pool = require('@config/db.js'); // Sesuaikan path
+const pool = require('../config/db.js'); // Sesuaikan path
 
 const selectTahun = async (req, res, next) => {
   try {

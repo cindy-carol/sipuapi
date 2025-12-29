@@ -1,7 +1,7 @@
 // controllers/mahasiswa/uploadBerkasController.js
-const { Berkas } = require('@models/berkasModel.js');
-const { Mahasiswa } = require('@models/mahasiswaModel.js');
-const { Status } = require('@models/statusModel.js'); 
+const { Berkas } = require('../../models/berkasModel.js');
+const { Mahasiswa } = require('../../models/mahasiswaModel.js');
+const { Status } = require('../../models/statusModel.js'); 
 const sharp = require('sharp'); // 📦 Panggil tukang pres
 
 // ==========================

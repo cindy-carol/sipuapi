@@ -1,6 +1,6 @@
 // controllers/admin/daftarDosenController.js
-const { Dosen } = require('@models/dosenModel.js');
-const pool = require('@config/db.js');
+const { Dosen } = require('../../models/dosenModel.js');
+const pool = require('../../config/db.js');
 const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');

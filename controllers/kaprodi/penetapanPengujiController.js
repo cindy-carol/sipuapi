@@ -1,7 +1,7 @@
-const { getMahasiswaBelumPenguji, getMahasiswaSudahPenguji, getAllDosen } = require('@models/pengujiModel.js');
-const { Mahasiswa } = require('@models/mahasiswaModel.js');
-const { TahunAjaran } = require('@models/tahunAjaranModel.js');
-const { getQuickViewStat } = require('@models/monitoringModel.js');
+const { getMahasiswaBelumPenguji, getMahasiswaSudahPenguji, getAllDosen } = require('../../models/pengujiModel.js');
+const { Mahasiswa } = require('../../models/mahasiswaModel.js');
+const { TahunAjaran } = require('../../models/tahunAjaranModel.js');
+const { getQuickViewStat } = require('../../models/monitoringModel.js');
 
 const getPenetapanPenguji = async (req, res) => {
   try {

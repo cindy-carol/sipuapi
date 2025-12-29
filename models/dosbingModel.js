@@ -1,4 +1,4 @@
-const pool = require('../config/db.js'); // ⚠️ Pastikan path config/db benar
+const pool = require('../config/db.js');
 
 const Dosbing = {
   // 🔹 Ambil daftar mahasiswa + dosbing (dengan kode_dosen), bisa filter per tahun

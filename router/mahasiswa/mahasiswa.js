@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuthenticated, onlyMahasiswa } = require('@middlewares/auth');
+const { ensureAuthenticated, onlyMahasiswa } = require('../../middlewares/auth');
 
 const isiJadwalRoutes = require('./isi-jadwal');
 const uploadBerkasRoutes = require('./upload-berkas');

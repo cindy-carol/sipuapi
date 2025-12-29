@@ -1,4 +1,4 @@
-const pool = require('@config/db.js');
+const pool = require('../../config/db.js');
 
 // 🔥 UPDATE: Import juga getJadwalDosen dari model yang bener
 const { 
@@ -6,7 +6,7 @@ const {
   getAllDosen, 
   assignPenguji, 
   getJadwalDosen 
-} = require('@models/pengujiModel.js'); // Pastikan path ini sesuai nama file model lo
+} = require('../models/pengujiModel.js'); // Pastikan path ini sesuai nama file model lo
 
 const renderPilihPenguji = async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const akunController = require('@controllers/admin/kelolaAkunController'); // Sesuaikan path
+const akunController = require('../../controllers/admin/kelolaAkunController'); // Sesuaikan path
 
 // Middleware Cek Login Admin (Pastikan kamu punya ini)
 // const { verifyAdmin } = require('../middleware/authMiddleware'); 

@@ -1,6 +1,6 @@
 const ExcelJS = require('exceljs');
-const { TahunAjaran } = require('@models/tahunAjaranModel.js');
-const { getAllMahasiswaMonitoring, getStatistikPerAngkatan } = require('@models/monitoringModel.js');
+const { TahunAjaran } = require('../../models/tahunAjaranModel.js');
+const { getAllMahasiswaMonitoring, getStatistikPerAngkatan } = require('../../models/monitoringModel.js');
 
 // 🟢 TAMPIL HALAMAN MONITORING
 const getMonitoringMahasiswa = async (req, res) => {

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { uploadAdmin } = require('@middlewares/upload');
-const daftarMahasiswaController = require('@controllers/admin/daftarMahasiswaController');
-const daftarDosenController = require('@controllers/admin/daftarDosenController');
+const { uploadAdmin } = require('../../middlewares/upload');
+const daftarMahasiswaController = require('../../controllers/admin/daftarMahasiswaController');
+const daftarDosenController = require('../../controllers/admin/daftarDosenController');
 
 // Mahasiswa
 router.get('/daftar-mahasiswa', daftarMahasiswaController.renderDaftarMahasiswa);

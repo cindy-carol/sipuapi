@@ -4,7 +4,7 @@ const router = express.Router();
 // Pastikan path ini benar mengarah ke controller yang TADI KITA PERBAIKI
 // Jika pakai alias '@controllers', pastikan setup-nya jalan. 
 // Jika error "Cannot find module", ganti jadi path relative: '../../controllers/mahasiswa/isiJadwalController'
-const isiJadwalController = require('@controllers/mahasiswa/isiJadwalController'); 
+const isiJadwalController = require('../../controllers/mahasiswa/isiJadwalController'); 
 
 // ==================================================
 // DEFINISI ROUTE

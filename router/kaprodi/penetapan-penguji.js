@@ -1,8 +1,8 @@
 // routes/kaprodi/penetapanPenguji.js
 const express = require('express');
 const router = express.Router();
-const penetapanPengujiController = require('@controllers/kaprodi/penetapanPengujiController');
-const pilihPengujiController = require('@controllers/kaprodi/pilihPengujiController');
+const penetapanPengujiController = require('../../controllers/kaprodi/penetapanPengujiController');
+const pilihPengujiController = require('../../controllers/kaprodi/pilihPengujiController');
 
 // Daftar penetapan penguji
 router.get('/', penetapanPengujiController.getPenetapanPenguji);

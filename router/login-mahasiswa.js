@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMahasiswaController = require('../controllers/authMahasiswaController');
-const { ensureAuthenticated, onlyMahasiswa } = require('@middlewares/auth');
+const { ensureAuthenticated, onlyMahasiswa } = require('../middlewares/auth');
 
 // Halaman login mahasiswa
 router.get('/login', (req, res) => {

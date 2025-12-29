@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const dashboardController = require('@controllers/kaprodi/dashboardController');
-const penetapanPengujiController = require('@controllers/kaprodi/penetapanPengujiController');
+const dashboardController = require('../../controllers/kaprodi/dashboardController');
+const penetapanPengujiController = require('../../controllers/kaprodi/penetapanPengujiController');
 
 
 // route GET /

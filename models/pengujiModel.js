@@ -1,4 +1,4 @@
-const pool = require('@config/db.js');
+const pool = require('../config/db.js');
 
 const getMahasiswaBelumPenguji = async () => {
   // Menggunakan DISTINCT ON agar satu NPM hanya muncul satu kali di antrean

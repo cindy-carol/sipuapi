@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuthenticated, onlyAdmin } = require('@middlewares/auth');
+const { ensureAuthenticated, onlyAdmin } = require('../../middlewares/auth');
 
 // ===== Proteksi semua route admin =====
 router.use(ensureAuthenticated, onlyAdmin);

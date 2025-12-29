@@ -1,4 +1,4 @@
-const Jadwal = require('@models/jadwalModel.js');
+const Jadwal = require('../../models/jadwalModel.js');
 
 const jadwalController = {
 

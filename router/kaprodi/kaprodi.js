@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuthenticated, onlyKaprodi } = require('@middlewares/auth');
+const { ensureAuthenticated, onlyKaprodi } = require('../../middlewares/auth');
 
 const daftarRoutes = require('./daftar');
 const penetapanPengujiRoutes = require('./penetapan-penguji');

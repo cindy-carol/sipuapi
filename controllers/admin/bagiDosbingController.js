@@ -1,9 +1,9 @@
 const xlsx = require("xlsx");
-const pool = require("@config/db.js");
+const pool = require("../../config/db.js");
 const path = require("path");
 const fs = require("fs"); 
-const { Dosbing } = require('@models/dosbingModel.js');
-const { TahunAjaran } = require('@models/tahunAjaranModel.js');
+const { Dosbing } = require('../../models/dosbingModel.js');
+const { TahunAjaran } = require('../../models/tahunAjaranModel.js');
 
 const dosbingController = {
 

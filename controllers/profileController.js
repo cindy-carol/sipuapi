@@ -1,5 +1,5 @@
 // controllers/profileController.js
-const pool = require('@config/db'); // Sesuaikan path db kamu
+const pool = require('../config/db'); // Sesuaikan path db kamu
 const bcrypt = require('bcrypt');
 
 const updateProfile = async (req, res) => {
