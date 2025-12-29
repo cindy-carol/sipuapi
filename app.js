@@ -27,11 +27,14 @@ app.use(express.json()); // Untuk parsing JSON (misal dari fetch/AJAX)
 
 // ===== Session =====
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'kombinasi_acak_rahasia',
   resave: false,
   saveUninitialized: false,
+  proxy: true, // Tambahkan ini agar Vercel bisa baca header proxy
   cookie: {
-    maxAge: 60 * 60 * 1000 // 🕐 60 menit (1 jam)
+    secure: process.env.NODE_ENV === "production", // Otomatis true kalau di Vercel
+    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // Biar aman di cross-site
+    maxAge: 60 * 60 * 1000 
   }
 }));
 
@@ -80,11 +83,10 @@ app.get('/cek-db', async (req, res) => {
 
 startScheduler();
 
-app.listen(3000, () => {
-  console.log('Server nyala di port 3000');
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server jalan di http://localhost:${PORT}`);
+  });
+}
 
-// ===== Start server =====
-app.listen(PORT, () => {
-  console.log(`Server jalan di http://localhost:${PORT}`);
-});
+module.exports = app;
