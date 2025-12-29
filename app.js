@@ -33,7 +33,7 @@ app.use(session({
     pool: pool,                
     tableName: 'session'       
   }),
-  secret: process.env.SESSION_SECRET || 'rahasia-cindy-2025',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   proxy: true, // Dibutuhkan Vercel untuk HTTPS

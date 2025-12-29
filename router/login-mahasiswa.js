@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const authMahasiswaController = require('@controllers/authMahasiswaController');
+const authMahasiswaController = require('../controllers/authMahasiswaController');
 const { ensureAuthenticated, onlyMahasiswa } = require('@middlewares/auth');
 
 // Halaman login mahasiswa
