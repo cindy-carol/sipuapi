@@ -45,9 +45,12 @@ app.use(session({
 }));
 
 // ===== Variabel global untuk EJS =====
+// Di app.js cari bagian res.locals
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.role = req.session.user ? req.session.user.role : null;
+  res.locals.title = 'SIPUAPI'; // Tambahin nilai default ini
+  res.locals.currentPage = '';  // Tambahin nilai default ini
   res.locals.hideSidebar = false;
   next();
 });
