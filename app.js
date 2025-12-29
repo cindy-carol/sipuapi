@@ -3,11 +3,13 @@ require('module-alias/register');
 
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
+const expressLayouts = require('express-ejs-layouts');
+
 const app = express();
 const pool = require('./config/db');
-const session = require('express-session');
-const expressLayouts = require('express-ejs-layouts'); // ✅ Layouts
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const startScheduler = require('./utils/scheduler');
 const selectTahun = require('./middlewares/selectTahun');
 
@@ -17,24 +19,28 @@ app.set('views', path.join(__dirname, 'views'));
 
 // ===== Middleware express-ejs-layouts =====
 app.use(expressLayouts);
-app.set('layout', 'layout'); // ✅ Layout default untuk semua halamanz
+app.set('layout', 'layout'); 
 
 // ===== Middleware umum =====
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/upload', express.static(path.join(__dirname, 'public/upload')));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // Untuk parsing JSON (misal dari fetch/AJAX)
+app.use(express.json());
 
-// ===== Session =====
+// ===== Session (Persistent with PostgreSQL) =====
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'kombinasi_acak_rahasia',
+  store: new pgSession({
+    pool: pool,                
+    tableName: 'session'       
+  }),
+  secret: process.env.SESSION_SECRET || 'rahasia-cindy-2025',
   resave: false,
   saveUninitialized: false,
-  proxy: true, // Tambahkan ini agar Vercel bisa baca header proxy
-  cookie: {
-    secure: process.env.NODE_ENV === "production", // Otomatis true kalau di Vercel
-    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // Biar aman di cross-site
-    maxAge: 60 * 60 * 1000 
+  proxy: true, // Dibutuhkan Vercel untuk HTTPS
+  cookie: { 
+    maxAge: 60 * 60 * 1000, // 1 Jam
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 
@@ -42,10 +48,7 @@ app.use(session({
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.role = req.session.user ? req.session.user.role : null;
-
-  // ✅ Tambahkan default sidebar tampil
   res.locals.hideSidebar = false;
-
   next();
 });
 
@@ -53,21 +56,17 @@ app.use(selectTahun);
 
 // ===== Routing =====
 const loginRoutes = require('./router/login-admin-kaprodi');
-app.use('/', loginRoutes);
-
 const loginMahasiswaRoutes = require('./router/login-mahasiswa');
-app.use('/', loginMahasiswaRoutes);
-
-const profileRouter = require('./router/profile'); // Import router yg baru dibuat
-app.use('/profile', profileRouter);
-
+const profileRouter = require('./router/profile');
 const adminRoutes = require('./router/admin/admin');
-app.use('/admin', adminRoutes);
-
 const kaprodiRoutes = require('./router/kaprodi/kaprodi');
-app.use('/kaprodi', kaprodiRoutes);
-
 const mahasiswaRoutes = require('./router/mahasiswa/mahasiswa');
+
+app.use('/', loginRoutes);
+app.use('/', loginMahasiswaRoutes);
+app.use('/profile', profileRouter);
+app.use('/admin', adminRoutes);
+app.use('/kaprodi', kaprodiRoutes);
 app.use('/mahasiswa', mahasiswaRoutes);
 
 // ===== Cek koneksi database =====
@@ -83,6 +82,7 @@ app.get('/cek-db', async (req, res) => {
 
 startScheduler();
 
+// ===== Start server (Support Vercel) =====
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`Server jalan di http://localhost:${PORT}`);
