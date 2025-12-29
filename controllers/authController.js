@@ -21,12 +21,12 @@ const loginAdminKaprodi = async (req, res) => {
 
     // Jika user tidak ditemukan
     if (!user) {
-      return res.render('login', { error: 'Username atau password salah' });
+      return res.render('login-admin-kaprodi', { error: 'Username atau password salah' });
     }
 
     // Cek Status Aktif
     if (user.status_aktif === false) {
-         return res.render('login', { error: 'AKUN DINONAKTIFKAN! Hubungi Super Admin.' });
+         return res.render('login-admin-kaprodi', { error: 'AKUN DINONAKTIFKAN! Hubungi Super Admin.' });
     }
 
     // 2. Cek Password
@@ -38,7 +38,7 @@ const loginAdminKaprodi = async (req, res) => {
     }
 
     if (!isMatch) {
-      return res.render('login', { error: 'Username atau password salah' });
+      return res.render('login-admin-kaprodi', { error: 'Username atau password salah' });
     }
 
     // 3. Simpan Sesi
@@ -55,12 +55,12 @@ const loginAdminKaprodi = async (req, res) => {
     } else if (user.role === 'kaprodi') {
       return res.redirect('/kaprodi/dashboard');
     } else {
-      return res.render('login', { error: 'Role tidak dikenal' });
+      return res.render('login-admin-kaprodi', { error: 'Role tidak dikenal' });
     }
 
   } catch (err) {
     console.error('Login error:', err);
-    res.render('login', { error: 'Terjadi kesalahan server' });
+    res.render('login-admin-kaprodi', { error: 'Terjadi kesalahan server' });
   }
 };
 
