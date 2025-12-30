@@ -187,17 +187,24 @@ const showDashboardKaprodi = async (req, res) => {
 // 4. LOGOUT
 // ============================================================================
 const logout = (req, res) => {
+  // 1. Ambil role SEBELUM session di-destroy agar tidak undefined
   const role = req.session?.user?.role?.toLowerCase();
   
   req.session.destroy(err => {
-    if (err) console.error('❌ Error destroying session:', err);
-    res.clearCookie('connect.sid'); // Bersihkan cookie sesi di browser
+    if (err) {
+      console.error('❌ Error destroying session:', err);
+    }
 
-    // Redirect berdasarkan role terakhir
+    // 2. Bersihkan cookie dengan path '/' agar benar-benar terhapus di browser
+    res.clearCookie('connect.sid', { path: '/' }); 
+
+    // 3. Logika pengalihan (Redirect)
     if (role === 'mahasiswa') {
-      res.redirect('/login');
+      // Sesuaikan dengan rute login mahasiswa di app.js
+      return res.redirect('/login-mahasiswa'); 
     } else {
-      res.redirect('/login-admin-kaprodi');
+      // Staff (Admin/Kaprodi) diarahkan ke root atau login staff
+      return res.redirect('/'); 
     }
   });
 };
