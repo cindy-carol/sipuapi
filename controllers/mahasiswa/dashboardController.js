@@ -15,7 +15,7 @@ const showDashboard = async (req, res) => {
     // 🔹 1. AMBIL DATA SECARA PARALEL (OPTIMIZED)
     // ============================================================
     const [mhs, berkas, jadwalList, statusData, infoList, suratData] = await Promise.all([
-      Mahasiswa.getMahasiswaByNPM(npm),
+      Mahasiswa.findByNPM(npm),
       Mahasiswa.getStatusBerkasByNPM(npm),
       Mahasiswa.getJadwalUjianByNPM(npm), // Mengandung data jadwal & daftar_ujian
       Status.getStatusMahasiswaByNPM(npm),
