@@ -201,7 +201,7 @@ const logout = (req, res) => {
     // 3. Logika pengalihan (Redirect)
     if (role === 'mahasiswa') {
       // Sesuaikan dengan rute login mahasiswa di app.js
-      return res.redirect('/login-mahasiswa'); 
+      return res.redirect('/login'); 
     } else {
       // Staff (Admin/Kaprodi) diarahkan ke root atau login staff
       return res.redirect('/'); 
