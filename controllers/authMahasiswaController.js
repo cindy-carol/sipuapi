@@ -20,8 +20,10 @@ const authMahasiswaController = {
         });
       }
 
+      const cleanNPM = npm.trim();
+
       // 2. Cek akun dari tabel akun (Status Aktif & Role) 
-      const akun = await getUserByUsername(npm.trim());
+      const akun = await getUserByUsername(cleanNPM);
       if (!akun || akun.role.toLowerCase() !== 'mahasiswa' || !akun.status_aktif) {
         return res.render('login-mahasiswa', { 
           title: 'Login Mahasiswa',
@@ -30,17 +32,17 @@ const authMahasiswaController = {
         });
       }
 
-      // 3. Ambil data profil mahasiswa berdasarkan NPM 
-      const mahasiswa = await Mahasiswa.getMahasiswaByNPM(npm.trim());
+      // 3. FIX: Gunakan findByNPM (sesuai mahasiswaModel.js)
+      const mahasiswa = await Mahasiswa.findByNPM(cleanNPM);
       if (!mahasiswa) {
         return res.render('login-mahasiswa', { 
           title: 'Login Mahasiswa',
           currentPage: 'login-mahasiswa',
-          error: 'Data mahasiswa tidak ditemukan di pangkalan data.' 
+          error: 'Data profil mahasiswa tidak ditemukan.' 
         });
       }
 
-      // 4. Simpan data ke session untuk akses serverless 
+      // 4. Simpan data ke session
       req.session.user = {
         id: akun.id,
         mahasiswa_id: mahasiswa.id,
@@ -50,6 +52,8 @@ const authMahasiswaController = {
       };
 
       console.log(`✅ Login mahasiswa berhasil: ${mahasiswa.nama} (${mahasiswa.npm})`);
+      
+      // Pastikan redirect ke path yang benar
       res.redirect('/mahasiswa/dashboard');
 
     } catch (err) {
@@ -67,19 +71,19 @@ const authMahasiswaController = {
   // ==========================
   showDashboardMahasiswa: async (req, res) => {
     try {
-      // Pastikan session user tersedia sebelum query 
       if (!req.session.user || !req.session.user.npm) {
         return res.redirect('/login');
       }
 
       const { npm } = req.session.user;
-      const mhs = await Mahasiswa.getMahasiswaByNPM(npm);
+      
+      // FIX: Gunakan findByNPM (sesuai mahasiswaModel.js)
+      const mhs = await Mahasiswa.findByNPM(npm);
 
       if (!mhs) {
-        return res.render('error', { message: 'Data mahasiswa tidak ditemukan atau telah dihapus.' });
+        return res.render('error', { message: 'Data mahasiswa tidak ditemukan.' });
       }
 
-      // Render dashboard dengan data terbaru dari DB 
       res.render('mahasiswa/dashboard', {
         title: 'Dashboard Mahasiswa',
         currentPage: 'dashboard',
@@ -93,7 +97,7 @@ const authMahasiswaController = {
 
     } catch (err) {
       console.error('❌ ERROR showDashboardMahasiswa:', err);
-      res.render('error', { message: 'Terjadi kesalahan saat memuat data dashboard.' });
+      res.status(500).render('error', { message: 'Gagal memuat dashboard.' });
     }
   },
 
@@ -101,13 +105,10 @@ const authMahasiswaController = {
   // 🚪 LOGOUT
   // ==========================
   logout: (req, res) => {
-    // Hancurkan session dan hapus cookie untuk keamanan 
     req.session.destroy((err) => {
-      if (err) {
-        console.error('❌ Logout Error:', err);
-      }
-      res.clearCookie('connect.sid');
-      res.redirect('/login'); // Kembali ke halaman utama login mahasiswa
+      if (err) console.error('❌ Logout Error:', err);
+      res.clearCookie('connect.sid', { path: '/' }); // Bersihkan cookie secara global
+      res.redirect('/login'); 
     });
   },
 };
