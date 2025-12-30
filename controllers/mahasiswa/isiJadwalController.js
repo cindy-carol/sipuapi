@@ -39,7 +39,7 @@ const getIsiJadwal = async (req, res) => {
 
     // --- AMBIL DATA PENDUKUNG ---
     const [mhs, allJadwal] = await Promise.all([
-        Mahasiswa.getMahasiswaByNPM(npm),
+        Mahasiswa.findByNPM(npm),
         getJadwalUjian() // Mengambil semua jadwal untuk diletakkan di Kalender (Legenda)
     ]);
 

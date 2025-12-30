@@ -11,7 +11,7 @@ const showUploadPage = async (req, res) => {
     if (!req.session.user) return res.status(403).send('Akses ditolak');
 
     const npm = req.session.user.npm;
-    const mhs = await Mahasiswa.getMahasiswaByNPM(npm);
+    const mhs = await Mahasiswa.findByNPM(npm);
     
     // Ambil data dari database melalui model
     const rawBerkas = await Berkas.getBerkasByMahasiswa(npm); 
@@ -82,7 +82,7 @@ const uploadFiles = async (req, res) => {
         return res.status(400).json({ error: 'Tidak ada file diupload' });
     }
 
-    const mhs = await Mahasiswa.getMahasiswaByNPM(npm);
+    const mhs = await Mahasiswa.findByNPM(npm);
     if (!mhs) return res.status(404).json({ error: 'Mahasiswa tidak ditemukan' });
 
     // Format folder berdasarkan tahun ajaran
