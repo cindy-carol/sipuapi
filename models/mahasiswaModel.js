@@ -15,23 +15,28 @@ const Mahasiswa = {
    * ========================================================== */
 
   // Ambil profil lengkap mahasiswa berdasarkan NPM
-  findByNPM: async (npm) => {
-    try {
-      const res = await pool.query(
-        `
-        SELECT m.*, t.nama_tahun, t.semester
-        FROM mahasiswa m
-        LEFT JOIN tahun_ajaran t ON m.tahun_ajaran_id = t.id
-        WHERE m.npm = $1
-        `,
-        [npm]
-      );
-      return res.rows[0] || null;
-    } catch (err) {
-      console.error('❌ ERROR findByNPM:', err);
-      throw err;
-    }
-  },
+// Ambil profil lengkap mahasiswa beserta nama dosen pembimbing
+findByNPM: async (npm) => {
+  try {
+    const res = await pool.query(
+      `
+      SELECT m.*, t.nama_tahun, t.semester,
+             d1.nama AS nama_dosbing1, 
+             d2.nama AS nama_dosbing2
+      FROM mahasiswa m
+      LEFT JOIN tahun_ajaran t ON m.tahun_ajaran_id = t.id
+      LEFT JOIN dosen d1 ON m.dosbing1_id = d1.id
+      LEFT JOIN dosen d2 ON m.dosbing2_id = d2.id
+      WHERE m.npm = $1
+      `,
+      [npm]
+    );
+    return res.rows[0] || null;
+  } catch (err) {
+    console.error('❌ ERROR findByNPM:', err);
+    throw err;
+  }
+},
 
   // Ambil data mahasiswa dengan info Tahun Ajaran & Dosbing (Filterable)
   getAll: async (tahunId = null) => {
