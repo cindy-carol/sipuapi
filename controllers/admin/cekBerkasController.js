@@ -78,29 +78,32 @@ const cekBerkasController = {
   // ❌ 2. REJECT BERKAS (SATU PER SATU VIA MODAL)
   // =========================================================================
 // Ganti fungsi rejectBerkas lama kamu dengan ini:
+// Di dalam cekBerkasController.js
 rejectBerkas: async (req, res) => {
   try {
-    // Ambil alasan_khusus dari body (input textarea)
-    const { berkas_id, alasan_kode, alasan_khusus, npm } = req.body;
+    // Tangkap alasan_custom (textarea) dan alasan_kode (select)
+    const { berkas_id, alasan_kode, alasan_custom, npm } = req.body;
     const adminId = req.session.user?.id || null;
     
     let pesan = '';
-    
-    // Logika pemilihan pesan yang dinamis
-    if (alasan_kode === '1') {
+
+    // Cek value 'lainnya' yang datang dari select EJS kamu
+    if (alasan_kode === 'lainnya') {
+      // Jika user pilih 'lainnya', pastikan ambil teks dari textarea
+      pesan = (alasan_custom && alasan_custom.trim() !== '') 
+              ? alasan_custom.trim() 
+              : 'Mohon perbaiki berkas ini.'; 
+    } else if (alasan_kode === '1') {
       pesan = 'Berkas yang diupload salah/tidak sesuai.';
     } else if (alasan_kode === '2') {
       pesan = 'Scan berkas buram atau tidak terbaca.';
     } else if (alasan_kode === '3') {
       pesan = 'Tanda tangan atau stempel belum lengkap.';
-    } else if (alasan_kode === 'lainnya') {
-      // Jika pilih lainnya, gunakan isi dari textarea
-      pesan = alasan_khusus ? alasan_khusus.trim() : 'Mohon perbaiki berkas ini.';
     } else {
       pesan = 'Mohon perbaiki berkas ini.';
     }
     
-    // Kirim 'pesan' yang sudah berisi rincian manual ke database
+    // Update status ke database dengan pesan yang sudah fix
     await model.updateStatus(berkas_id, false, pesan, adminId);
 
     if (npm) {
