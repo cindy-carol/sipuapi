@@ -6,17 +6,18 @@ const { Mahasiswa } = require('../../models/mahasiswaModel');
 // ==========================
 // 📄 Render halaman upload
 // ==========================
+// controllers/mahasiswa/uploadBerkasController.js
+
 const showUploadPage = async (req, res) => {
   try {
     if (!req.session.user) return res.status(403).send('Akses ditolak');
 
     const npm = req.session.user.npm;
-    const mhs = await Mahasiswa.findByNPM(npm);
     
-    // Ambil data dari database melalui model
+    // 🔥 PERBAIKAN: Gunakan findByNPM yang sudah kita update untuk ambil dosbing
+    const mhs = await Mahasiswa.findByNPM(npm); 
     const rawBerkas = await Berkas.getBerkasByMahasiswa(npm); 
 
-    // Konversi array dari database ke object agar mudah dibaca EJS
     const berkasMahasiswa = {};
     if (rawBerkas && Array.isArray(rawBerkas)) {
       rawBerkas.forEach(item => {
@@ -28,7 +29,6 @@ const showUploadPage = async (req, res) => {
       });
     }
 
-    // Status badge untuk tampilan UI
     const sudahUpload = berkasMahasiswa.dokumen_rpl?.path || 
                         berkasMahasiswa.draft_artikel?.path || 
                         berkasMahasiswa.kartu_asistensi_1?.path;
@@ -43,15 +43,17 @@ const showUploadPage = async (req, res) => {
       nama: mhs.nama,
       npm: mhs.npm,
       thajaran: `${mhs.nama_tahun} ${mhs.semester}`,
-      badge,
       
-      // Kirim data terpisah ke view
+      // 🔥 TAMBAHKAN DUA BARIS INI AGAR PARTIAL TIDAK ERROR
+      dosbing1: mhs.nama_dosbing1 || 'Belum Ditentukan',
+      dosbing2: mhs.nama_dosbing2 || 'Belum Ditentukan',
+      
+      badge,
       rpl: berkasMahasiswa.dokumen_rpl || {},
       artikel: berkasMahasiswa.draft_artikel || {},
       asistensi1: berkasMahasiswa.kartu_asistensi_1 || {},
       asistensi2: berkasMahasiswa.kartu_asistensi_2 || {},
       asistensi3: berkasMahasiswa.kartu_asistensi_3 || {},
-      
       berkasMahasiswa 
     });
 
