@@ -17,6 +17,29 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
+  <style>
+    /* Pastikan seluruh tinggi layar terisi */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+/* Buat body jadi container flex vertikal */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bagian konten utama akan 'memaksa' footer ke bawah */
+main, .content-wrapper {
+  flex: 1 0 auto;
+}
+
+/* Footer tetap di posisinya tanpa perlu floating */
+footer {
+  flex-shrink: 0;
+}
+  </style>
 </head>
 <body>
 

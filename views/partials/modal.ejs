@@ -85,9 +85,11 @@
               <select class="form-select mb-2" name="alasan_kode" required>
                 <option value="" selected disabled>[ Pilih Alasan ]</option>
                 <option value="1">Berkas salah / tidak sesuai</option>
-                <option value="2">File buram / tidak terbaca</option>
+                <option value="2">File tidak terbaca</option>
                 <option value="3">Tanda tangan / stempel kurang</option>
               </select>
+              <label class="form-label">Catatan Detail</label>
+              <textarea id="catatan-input" name="catatan" class="form-control" rows="3"><%= valCatatanLama %></textarea>
               
               <div class="alert alert-light border small">
                 <strong>Catatan saat ini:</strong><br>
