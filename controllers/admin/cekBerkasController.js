@@ -18,7 +18,7 @@ const cekBerkasController = {
       }
 
       // Ambil data profil mahasiswa target
-      const mhs = await Mahasiswa.getMahasiswaByNPM(npm);
+      const mhs = await Mahasiswa.findByNPM(npm);
       
       if (!mhs) {
           return res.status(404).send(`Mahasiswa dengan NPM ${npm} tidak ditemukan.`);
