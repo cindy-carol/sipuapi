@@ -89,10 +89,10 @@
             <option value="custom">Lainnya (Tulis detail...)</option>
         </select>
         
-        <div id="containerLainnya" style="display: none;">
-            <label class="form-label small fw-bold">Rincian Kesalahan:</label>
-            <textarea class="form-control mb-2" name="alasan_custom" id="alasanCustom" placeholder="Jelaskan secara detail..."></textarea>
-        </div>
+<div id="inputLainnya" style="display: none;">
+    <label class="form-label small fw-bold">Rincian Kesalahan:</label>
+    <textarea class="form-control mb-2" name="alasan_khusus" id="textLainnya" placeholder="Ketik rincian di sini..."></textarea>
+</div>
         
         <div class="alert alert-light border small">
             <strong>Catatan saat ini:</strong><br>
@@ -107,16 +107,16 @@
 </form>
 
 <script>
-function toggleAlasanLainnya() {
+function cekAlasan() {
     const select = document.getElementById('selectAlasan');
-    const container = document.getElementById('containerLainnya');
-    const textarea = document.getElementById('alasanCustom');
-
-    if (select.value === 'custom') {
-        container.style.display = 'block';
-        textarea.setAttribute('required', 'required'); // Wajib isi jika pilih lainnya
+    const inputDiv = document.getElementById('inputLainnya');
+    const textarea = document.getElementById('textLainnya');
+    
+    if (select.value === 'lainnya') {
+        inputDiv.style.display = 'block';
+        textarea.setAttribute('required', 'required');
     } else {
-        container.style.display = 'none';
+        inputDiv.style.display = 'none';
         textarea.removeAttribute('required');
     }
 }
