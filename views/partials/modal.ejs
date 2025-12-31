@@ -75,44 +75,54 @@
         </div>
 
 <% } else if (modalType === 'form') { %>
-  <form action="/admin/verifikasi/update-status-reject" method="POST" id="form-reject-<%= valBerkasId %>">
-      <div class="modal-body">
-        <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
-        <input type="hidden" name="npm" value="<%= valNpm %>">
+  <form action="/admin/verifikasi/update-status-reject" method="POST">
+    <div class="modal-body">
+      <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
+      <input type="hidden" name="npm" value="<%= valNpm %>">
 
-        <label class="form-label fw-bold">Alasan Penolakan:</label>
-        <select class="form-select mb-3" id="select-alasan-<%= valBerkasId %>" 
-                onchange="toggleLainnya('<%= valBerkasId %>')" required>
-          <option value="" selected disabled>[ Pilih Alasan Cepat ]</option>
-          <option value="Berkas salah / tidak sesuai">Berkas salah / tidak sesuai</option>
-          <option value="File tidak terbaca atau buram">File tidak terbaca atau buram</option>
-          <option value="Tanda tangan / stempel kurang lengkap">Tanda tangan / stempel kurang lengkap</option>
-          <option value="LAINNYA">Lainnya (Ketik Manual...)</option>
-        </select>
+      <label class="form-label fw-bold">Alasan Penolakan:</label>
+      <select class="form-select mb-3" id="sel-revisi-<%= valBerkasId %>" 
+              onchange="syncCatatan('<%= valBerkasId %>')" required>
+        <option value="" selected disabled>[ Pilih Alasan Cepat ]</option>
+        <option value="Berkas salah / tidak sesuai">Berkas salah / tidak sesuai</option>
+        <option value="File tidak terbaca atau buram">File tidak terbaca atau buram</option>
+        <option value="Tanda tangan / stempel kurang lengkap">Tanda tangan / stempel kurang lengkap</option>
+        <option value="LAINNYA">Lainnya (Ketik Manual...)</option>
+      </select>
 
-        <div id="wrapper-lainnya-<%= valBerkasId %>" style="display: none;">
-          <label class="form-label fw-bold text-danger">Masukkan Catatan Detail:</label>
-        </div>
-        
-        <textarea 
-          id="catatan-final-<%= valBerkasId %>"
-          name="catatan" 
-          class="form-control mb-3" 
-          rows="3" 
-          placeholder="Catatan akan muncul di sini..."
-        ><%= valCatatanLama !== '-' ? valCatatanLama : '' %></textarea>
-        
-        <div class="alert alert-light border small bg-light">
-          <strong>Riwayat catatan sebelumnya:</strong><br>
-          <span class="text-muted"><%= valCatatanLama %></span>
-        </div>
+      <div id="wrapper-manual-<%= valBerkasId %>" style="display: none;">
+        <label class="form-label fw-bold text-danger">Ketik Catatan Detail:</label>
       </div>
-
-      <div class="modal-footer p-2 border-0">
-        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-sm btn-danger px-3">Simpan & Kirim Revisi</button>
-      </div>
+      
+      <textarea 
+        id="final-note-<%= valBerkasId %>"
+        name="catatan" 
+        class="form-control mb-3" 
+        rows="3" 
+      ><%= valCatatanLama !== '-' ? valCatatanLama : '' %></textarea>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-danger">Simpan Revisi</button>
+    </div>
   </form>
+
+<script>
+function syncCatatan(id) {
+    const select = document.getElementById('sel-revisi-' + id);
+    const wrapper = document.getElementById('wrapper-manual-' + id);
+    const textarea = document.getElementById('final-note-' + id);
+
+    if (select.value === 'LAINNYA') {
+        wrapper.style.display = 'block';
+        textarea.value = ""; // Bersihkan agar admin ketik manual
+        textarea.focus();
+    } else {
+        wrapper.style.display = 'none';
+        textarea.value = select.value; // Salin nilai dropdown ke textarea
+    }
+}
+</script>
 
 
       <% } else if (modalType === 'sukses') { %>
