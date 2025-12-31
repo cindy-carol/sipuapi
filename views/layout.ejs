@@ -14,35 +14,30 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
-    /* CSS STICKY FOOTER TANPA MERUSAK SIDEBAR */
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    /* Pembungkus utama agar footer terdorong ke bawah */
-    .main-wrapper {
+    /* RESET DASAR */
+    html, body { height: 100%; margin: 0; padding: 0; }
+    
+    /* WRAPPER UTAMA: Sidebar (Kiri) & Area Utama (Kanan) */
+    .layout-wrapper {
       display: flex;
-      flex-direction: column;
       min-height: 100vh;
       width: 100%;
     }
-    /* Bagian tengah yang fleksibel mengisi sisa layar */
-    .content-area {
-      flex: 1 0 auto;
-      display: flex; /* Mendukung Sidebar Admin di sampingnya */
-    }
-    /* Khusus untuk area konten yang punya sidebar */
-    .main-content {
-      flex: 1;
+
+    /* AREA KANAN: Header + Konten + Footer */
+    .main-container {
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
+      flex-grow: 1; 
+      min-width: 0; /* Mencegah overflow */
     }
-    /* Khusus untuk area container body agar footer nempel */
-    .body-wrapper {
+
+    /* KONTEN: Mendorong footer ke paling bawah */
+    .content-area {
       flex: 1 0 auto;
     }
-    /* Pastikan footer tidak menyusut */
+
+    /* FOOTER: Tetap di bawah */
     footer {
       flex-shrink: 0;
     }
@@ -50,36 +45,44 @@
 </head>
 <body>
 
-<div class="main-wrapper">
-  <% if(role === 'admin' && !hideSidebar){ %>
-    <div class="content-area">
+  <div class="layout-wrapper">
+    <% if (role === 'admin' && !hideSidebar) { %>
       <%- include('partials/sidebar', {activePage: currentPage, role: 'admin'}) %>
       
-      <div class="main-content">
+      <div class="main-container">
         <%- include('partials/header') %>
-        <div class="body-wrapper container py-4">
-          <%- body %>
-        </div>
+        <main class="content-area">
+          <div class="container py-4" style="max-width: 100%">
+            <%- body %>
+          </div>
+        </main>
         <%- include('partials/footer') %>
       </div>
-    </div>
 
-  <% } else if(role === 'kaprodi' && !hideSidebar){ %>
-    <%- include('partials/header') %>
-    <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
-    <div class="body-wrapper container py-4" style="width:80%">
-      <%- body %>
-    </div>
-    <%- include('partials/footer') %>
+    <% } else if (role === 'kaprodi' && !hideSidebar) { %>
+      <div class="main-container">
+        <%- include('partials/header') %>
+        <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
+        <main class="content-area">
+          <div class="container py-4" style="width: 80%">
+            <%- body %>
+          </div>
+        </main>
+        <%- include('partials/footer') %>
+      </div>
 
-  <% } else { %>
-    <%- include('partials/header') %>
-    <div class="body-wrapper container py-4" style="width: 75%">
-      <%- body %>
-    </div>
-    <%- include('partials/footer') %>
-  <% } %>
-</div>
+    <% } else { %>
+      <div class="main-container">
+        <%- include('partials/header') %>
+        <main class="content-area">
+          <div class="container py-4" style="width: 75%">
+            <%- body %>
+          </div>
+        </main>
+        <%- include('partials/footer') %>
+      </div>
+    <% } %>
+  </div>
 
   <script src="/js/bootstrap.bundle.min.js"></script>
   <script src="/js/partials/calendar-handler.js"></script>
