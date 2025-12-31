@@ -75,40 +75,36 @@
         </div>
 
 <% } else if (modalType === 'form') { %>
+<% } else if (modalType === 'form') { %>
   <form action="/admin/verifikasi/update-status-reject" method="POST">
       <div class="modal-body">
-        
         <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
         <input type="hidden" name="npm" value="<%= valNpm %>">
 
         <label class="form-label fw-bold">Alasan Penolakan:</label>
-        <select class="form-select mb-3 select-alasan" name="alasan_kode" id="select-<%= valBerkasId %>" required>
-          <option value="" selected disabled>[ Pilih Alasan Cepat ]</option>
-          <option value="Berkas salah / tidak sesuai">Berkas salah / tidak sesuai</option>
-          <option value="File tidak terbaca atau buram">File tidak terbaca atau buram</option>
-          <option value="Tanda tangan / stempel kurang lengkap">Tanda tangan / stempel kurang lengkap</option>
-          <option value="LAINNYA">Lainnya (Ketik Manual...)</option>
-        </select>
+<select class="form-select mb-3" name="alasan_kode" id="select-alasan-<%= valBerkasId %>" 
+        onchange="toggleLainnya('<%= valBerkasId %>')" required>
+  <option value="" selected disabled>[ Pilih Alasan Cepat ]</option>
+  <option value="Berkas salah">Berkas salah / tidak sesuai</option>
+  <option value="File buram">File tidak terbaca atau buram</option>
+  <option value="LAINNYA">Lainnya (Ketik Manual...)</option>
+</select>
 
-        <div id="wrapper-lainnya-<%= valBerkasId %>" style="display: none;" class="animate__animated animate__fadeIn">
-          <label class="form-label fw-bold text-danger">Masukkan Catatan Detail:</label>
-          <textarea 
-            name="catatan" 
-            class="form-control mb-3" 
-            rows="3" 
-            placeholder="Contoh: Mohon perbaiki halaman 3 yang terpotong..."
-          ><%= valCatatanLama !== '-' ? valCatatanLama : '' %></textarea>
-        </div>
+<div id="wrapper-lainnya-<%= valBerkasId %>" style="display: none;">
+  <label class="form-label fw-bold">Detail Kesalahan:</label>
+  <textarea id="catatan-<%= valBerkasId %>" name="catatan" class="form-control mb-3" rows="3"></textarea>
+</div>
+
         
         <div class="alert alert-light border small bg-light">
-          <strong>Riwayat catatan sebelumnya:</strong><br>
+          <strong>Catatan sebelumnya:</strong><br>
           <span class="text-muted"><%= valCatatanLama %></span>
         </div>
       </div>
 
       <div class="modal-footer p-2 border-0">
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-sm btn-danger px-3">Simpan & Kirim Revisi</button>
+        <button type="submit" class="btn btn-sm btn-danger px-3">Simpan Revisi</button>
       </div>
   </form>
 
@@ -573,6 +569,24 @@
             </div>
           </form>
         </div>
+
+        <script>
+function toggleLainnya(id) {
+    const select = document.getElementById('select-alasan-' + id);
+    const wrapper = document.getElementById('wrapper-lainnya-' + id);
+    const textarea = document.getElementById('catatan-' + id);
+
+    if (select.value === 'LAINNYA') {
+        wrapper.style.display = 'block';
+        textarea.setAttribute('required', 'required');
+        textarea.focus();
+    } else {
+        wrapper.style.display = 'none';
+        textarea.removeAttribute('required');
+        textarea.value = select.value; // Kirim teks alasan cepat ke backend
+    }
+}
+</script>
 
         <script>
           function togglePasswordVisibility(inputId) {

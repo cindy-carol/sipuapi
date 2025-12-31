@@ -6,111 +6,81 @@
   <title><%= typeof title !== 'undefined' ? title : 'SIPUAPI' %></title>
   <link href="/css/bootstrap.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <!-- FullCalendar core + locale -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales-all.global.min.js"></script>
-
-  <!-- FullCalendar styles -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/list.min.css" rel="stylesheet" />
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
-/* Penyelamat footer agar tetap di bawah */
-html, body {
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Konten utama dipaksa memenuhi layar agar footer terdorong */
-main.content-wrapper { 
-  flex: 1 0 auto;
-}
-
-footer {
-  flex-shrink: 0;
-}
+    /* CSS STICKY FOOTER TANPA MERUSAK SIDEBAR */
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    /* Pembungkus utama agar footer terdorong ke bawah */
+    .main-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: 100%;
+    }
+    /* Bagian tengah yang fleksibel mengisi sisa layar */
+    .content-area {
+      flex: 1 0 auto;
+      display: flex; /* Mendukung Sidebar Admin di sampingnya */
+    }
+    /* Khusus untuk area konten yang punya sidebar */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    /* Khusus untuk area container body agar footer nempel */
+    .body-wrapper {
+      flex: 1 0 auto;
+    }
+    /* Pastikan footer tidak menyusut */
+    footer {
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
 
-  <% if(role === 'admin'){ %>
-      <!-- Sidebar Admin (hanya tampil kalau hideSidebar false) -->
-      <% if(!hideSidebar){ %>
-        <%- include('partials/sidebar', {activePage: currentPage, role: 'admin'}) %>
-        
-              <div class="content">
-                  <!-- Header -->
-                  <%- include('partials/header') %>
-        
-                  <!-- Body halaman spesifik -->
-                  <div class="container">
-                    <%- body %>
-                  </div>
-        
-                  <!-- Footer -->
-                  <%- include('partials/footer') %>
-
-    <% } else { %>
-      <!-- Header umum -->
-      <%- include('partials/header') %>
-
-      <!-- Body halaman spesifik -->
-      <div class="container" style="width: 75%">
-        <%- body %>
+<div class="main-wrapper">
+  <% if(role === 'admin' && !hideSidebar){ %>
+    <div class="content-area">
+      <%- include('partials/sidebar', {activePage: currentPage, role: 'admin'}) %>
+      
+      <div class="main-content">
+        <%- include('partials/header') %>
+        <div class="body-wrapper container py-4">
+          <%- body %>
+        </div>
+        <%- include('partials/footer') %>
       </div>
+    </div>
 
-      <!-- Footer -->
-      <%- include('partials/footer') %>
-      <% } %>
-
-  <% } else if(role === 'kaprodi'){ %>
-          <% if(!hideSidebar){ %>
-      <!-- Navbar Kaprodi -->
-      <%- include('partials/header') %>
-      <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
-
-      <!-- Body halaman spesifik -->
-      <div class="container" style="width:80%">
-        <%- body %>
-      </div>
-
-      <!-- Footer -->
-      <%- include('partials/footer') %>
-          <% } else { %>
-      <!-- Header umum -->
-      <%- include('partials/header') %>
-
-      <!-- Body halaman spesifik -->
-      <div class="container" style="width: 85%">
-        <%- body %>
-      </div>
-
-      <!-- Footer -->
-      <%- include('partials/footer') %>
-      <% } %>
+  <% } else if(role === 'kaprodi' && !hideSidebar){ %>
+    <%- include('partials/header') %>
+    <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
+    <div class="body-wrapper container py-4" style="width:80%">
+      <%- body %>
+    </div>
+    <%- include('partials/footer') %>
 
   <% } else { %>
-      <!-- Header umum -->
-      <%- include('partials/header') %>
-
-      <!-- Body halaman spesifik -->
-      <div class="container" style="width: 75%">
-        <%- body %>
-      </div>
-
-      <!-- Footer -->
-      <%- include('partials/footer') %>
+    <%- include('partials/header') %>
+    <div class="body-wrapper container py-4" style="width: 75%">
+      <%- body %>
+    </div>
+    <%- include('partials/footer') %>
   <% } %>
+</div>
 
-  <!-- JS Global -->
   <script src="/js/bootstrap.bundle.min.js"></script>
   <script src="/js/partials/calendar-handler.js"></script>
   <script src="/js/partials/chart.js"></script>
