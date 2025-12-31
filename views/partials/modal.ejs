@@ -74,34 +74,43 @@
           <iframe src="<%= iframeSrc %>" style="border:none;width:100%;height:500px"></iframe>
         </div>
 
-      <% } else if (modalType === 'form') { %>
-        <form action="/admin/verifikasi/update-status-reject" method="POST">
-            <div class="modal-body">
-              
-              <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
-              <input type="hidden" name="npm" value="<%= valNpm %>">
+<% } else if (modalType === 'form') { %>
+  <form action="/admin/verifikasi/update-status-reject" method="POST">
+      <div class="modal-body">
+        
+        <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
+        <input type="hidden" name="npm" value="<%= valNpm %>">
 
-              <label class="form-label fw-bold">Alasan Penolakan:</label>
-              <select class="form-select mb-2" name="alasan_kode" required>
-                <option value="" selected disabled>[ Pilih Alasan ]</option>
-                <option value="1">Berkas salah / tidak sesuai</option>
-                <option value="2">File tidak terbaca</option>
-                <option value="3">Tanda tangan / stempel kurang</option>
-              </select>
-              <label class="form-label">Catatan Detail</label>
-              <textarea id="catatan-input" name="catatan" class="form-control" rows="3"><%= valCatatanLama %></textarea>
-              
-              <div class="alert alert-light border small">
-                <strong>Catatan saat ini:</strong><br>
-                <%= valCatatanLama %>
-              </div>
-            </div>
+        <label class="form-label fw-bold">Alasan Penolakan:</label>
+        <select class="form-select mb-3 select-alasan" name="alasan_kode" id="select-<%= valBerkasId %>" required>
+          <option value="" selected disabled>[ Pilih Alasan Cepat ]</option>
+          <option value="Berkas salah / tidak sesuai">Berkas salah / tidak sesuai</option>
+          <option value="File tidak terbaca atau buram">File tidak terbaca atau buram</option>
+          <option value="Tanda tangan / stempel kurang lengkap">Tanda tangan / stempel kurang lengkap</option>
+          <option value="LAINNYA">Lainnya (Ketik Manual...)</option>
+        </select>
 
-            <div class="modal-footer p-1">
-              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
-              <button type="submit" class="btn btn-sm btn-danger">Simpan Revisi</button>
-            </div>
-        </form>
+        <div id="wrapper-lainnya-<%= valBerkasId %>" style="display: none;" class="animate__animated animate__fadeIn">
+          <label class="form-label fw-bold text-danger">Masukkan Catatan Detail:</label>
+          <textarea 
+            name="catatan" 
+            class="form-control mb-3" 
+            rows="3" 
+            placeholder="Contoh: Mohon perbaiki halaman 3 yang terpotong..."
+          ><%= valCatatanLama !== '-' ? valCatatanLama : '' %></textarea>
+        </div>
+        
+        <div class="alert alert-light border small bg-light">
+          <strong>Riwayat catatan sebelumnya:</strong><br>
+          <span class="text-muted"><%= valCatatanLama %></span>
+        </div>
+      </div>
+
+      <div class="modal-footer p-2 border-0">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-sm btn-danger px-3">Simpan & Kirim Revisi</button>
+      </div>
+  </form>
 
       <% } else if (modalType === 'sukses') { %>
         <div class="modal-body py-4 px-3 text-center" style="height: 300px">
