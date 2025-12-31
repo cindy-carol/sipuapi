@@ -80,19 +80,21 @@
         <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
         <input type="hidden" name="npm" value="<%= valNpm %>">
 
-        <label class="form-label fw-bold">Alasan Penolakan:</label>
-        <select class="form-select mb-2" name="alasan_kode" id="selectAlasan" required onchange="toggleAlasanLainnya()">
-            <option value="" selected disabled>[ Pilih Alasan ]</option>
-            <option value="1">Berkas salah / tidak sesuai</option>
-            <option value="2">File buram / tidak terbaca</option>
-            <option value="3">Tanda tangan / stempel kurang</option>
-            <option value="custom">Lainnya (Tulis detail...)</option>
-        </select>
-        
-<div id="inputLainnya" style="display: none;">
+<label class="form-label fw-bold">Alasan Penolakan:</label>
+<select class="form-select mb-2" name="alasan_kode" id="selectAlasan" required onchange="handleAlasanChange()">
+    <option value="" selected disabled>[ Pilih Alasan ]</option>
+    <option value="1">Berkas salah / tidak sesuai</option>
+    <option value="2">File buram / tidak terbaca</option>
+    <option value="3">Tanda tangan / stempel kurang</option>
+    <option value="lainnya">Lainnya (Tulis manual)</option>
+</select>
+
+<div id="containerLainnya" style="display: none;">
     <label class="form-label small fw-bold">Rincian Kesalahan:</label>
-    <textarea class="form-control mb-2" name="alasan_khusus" id="textLainnya" placeholder="Ketik rincian di sini..."></textarea>
+    <textarea class="form-control mb-2" name="alasan_custom" id="alasanCustom" rows="3" placeholder="Contoh: Nama di berkas tidak sesuai dengan KTP..."></textarea>
 </div>
+
+
         
         <div class="alert alert-light border small">
             <strong>Catatan saat ini:</strong><br>
@@ -107,17 +109,18 @@
 </form>
 
 <script>
-function cekAlasan() {
+function handleAlasanChange() {
     const select = document.getElementById('selectAlasan');
-    const inputDiv = document.getElementById('inputLainnya');
-    const textarea = document.getElementById('textLainnya');
-    
+    const container = document.getElementById('containerLainnya');
+    const textarea = document.getElementById('alasanCustom');
+
     if (select.value === 'lainnya') {
-        inputDiv.style.display = 'block';
-        textarea.setAttribute('required', 'required');
+        container.style.display = 'block';
+        textarea.setAttribute('required', 'required'); // Wajib isi jika pilih lainnya
     } else {
-        inputDiv.style.display = 'none';
+        container.style.display = 'none';
         textarea.removeAttribute('required');
+        textarea.value = ''; // Kosongkan jika pindah ke opsi lain
     }
 }
 </script>
