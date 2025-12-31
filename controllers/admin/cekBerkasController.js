@@ -77,32 +77,43 @@ const cekBerkasController = {
   // =========================================================================
   // ❌ 2. REJECT BERKAS (SATU PER SATU VIA MODAL)
   // =========================================================================
-  rejectBerkas: async (req, res) => {
-    try {
-      const { berkas_id, alasan_kode, npm } = req.body;
-      const adminId = req.session.user?.id || null;
-      
-      // Tentukan template pesan penolakan berdasarkan kode
-      let pesan = 'Mohon perbaiki berkas ini.';
-      if (alasan_kode === '1') pesan = 'Berkas yang diupload salah/tidak sesuai.';
-      else if (alasan_kode === '2') pesan = 'Scan berkas buram atau tidak terbaca.';
-      else if (alasan_kode === '3') pesan = 'Tanda tangan atau stempel belum lengkap.';
-      
-      // Update status ke FALSE (Ditolak) di database
-      await model.updateStatus(berkas_id, false, pesan, adminId);
-
-      // Redirect kembali ke halaman cek berkas mahasiswa tersebut
-      if (npm) {
-        return res.redirect(`/admin/verifikasi/cek-berkas/${npm}`);
-      } else {
-        return res.redirect('back'); 
-      }
-
-    } catch (err) {
-      console.error('❌ Error reject berkas:', err);
-      return res.redirect('back'); 
+// Ganti fungsi rejectBerkas lama kamu dengan ini:
+rejectBerkas: async (req, res) => {
+  try {
+    // Ambil alasan_khusus dari body (input textarea)
+    const { berkas_id, alasan_kode, alasan_khusus, npm } = req.body;
+    const adminId = req.session.user?.id || null;
+    
+    let pesan = '';
+    
+    // Logika pemilihan pesan yang dinamis
+    if (alasan_kode === '1') {
+      pesan = 'Berkas yang diupload salah/tidak sesuai.';
+    } else if (alasan_kode === '2') {
+      pesan = 'Scan berkas buram atau tidak terbaca.';
+    } else if (alasan_kode === '3') {
+      pesan = 'Tanda tangan atau stempel belum lengkap.';
+    } else if (alasan_kode === 'lainnya') {
+      // Jika pilih lainnya, gunakan isi dari textarea
+      pesan = alasan_khusus ? alasan_khusus.trim() : 'Mohon perbaiki berkas ini.';
+    } else {
+      pesan = 'Mohon perbaiki berkas ini.';
     }
-  },
+    
+    // Kirim 'pesan' yang sudah berisi rincian manual ke database
+    await model.updateStatus(berkas_id, false, pesan, adminId);
+
+    if (npm) {
+      return res.redirect(`/admin/verifikasi/cek-berkas/${npm}`);
+    } else {
+      return res.redirect('back');
+    }
+
+  } catch (err) {
+    console.error('❌ Error reject berkas:', err);
+    return res.redirect('back');
+  }
+},
 
   // =========================================================================
   // 🔄 3. RETURN TO MAHASISWA (TOLAK SEMUA BERKAS SEKALIGUS)
