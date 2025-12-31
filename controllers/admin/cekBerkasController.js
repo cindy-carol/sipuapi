@@ -61,8 +61,8 @@ const cekBerkasController = {
         nama: mhs.nama,
         npm: mhs.npm,
         thajaran: `${mhs.nama_tahun} ${mhs.semester}`,
-        dosbing1: mhs.dosbing1,
-        dosbing2: mhs.dosbing2,
+        dosbing1: mhs.nama_dosbing1,
+        dosbing2: mhs.nama_dosbing2,
         
         // List Berkas untuk dalooping di EJS
         berkasList: berkasList
