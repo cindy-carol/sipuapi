@@ -78,24 +78,18 @@
 
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const toggleDaftar = document.getElementById('toggleDaftar');
   const daftarSubmenu = document.getElementById('daftarSubmenu');
-  const iconDropdown = document.getElementById('iconDropdown');
 
-  if (toggleDaftar) {
-    toggleDaftar.addEventListener('click', (e) => {
-      e.preventDefault();
-      const isHidden = daftarSubmenu.style.display === 'none';
-      
-      // Toggle Submenu
-      daftarSubmenu.style.display = isHidden ? 'block' : 'none';
-      
-      // Toggle Icon caret (biar lebih interaktif)
-      iconDropdown.classList.toggle('bi-caret-down-fill', !isHidden);
-      iconDropdown.classList.toggle('bi-caret-up-fill', isHidden);
-    });
-  }
+  toggleDaftar.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (daftarSubmenu.style.display === 'none') {
+      daftarSubmenu.style.display = 'block';
+    } else {
+      daftarSubmenu.style.display = 'none';
+    }
+  });
 });
 </script>
 </body>

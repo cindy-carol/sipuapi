@@ -74,56 +74,53 @@
           <iframe src="<%= iframeSrc %>" style="border:none;width:100%;height:500px"></iframe>
         </div>
 
-<% } else if (modalType === 'form') { %>
-  <form action="/admin/verifikasi/update-status-reject" method="POST">
+      <% } else if (modalType === 'form') { %>
+<form action="/admin/verifikasi/update-status-reject" method="POST">
     <div class="modal-body">
-      <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
-      <input type="hidden" name="npm" value="<%= valNpm %>">
+        <input type="hidden" name="berkas_id" value="<%= valBerkasId %>">
+        <input type="hidden" name="npm" value="<%= valNpm %>">
 
-      <label class="form-label fw-bold">Alasan Penolakan:</label>
-      <select class="form-select mb-3" id="sel-revisi-<%= valBerkasId %>" 
-              onchange="syncCatatan('<%= valBerkasId %>')" required>
-        <option value="" selected disabled>[ Pilih Alasan Cepat ]</option>
-        <option value="Berkas salah / tidak sesuai">Berkas salah / tidak sesuai</option>
-        <option value="File tidak terbaca atau buram">File tidak terbaca atau buram</option>
-        <option value="Tanda tangan / stempel kurang lengkap">Tanda tangan / stempel kurang lengkap</option>
-        <option value="LAINNYA">Lainnya (Ketik Manual...)</option>
-      </select>
+        <label class="form-label fw-bold">Alasan Penolakan:</label>
+        <select class="form-select mb-2" name="alasan_kode" id="selectAlasan" required onchange="toggleAlasanLainnya()">
+            <option value="" selected disabled>[ Pilih Alasan ]</option>
+            <option value="1">Berkas salah / tidak sesuai</option>
+            <option value="2">File buram / tidak terbaca</option>
+            <option value="3">Tanda tangan / stempel kurang</option>
+            <option value="custom">Lainnya (Tulis detail...)</option>
+        </select>
+        
+        <div id="containerLainnya" style="display: none;">
+            <label class="form-label small fw-bold">Rincian Kesalahan:</label>
+            <textarea class="form-control mb-2" name="alasan_custom" id="alasanCustom" placeholder="Jelaskan secara detail..."></textarea>
+        </div>
+        
+        <div class="alert alert-light border small">
+            <strong>Catatan saat ini:</strong><br>
+            <%= valCatatanLama %>
+        </div>
+    </div>
 
-      <div id="wrapper-manual-<%= valBerkasId %>" style="display: none;">
-        <label class="form-label fw-bold text-danger">Ketik Catatan Detail:</label>
-      </div>
-      
-      <textarea 
-        id="final-note-<%= valBerkasId %>"
-        name="catatan" 
-        class="form-control mb-3" 
-        rows="3" 
-      ><%= valCatatanLama !== '-' ? valCatatanLama : '' %></textarea>
+    <div class="modal-footer p-1">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-sm btn-danger">Simpan Revisi</button>
     </div>
-    
-    <div class="modal-footer">
-      <button type="submit" class="btn btn-danger">Simpan Revisi</button>
-    </div>
-  </form>
+</form>
 
 <script>
-function syncCatatan(id) {
-    const select = document.getElementById('sel-revisi-' + id);
-    const wrapper = document.getElementById('wrapper-manual-' + id);
-    const textarea = document.getElementById('final-note-' + id);
+function toggleAlasanLainnya() {
+    const select = document.getElementById('selectAlasan');
+    const container = document.getElementById('containerLainnya');
+    const textarea = document.getElementById('alasanCustom');
 
-    if (select.value === 'LAINNYA') {
-        wrapper.style.display = 'block';
-        textarea.value = ""; // Bersihkan agar admin ketik manual
-        textarea.focus();
+    if (select.value === 'custom') {
+        container.style.display = 'block';
+        textarea.setAttribute('required', 'required'); // Wajib isi jika pilih lainnya
     } else {
-        wrapper.style.display = 'none';
-        textarea.value = select.value; // Salin nilai dropdown ke textarea
+        container.style.display = 'none';
+        textarea.removeAttribute('required');
     }
 }
 </script>
-
 
       <% } else if (modalType === 'sukses') { %>
         <div class="modal-body py-4 px-3 text-center" style="height: 300px">
@@ -586,24 +583,6 @@ function syncCatatan(id) {
             </div>
           </form>
         </div>
-
-        <script>
-function toggleLainnya(id) {
-    const select = document.getElementById('select-alasan-' + id);
-    const wrapper = document.getElementById('wrapper-lainnya-' + id);
-    const textarea = document.getElementById('catatan-' + id);
-
-    if (select.value === 'LAINNYA') {
-        wrapper.style.display = 'block';
-        textarea.setAttribute('required', 'required');
-        textarea.focus();
-    } else {
-        wrapper.style.display = 'none';
-        textarea.removeAttribute('required');
-        textarea.value = select.value; // Kirim teks alasan cepat ke backend
-    }
-}
-</script>
 
         <script>
           function togglePasswordVisibility(inputId) {
