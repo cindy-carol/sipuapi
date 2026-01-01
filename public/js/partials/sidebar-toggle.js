@@ -1,54 +1,61 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const toggleBtn = document.getElementById('toggleSidebar'); // tombol garis 3
-  const sidebar = document.querySelector('.sidebar');
-  const content = document.querySelector('.content');
-  const toggleDaftar = document.getElementById('toggleDaftar'); // tombol daftar
+  const toggleBtn = document.getElementById('toggleSidebar'); 
+  const sidebar = document.getElementById('sidebarMain'); // Sesuaikan ID
+  const toggleDaftar = document.getElementById('toggleDaftar'); 
   const daftarSubmenu = document.getElementById('daftarSubmenu');
+  const iconDropdown = document.getElementById('iconDropdown');
 
-  let sidebarUserToggled = false; // track toggle manual sidebar
-  let daftarUserToggled = false;  // track toggle manual submenu
+  let sidebarUserToggled = false; 
+  let daftarUserToggled = false;  
 
-  // === Sidebar hide/show ===
-  if (toggleBtn && sidebar && content) {
+  // === Sidebar Toggle (Push Content) ===
+  if (toggleBtn && sidebar) {
     toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('hide');
-      content.classList.toggle('full');
+      sidebar.classList.toggle('collapsed'); // Gunakan collapsed sesuai CSS
       sidebarUserToggled = true;
     });
   }
 
-  // === Submenu toggle ===
+  // === Submenu Toggle (Dosen & Mahasiswa) ===
   if (toggleDaftar && daftarSubmenu) {
     toggleDaftar.addEventListener('click', (e) => {
       e.preventDefault();
-      daftarSubmenu.classList.toggle('open'); // class "open" = tampil
+      
+      // Gunakan style.display karena di EJS ada inline style 
+      const isHidden = (daftarSubmenu.style.display === 'none' || daftarSubmenu.style.display === '');
+      daftarSubmenu.style.display = isHidden ? 'block' : 'none';
+      
+      // Update Icon Panah [cite: 9]
+      if (iconDropdown) {
+        iconDropdown.classList.toggle('bi-caret-down-fill', !isHidden);
+        iconDropdown.classList.toggle('bi-caret-up-fill', isHidden);
+      }
+      
       daftarUserToggled = true;
     });
   }
 
-  // === Responsive default (tanpa ganggu toggle manual) ===
+  // === Responsive Handle ===
   function handleResize() {
-    // Sidebar: auto muncul desktop, auto sembunyi mobile (kecuali user toggle)
-    if (!sidebarUserToggled) {
-      if (window.innerWidth >= 768) {
-        sidebar.classList.remove('hide');
-        content.classList.remove('full');
+    if (!sidebarUserToggled && sidebar) {
+      if (window.innerWidth < 768) {
+        sidebar.classList.add('collapsed');
       } else {
-        sidebar.classList.add('hide');
-        content.classList.add('full');
+        sidebar.classList.remove('collapsed');
       }
     }
 
-    // Submenu: auto terbuka desktop, auto tertutup mobile (kecuali user toggle)
-    if (!daftarUserToggled) {
-      if (window.innerWidth >= 768) {
-        daftarSubmenu?.classList.add('open');
+    if (!daftarUserToggled && daftarSubmenu) {
+      if (window.innerWidth < 768) {
+        daftarSubmenu.style.display = 'none';
       } else {
-        daftarSubmenu?.classList.remove('open');
+        // Cek jika halaman aktif adalah bagian dari daftar, maka tetap buka 
+        const isActive = daftarSubmenu.dataset.active === 'true'; 
+        if (!isActive) daftarSubmenu.style.display = 'block';
       }
     }
   }
 
   window.addEventListener('resize', handleResize);
-  handleResize(); // panggil pertama kali
+  handleResize(); 
 });
