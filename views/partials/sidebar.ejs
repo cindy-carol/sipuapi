@@ -96,7 +96,7 @@
         <i id="iconDropdown" class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %> small"></i> 
       </a>
 
-      <ul class="nav flex-column" id="daftarSubmenu" style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;"> [cite: 10]
+      <ul class="nav flex-column" id="daftarSubmenu" style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;">
         <li>
           <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/admin/daftar-dosen">Daftar Dosen</a>
         </li>
@@ -140,7 +140,66 @@
 <% } %>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('toggleSidebar');
+  const sidebar = document.getElementById('sidebarMain'); // Pastikan ID ini sesuai di HTML
+  const toggleDaftar = document.getElementById('toggleDaftar');
+  const daftarSubmenu = document.getElementById('daftarSubmenu');
+
+  let sidebarUserToggled = false; 
+
+  // === 1. Logika Toggle Sidebar (Buka/Tutup) ===
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener('click', () => {
+      // PAKAI 'collapsed' karena di CSS lo punyanya .sidebar.collapsed
+      sidebar.classList.toggle('collapsed');
+      
+      // Kasih tau sistem kalau user sudah klik manual
+      sidebarUserToggled = true; 
+      
+      // Simpan status ke storage biar pas refresh gak balik lagi
+      const isCollapsed = sidebar.classList.contains('collapsed');
+      localStorage.setItem('sidebarCollapsed', isCollapsed);
+    });
+
+    // Cek status terakhir dari storage
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true') {
+      sidebar.classList.add('collapsed');
+    }
+  }
+
+  // === 2. Logika Dropdown Dosen & Mahasiswa ===
+  if (toggleDaftar && daftarSubmenu) {
+    toggleDaftar.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Pakai style display karena EJS lo pake inline style
+      const isHidden = (daftarSubmenu.style.display === 'none' || daftarSubmenu.style.display === '');
+      daftarSubmenu.style.display = isHidden ? 'block' : 'none';
+      
+      // Update icon panah kalau ada
+      const icon = document.getElementById('iconDropdown');
+      if (icon) {
+        icon.classList.toggle('bi-caret-down-fill', !isHidden);
+        icon.classList.toggle('bi-caret-up-fill', isHidden);
+      }
+    });
+  }
+
+  // === 3. Logika Responsive (Auto hide di mobile) ===
+  function handleResize() {
+    if (!sidebarUserToggled && sidebar) {
+      if (window.innerWidth < 992) { // Ambang batas mobile/tablet
+        sidebar.classList.add('collapsed');
+      } else {
+        sidebar.classList.remove('collapsed');
+      }
+    }
+  }
+
+  window.addEventListener('resize', handleResize);
+  handleResize(); // Jalankan pas pertama kali load
+});
     const sidebar = document.getElementById('sidebarMain');
     const toggleBtn = document.getElementById('toggleSidebar');
     const toggleDaftar = document.getElementById('toggleDaftar');
@@ -170,11 +229,11 @@
         const isCurrentlyHidden = window.getComputedStyle(daftarSubmenu).display === 'none';
         
         if (isCurrentlyHidden) {
-          daftarSubmenu.style.display = 'block'; [cite: 10]
-          iconDropdown.classList.replace('bi-caret-down-fill', 'bi-caret-up-fill'); [cite: 9]
+          daftarSubmenu.style.display = 'block';
+          iconDropdown.classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
         } else {
-          daftarSubmenu.style.display = 'none'; [cite: 10]
-          iconDropdown.classList.replace('bi-caret-up-fill', 'bi-caret-down-fill'); [cite: 9]
+          daftarSubmenu.style.display = 'none';
+          iconDropdown.classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
         }
       });
     }
