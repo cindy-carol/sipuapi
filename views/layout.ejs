@@ -15,50 +15,50 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales-all.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+  <style>
+    /* Mengatur wrapper utama agar memenuhi layar */
+    .main-wrapper {
+      display: flex;
+      flex-direction: row;
+      min-height: 100vh;
+      width: 100%;
+    }
+    /* Mengatur kolom konten (Header + Body + Footer) */
+    .content-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+    }
+  </style>
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body class="bg-light">
 
-  <% if(role === 'admin'){ %>
-      <% if(!hideSidebar){ %>
-          <div class="d-flex flex-row flex-fill">
-              <%- include('partials/sidebar', {activePage: currentPage, role: 'admin'}) %>
-              
-              <div class="content flex-fill d-flex flex-column">
-                  <%- include('partials/header') %>
-                  <main class="container py-4 flex-fill">
-                      <%- body %>
-                  </main>
-              </div>
-          </div>
-      <% } else { %>
-          <div class="flex-fill d-flex flex-column">
-              <%- include('partials/header') %>
-              <main class="container py-4 flex-fill" style="width: 75%">
-                  <%- body %>
-              </main>
-          </div>
+  <div class="main-wrapper">
+    
+    <% if (role === 'admin' && !hideSidebar) { %>
+      <%- include('partials/sidebar', {activePage: currentPage, role: 'admin'}) %>
+    <% } %>
+
+    <div class="content-wrapper">
+      
+      <%- include('partials/header') %>
+
+      <% if (role === 'kaprodi' && !hideSidebar) { %>
+        <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
       <% } %>
 
-  <% } else if(role === 'kaprodi'){ %>
-      <div class="flex-fill d-flex flex-column">
-          <%- include('partials/header') %>
-          <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
-          <main class="container py-4 flex-fill" style="width: 80%">
-              <%- body %>
-          </main>
-      </div>
+      <main class="container py-4 flex-grow-1" 
+            style="<%= (role === 'mahasiswa' || hideSidebar) ? 'max-width: 80%;' : '' %>">
+        <%- body %>
+      </main>
 
-  <% } else { %>
-      <div class="flex-fill d-flex flex-column">
-          <%- include('partials/header') %>
-          <main class="container py-4 flex-fill" style="width: 75%">
-              <%- body %>
-          </main>
-      </div>
-  <% } %>
-
-  <%- include('partials/footer') %>
+      <%- include('partials/footer') %>
+      
+    </div>
+  </div>
 
   <script src="/js/bootstrap.bundle.min.js"></script>
   <script src="/js/partials/calendar-handler.js"></script>
