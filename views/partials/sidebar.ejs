@@ -1,11 +1,9 @@
 <style>
-  /* --- Style Sidebar Utama --- */
-/* --- Style Sidebar Utama --- */
   .sidebar {
-    width: 220px; /* Lebar Sidebar lo */
+    width: 220px;
     background-color: #003875;
     color: white;
-    transition: margin-left 0.3s ease; /* Kecepatan animasi */
+    transition: all 0.3s ease-in-out; /* Animasi diperhalus */
     height: 100vh;
     position: sticky;
     top: 0;
@@ -13,11 +11,15 @@
     z-index: 1050;
     display: flex;
     flex-direction: column;
+    /* JUMAT 1: Biar lebar sidebar kaku, gak mengecil pas konten di kanan lebar */
+    flex-shrink: 0; 
   }
 
-  /* KUNCI: Angkanya HARUS sama dengan lebar sidebar lo (220px) */
+  /* KUNCI: Margin minus buat narik keluar, visibility biar ilang total */
   .sidebar.collapsed {
     margin-left: -220px !important;
+    visibility: hidden; /* JIMAT 2: Biar beneran ilang dari pandangan */
+    opacity: 0;
   }
 
   /* Hamburger Button */
@@ -39,9 +41,9 @@
     cursor: pointer;
   }
 
-  /* Penyesuaian jarak agar tidak tertutup tombol */
-  .nav.flex-column.mt-2 {
-    margin-top: 60px !important;
+  /* Beri jarak atas di list agar menu tidak tertutup tombol hamburger */
+  .sidebar .nav {
+    padding-top: 60px;
   }
 
   .sidebar .nav-link {
@@ -53,6 +55,7 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.2s ease;
     text-decoration: none;
+    white-space: nowrap; /* Biar teks gak turun pas proses geser */
   }
 
   .sidebar .nav-link:hover, 
@@ -80,7 +83,7 @@
 
 <% if (role === 'admin') { %>
 <div class="sidebar shadow-lg" id="sidebarMain">
-  <ul class="nav flex-column mt-2">
+  <ul class="nav flex-column">
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/admin/dashboard">
         <i class="bi bi-speedometer2"></i> <span>Beranda</span>
