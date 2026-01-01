@@ -1,10 +1,11 @@
 <style>
   /* --- Style Sidebar Utama --- */
+/* --- Style Sidebar Utama --- */
   .sidebar {
-    width: 250px;
+    width: 220px; /* Lebar Sidebar lo */
     background-color: #003875;
     color: white;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s ease; /* Kecepatan animasi */
     height: 100vh;
     position: sticky;
     top: 0;
@@ -14,9 +15,9 @@
     flex-direction: column;
   }
 
-  /* KUNCI: Sidebar bergeser ke kiri saat class 'collapsed' aktif */
+  /* KUNCI: Angkanya HARUS sama dengan lebar sidebar lo (220px) */
   .sidebar.collapsed {
-    margin-left: -250px;
+    margin-left: -220px !important;
   }
 
   /* Hamburger Button */

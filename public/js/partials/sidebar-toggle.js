@@ -1,97 +1,62 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Inisialisasi Elemen
     const sidebar = document.getElementById('sidebarMain');
     const toggleBtn = document.getElementById('toggleSidebar');
     const toggleDaftar = document.getElementById('toggleDaftar');
     const daftarSubmenu = document.getElementById('daftarSubmenu');
     const iconDropdown = document.getElementById('iconDropdown');
 
-    // Variabel state untuk menghindari bentrok antara resize otomatis dan klik manual
-    let sidebarUserToggled = localStorage.getItem('sidebarUserToggled') === 'true';
-    let daftarUserToggled = false;
-
-    // === 1. LOGIKA SIDEBAR TOGGLE (PUSH CONTENT) ===
+    // === 1. LOGIKA SIDEBAR TOGGLE ===
     if (toggleBtn && sidebar) {
-        // Cek status terakhir dari localStorage saat halaman dimuat
-        const savedState = localStorage.getItem('sidebarCollapsed');
-        if (savedState === 'true') {
+        // Ambil status terakhir dari localStorage
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        
+        // Terapkan langsung tanpa animasi pas pertama kali load biar gak kedap-kedip
+        if (isCollapsed) {
+            sidebar.style.transition = 'none';
             sidebar.classList.add('collapsed');
+            // Balikin transisi setelah render pertama selesai
+            setTimeout(() => { sidebar.style.transition = 'margin-left 0.3s ease'; }, 50);
         }
 
         toggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
-            
-            // Tandai bahwa user sudah melakukan aksi manual
-            sidebarUserToggled = true;
+            // Simpan status terbaru
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            // Kasih tau sistem kalau user sudah interaksi manual
             localStorage.setItem('sidebarUserToggled', 'true');
-            
-            // Simpan status collapsed saat ini
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
         });
     }
 
-    // === 2. LOGIKA SUBMENU TOGGLE (DOSEN & MAHASISWA) ===
+    // === 2. LOGIKA SUBMENU (DOSEN & MAHASISWA) ===
     if (toggleDaftar && daftarSubmenu) {
         toggleDaftar.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Cek status display menggunakan getComputedStyle untuk akurasi tinggi
+            // Cek status display lewat computed style
             const isHidden = window.getComputedStyle(daftarSubmenu).display === 'none';
             
             if (isHidden) {
                 daftarSubmenu.style.display = 'block';
-                if (iconDropdown) {
-                    iconDropdown.classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
-                }
+                if (iconDropdown) iconDropdown.classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
             } else {
                 daftarSubmenu.style.display = 'none';
-                if (iconDropdown) {
-                    iconDropdown.classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
-                }
+                if (iconDropdown) iconDropdown.classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
             }
-            
-            // Tandai user sudah berinteraksi dengan submenu
-            daftarUserToggled = true;
         });
     }
 
-    // === 3. LOGIKA RESPONSIVE (HANDLE AUTO-RESIZE) ===
+    // === 3. LOGIKA RESPONSIVE (AUTO-HIDE) ===
     function handleResize() {
-        const width = window.innerWidth;
-
-        // Atur Sidebar otomatis jika user belum pernah klik manual di sesi ini
-        if (!sidebarUserToggled && sidebar) {
-            if (width < 992) { // Ambang batas Tablet/Mobile
+        const userToggled = localStorage.getItem('sidebarUserToggled') === 'true';
+        // Hanya jalankan auto-hide kalau user BELUM pernah klik tombol manual
+        if (!userToggled && sidebar) {
+            if (window.innerWidth < 992) {
                 sidebar.classList.add('collapsed');
             } else {
                 sidebar.classList.remove('collapsed');
             }
         }
-
-        // Atur Submenu otomatis jika user belum pernah klik manual
-        if (!daftarUserToggled && daftarSubmenu) {
-            if (width < 768) {
-                daftarSubmenu.style.display = 'none';
-                if (iconDropdown) {
-                    iconDropdown.classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
-                }
-            } else {
-                // Tetap buka di desktop kecuali jika tidak ada halaman aktif di dalamnya
-                const isActive = daftarSubmenu.dataset.active === 'true';
-                if (isActive) {
-                    daftarSubmenu.style.display = 'block';
-                    if (iconDropdown) {
-                        iconDropdown.classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
-                    }
-                }
-            }
-        }
     }
 
-    // Event Listener untuk Resize jendela
     window.addEventListener('resize', handleResize);
-    
-    // Jalankan handleResize sekali saat pertama kali load untuk menyesuaikan tampilan awal
-    handleResize();
+    handleResize(); 
 });
