@@ -1,96 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Admin</title>
-<link href="/css/bootstrap.css" rel="stylesheet">
 <style>
-    body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  display: flex;
-  min-height: 100vh;
-}
-</style>
-</head>
-<body>
+  /* --- Style Sidebar --- */
+  .sidebar {
+    width: 250px;
+    background-color: #003875; /* Biru Unila */
+    color: white;
+    transition: all 0.3s;
+    min-height: 100vh;
+    z-index: 1000;
+  }
 
-<!-- Toggle button -->
-<button class="btn bg-white" id="toggleSidebar">☰</button>
+  /* Status Sidebar Tertutup */
+  .sidebar.collapsed {
+    margin-left: -250px;
+  }
+
+  .sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar .nav-link:hover, 
+  .sidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  .sidebar .nav-link i {
+    font-size: 1.1rem;
+  }
+
+  /* Hamburger Floating Button */
+  #toggleSidebar {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+  }
+
+  /* Submenu Style */
+  #daftarSubmenu .nav-link {
+    padding-left: 50px;
+    font-size: 0.9rem;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<button class="btn btn-light" id="toggleSidebar">
+  <i class="bi bi-list"></i>
+</button>
 
 <% if (role === 'admin') { %>
-<!-- Sidebar -->
-<div class="sidebar">
+<div class="sidebar shadow" id="sidebarMain">
+  <div class="py-4 text-center border-bottom border-secondary mb-2">
+    <h5 class="mb-0 fw-bold">ADMIN PANEL</h5>
+  </div>
+
   <ul class="nav flex-column">
     <li class="nav-item">
-     <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/<%= role %>/dashboard">Beranda</a>
-
-<li class="nav-item">
-  <!-- Tombol utama daftar -->
-  <a id="toggleDaftar" 
-     class="nav-link d-flex justify-content-between align-items-center <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'active' : '' %>" 
-     href="#">
-
-     <span>Dosen & Mahasiswa</span>
-     <!-- Icon dropdown -->
-     <i id="iconDropdown" 
-        class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %>">
-     </i>
-  </a>
-
-  <!-- Submenu daftar dosen & mahasiswa -->
-  <ul class="nav flex-column ms-3" id="daftarSubmenu" 
-      style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;">
-    <li>
-      <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/<%= role %>/daftar-dosen">
-        Daftar Dosen
+      <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/admin/dashboard">
+        <i class="bi bi-house-door"></i> Beranda
       </a>
     </li>
-    <li>
-      <a class="nav-link <%= activePage === 'daftar-mahasiswa' ? 'active' : '' %>" href="/<%= role %>/daftar-mahasiswa">
-        Daftar Mahasiswa
+
+    <li class="nav-item">
+      <a id="toggleDaftar" href="#" class="nav-link d-flex justify-content-between align-items-center <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'active' : '' %>">
+        <span><i class="bi bi-people"></i> Dosen & Mahasiswa</span>
+        <i id="iconDropdown" class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %>"></i>
+      </a>
+
+      <ul class="nav flex-column" id="daftarSubmenu" style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;">
+        <li>
+          <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/admin/daftar-dosen">Daftar Dosen</a>
+        </li>
+        <li>
+          <a class="nav-link <%= activePage === 'daftar-mahasiswa' ? 'active' : '' %>" href="/admin/daftar-mahasiswa">Daftar Mahasiswa</a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'bagi-dosbing' ? 'active' : '' %>" href="/admin/bagi-dosbing">
+        <i class="bi bi-person-check"></i> Dosen Pembimbing
       </a>
     </li>
-  </ul>
-</li>
-
-
+    
     <li class="nav-item">
-      <a class="nav-link <%= activePage === 'bagi-dosbing' ? 'active' : '' %>" href="/<%= role %>/bagi-dosbing">Dosen Pembimbing</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'verifikasi' ? 'active' : '' %>" href="/<%= role %>/verifikasi">Verifikasi Pendaftaran</a>
-    </li>            
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'jadwal-ujian' ? 'active' : '' %>" href="/<%= role %>/jadwal-ujian">Jadwal Ujian</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'monitoring' ? 'active' : '' %>" href="/<%= role %>/monitoring">Monitoring</a>
-    </li>    
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'kelola-akun' ? 'active' : '' %>" href="/<%= role %>/kelola-akun">Kelola Akun</a>
+      <a class="nav-link <%= activePage === 'verifikasi' ? 'active' : '' %>" href="/admin/verifikasi">
+        <i class="bi bi-file-earmark-check"></i> Verifikasi Pendaftaran
+      </a>
     </li>
 
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'jadwal-ujian' ? 'active' : '' %>" href="/admin/jadwal-ujian">
+        <i class="bi bi-calendar-event"></i> Jadwal Ujian
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'monitoring' ? 'active' : '' %>" href="/admin/monitoring">
+        <i class="bi bi-display"></i> Monitoring
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'kelola-akun' ? 'active' : '' %>" href="/admin/kelola-akun">
+        <i class="bi bi-gear"></i> Kelola Akun
+      </a>
+    </li>
   </ul>
 </div>
 <% } %>
 
-
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const toggleDaftar = document.getElementById('toggleDaftar');
-  const daftarSubmenu = document.getElementById('daftarSubmenu');
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebarMain');
+    const toggleBtn = document.getElementById('toggleSidebar');
+    const toggleDaftar = document.getElementById('toggleDaftar');
+    const daftarSubmenu = document.getElementById('daftarSubmenu');
+    const iconDropdown = document.getElementById('iconDropdown');
 
-  toggleDaftar.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (daftarSubmenu.style.display === 'none') {
-      daftarSubmenu.style.display = 'block';
-    } else {
-      daftarSubmenu.style.display = 'none';
+    // --- Logika Hamburger (Sidebar Toggle) ---
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+    });
+
+    // --- Logika Dropdown Submenu ---
+    if(toggleDaftar) {
+      toggleDaftar.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isHidden = daftarSubmenu.style.display === 'none';
+        daftarSubmenu.style.display = isHidden ? 'block' : 'none';
+        
+        // Ganti icon panah
+        iconDropdown.classList.toggle('bi-caret-down-fill', !isHidden);
+        iconDropdown.classList.toggle('bi-caret-up-fill', isHidden);
+      });
     }
   });
-});
 </script>
-</body>
-</html>
