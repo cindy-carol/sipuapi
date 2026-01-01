@@ -2,39 +2,20 @@
   /* --- Style Sidebar Utama --- */
   .sidebar {
     width: 250px;
-    background-color: #003875; /* Biru Unila */
+    background-color: #003875;
     color: white;
     transition: margin-left 0.3s ease;
-    
-    /* KUNCI: Sticky & Scrollable Internal */
-    height: 100vh;           /* Tinggi pas layar  */
-    position: sticky;        /* Tetap di tempat saat konten di-scroll */
+    height: 100vh;
+    position: sticky;
     top: 0;
-    overflow-y: auto;        /* Bisa scroll di dalam sidebar saja */
-    z-index: 1050;           /* Di bawah tombol hamburger  */
+    overflow-y: auto;
+    z-index: 1050;
     display: flex;
     flex-direction: column;
   }
 
-  /* Status Sidebar Tertutup */
   .sidebar.collapsed {
     margin-left: -250px;
-  }
-
-  /* Styling Scrollbar Sidebar (Agar lebih tipis dan bersih) */
-  .sidebar::-webkit-scrollbar {
-    width: 5px;
-  }
-  .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-  }
-
-  /* Header di dalam Sidebar */
-  .sidebar-header {
-    padding: 1.5rem 1rem;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   /* Link Navigasi */
@@ -46,27 +27,22 @@
     gap: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.2s ease;
+    cursor: pointer; /* Pastikan kursor berubah saat diarahkan */
   }
 
   .sidebar .nav-link:hover, 
   .sidebar .nav-link.active {
     background-color: rgba(255, 255, 255, 0.15);
     color: white;
-    border-left: 4px solid #ffc107; /* Aksen Kuning Unila */
+    border-left: 4px solid #ffc107;
   }
 
-  .sidebar .nav-link i {
-    font-size: 1.2rem;
-    width: 20px;
-    text-align: center;
-  }
-
-  /* Hamburger Floating Button */
+  /* Hamburger Button - Digeser agar tidak menimpa teks menu */
   #toggleSidebar {
     position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1100; /* Paling atas agar selalu bisa diklik */
+    top: 10px;
+    left: 10px;
+    z-index: 1100;
     box-shadow: 0 4px 6px rgba(0,0,0,0.15);
     display: flex;
     align-items: center;
@@ -79,19 +55,23 @@
     color: #003875;
   }
 
-  /* Submenu Style */
+  /* Beri padding top pada list pertama agar tidak tertutup tombol hamburger */
+  .nav.flex-column.mt-2 {
+    margin-top: 60px !important;
+  }
+
+  /* Submenu Style - Default Hidden */
+  #daftarSubmenu {
+    display: none; 
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
   #daftarSubmenu .nav-link {
     padding-left: 52px;
     font-size: 0.88rem;
     background-color: rgba(0, 0, 0, 0.15);
-  }
-
-  /* Penyesuaian Mobile (Sidebar Menutup Layar) */
-  @media (max-width: 991.98px) {
-    .sidebar {
-      position: fixed;
-      height: 100vh;
-    }
   }
 </style>
 
@@ -101,14 +81,6 @@
 
 <% if (role === 'admin') { %>
 <div class="sidebar shadow-lg" id="sidebarMain">
-  
-  <div class="sidebar-header">
-    <div class="d-flex align-items-center justify-content-center gap-2">
-       <img src="/images/unila.png" alt="Logo" style="height: 35px; width: auto;">
-       <span class="fw-bold">ADMIN PANEL</span>
-    </div>
-  </div>
-
   <ul class="nav flex-column mt-2">
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/admin/dashboard">
@@ -117,19 +89,19 @@
     </li>
 
     <li class="nav-item">
-      <a id="toggleDaftar" href="#" class="nav-link d-flex justify-content-between align-items-center <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'active' : '' %>">
+      <a id="toggleDaftar" class="nav-link d-flex justify-content-between align-items-center <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'active' : '' %>">
         <div class="d-flex align-items-center gap-2">
            <i class="bi bi-people"></i> <span>Dosen & Mahasiswa</span>
         </div>
-        <i id="iconDropdown" class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %> small"></i>
+        <i id="iconDropdown" class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %> small"></i> 
       </a>
 
-      <ul class="nav flex-column" id="daftarSubmenu" style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;">
+      <ul class="nav flex-column" id="daftarSubmenu" style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;"> [cite: 10]
         <li>
-          <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/<%= role %>/daftar-dosen">Daftar Dosen</a>
+          <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/admin/daftar-dosen">Daftar Dosen</a>
         </li>
         <li>
-          <a class="nav-link <%= activePage === 'daftar-mahasiswa' ? 'active' : '' %>" href="/<%= role %>/daftar-mahasiswa">Daftar Mahasiswa</a>
+          <a class="nav-link <%= activePage === 'daftar-mahasiswa' ? 'active' : '' %>" href="/admin/daftar-mahasiswa">Daftar Mahasiswa</a>
         </li>
       </ul>
     </li>
@@ -175,33 +147,35 @@
     const daftarSubmenu = document.getElementById('daftarSubmenu');
     const iconDropdown = document.getElementById('iconDropdown');
 
-    // --- Logika Hamburger (Sidebar Toggle) ---
+    // 1. Logika Hamburger (Sidebar Toggle)
     if(toggleBtn && sidebar) {
       toggleBtn.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
-        
-        // Simpan status ke localStorage 
-        const isCollapsed = sidebar.classList.contains('collapsed');
-        localStorage.setItem('sidebarCollapsed', isCollapsed);
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
       });
 
-      // Cek status terakhir dari localStorage agar tidak reset pas refresh
-      const savedState = localStorage.getItem('sidebarCollapsed');
-      if (savedState === 'true') {
+      if (localStorage.getItem('sidebarCollapsed') === 'true') {
         sidebar.classList.add('collapsed');
       }
     }
 
-    // --- Logika Dropdown Submenu ---
-    if(toggleDaftar) {
+    // 2. Logika Dropdown Submenu
+    if(toggleDaftar && daftarSubmenu) {
+      toggleDaftar.style.cursor = 'pointer';
+      
       toggleDaftar.addEventListener('click', (e) => {
         e.preventDefault();
-        const isHidden = (daftarSubmenu.style.display === 'none' || daftarSubmenu.style.display === '');
-        daftarSubmenu.style.display = isHidden ? 'block' : 'none'; [cite: 10]
         
-        // Ganti icon panah
-        iconDropdown.classList.toggle('bi-caret-down-fill', !isHidden); [cite: 9]
-        iconDropdown.classList.toggle('bi-caret-up-fill', isHidden); [cite: 9]
+        // Cek status display saat ini
+        const isCurrentlyHidden = window.getComputedStyle(daftarSubmenu).display === 'none';
+        
+        if (isCurrentlyHidden) {
+          daftarSubmenu.style.display = 'block'; [cite: 10]
+          iconDropdown.classList.replace('bi-caret-down-fill', 'bi-caret-up-fill'); [cite: 9]
+        } else {
+          daftarSubmenu.style.display = 'none'; [cite: 10]
+          iconDropdown.classList.replace('bi-caret-up-fill', 'bi-caret-down-fill'); [cite: 9]
+        }
       });
     }
   });
