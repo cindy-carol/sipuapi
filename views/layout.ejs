@@ -13,40 +13,43 @@
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet" />
 
   <style>
+    /* 1. RESET LAYOUT AGAR FIX SEUKURAN LAYAR */
     html, body {
-      height: 100%;
+      height: 100vh; /* Kunci tinggi body seukuran layar browser */
       margin: 0;
+      padding: 0;
+      overflow: hidden; /* Hilangkan scroll body utama */
     }
     
-    /* Root Layout: Menangani Sidebar Admin vs Navbar Kaprodi */
     body {
       display: flex;
-      min-height: 100vh;
+      flex-direction: row; /* Sidebar kiri, Konten kanan */
       background-color: #f8f9fa;
-      flex-direction: column; /* Default: Kaprodi/MHS lurus ke bawah */
-      overflow-x: hidden;
     }
 
-    /* Khusus Admin dengan Sidebar aktif */
-    body.admin-layout {
-      flex-direction: row; /* Sidebar di kiri, Konten di kanan */
+    /* Khusus Non-Admin (MHS/Kaprodi) tetap Column */
+    body.no-sidebar {
+      flex-direction: column;
+      overflow-y: auto; /* Balikin scroll buat MHS/Kaprodi */
     }
 
-    /* Wrapper Konten Utama */
+    /* 2. WRAPPER KONTEN (Area di sebelah kanan sidebar) */
     .content-wrapper {
-      display: flex;
-      flex-direction: column; 
       flex: 1;
-      min-width: 0; /* Mencegah elemen lebar merusak layout sidebar */
+      display: flex;
+      flex-direction: column;
+      height: 100vh; /* Konten wrapper juga seukuran layar */
+      overflow-y: auto; /* Cuma area ini yang bisa di-scroll ke bawah */
+      min-width: 0;
       transition: all 0.3s ease;
     }
 
-    /* Main Area: Pendorong Footer */
+    /* 3. STICKY FOOTER DI DALAM CONTENT WRAPPER */
     main {
-      flex: 1 0 auto; 
+      flex: 1 0 auto; /* Dorong footer ke bawah di dalam wrapper konten */
     }
 
-    /* Kontainer Tengah Responsif */
+    /* 4. KONTAINER WEB (Request: 75% MHS, 80% Kaprodi) */
     .custom-container {
       width: 100%;
       margin: 0 auto;
@@ -62,9 +65,9 @@
   </style>
 </head>
 
-<body class="<%= (role === 'admin' && (typeof hideSidebar === 'undefined' || !hideSidebar)) ? 'admin-layout' : '' %>">
+<body class="<%= (role !== 'admin' || hideSidebar) ? 'no-sidebar' : '' %>">
 
-  <% if (role === 'admin' && (typeof hideSidebar === 'undefined' || !hideSidebar)) { %>
+  <% if (role === 'admin' && !hideSidebar) { %>
     <%- include('partials/sidebar', {activePage: currentPage, role: 'admin'}) %>
   <% } %>
 
@@ -72,16 +75,16 @@
     
     <%- include('partials/header') %>
 
-    <% if (role === 'kaprodi' && (typeof hideSidebar === 'undefined' || !hideSidebar)) { %>
+    <% if (role === 'kaprodi' && !hideSidebar) { %>
       <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
     <% } %>
 
     <main class="py-4">
       <% 
         let widthClass = 'container-default';
-        if (role === 'Mahasiswa') widthClass = 'container-mhs';
+        if (role === 'mahasiswa') widthClass = 'container-mhs';
         else if (role === 'kaprodi') widthClass = 'container-kaprodi';
-        else if (role === 'admin' && (typeof hideSidebar !== 'undefined' && hideSidebar)) widthClass = 'container-admin-cek';
+        else if (role === 'admin' && hideSidebar) widthClass = 'container-admin-cek';
       %>
       <div class="custom-container <%= widthClass %>">
         <%- body %>

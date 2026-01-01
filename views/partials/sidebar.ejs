@@ -126,10 +126,10 @@
 
       <ul class="nav flex-column" id="daftarSubmenu" style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;">
         <li>
-          <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/admin/daftar-dosen">Daftar Dosen</a>
+          <a class="nav-link <%= activePage === 'daftar-dosen' ? 'active' : '' %>" href="/<%= role %>/daftar-dosen">Daftar Dosen</a>
         </li>
         <li>
-          <a class="nav-link <%= activePage === 'daftar-mahasiswa' ? 'active' : '' %>" href="/admin/daftar-mahasiswa">Daftar Mahasiswa</a>
+          <a class="nav-link <%= activePage === 'daftar-mahasiswa' ? 'active' : '' %>" href="/<%= role %>/daftar-mahasiswa">Daftar Mahasiswa</a>
         </li>
       </ul>
     </li>
