@@ -4,15 +4,37 @@
     width: 250px;
     background-color: #003875; /* Biru Unila */
     color: white;
-    transition: margin-left 0.3s ease; /* Transisi halus saat toggle */
-    min-height: 100vh;
-    z-index: 1050; /* Di bawah tombol hamburger tapi di atas main content */
-    position: relative;
+    transition: margin-left 0.3s ease;
+    
+    /* KUNCI: Sticky & Scrollable Internal */
+    height: 100vh;           /* Tinggi pas layar  */
+    position: sticky;        /* Tetap di tempat saat konten di-scroll */
+    top: 0;
+    overflow-y: auto;        /* Bisa scroll di dalam sidebar saja */
+    z-index: 1050;           /* Di bawah tombol hamburger  */
+    display: flex;
+    flex-direction: column;
   }
 
   /* Status Sidebar Tertutup */
   .sidebar.collapsed {
     margin-left: -250px;
+  }
+
+  /* Styling Scrollbar Sidebar (Agar lebih tipis dan bersih) */
+  .sidebar::-webkit-scrollbar {
+    width: 5px;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+
+  /* Header di dalam Sidebar */
+  .sidebar-header {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   /* Link Navigasi */
@@ -23,14 +45,14 @@
     align-items: center;
     gap: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.2s;
+    transition: all 0.2s ease;
   }
 
   .sidebar .nav-link:hover, 
   .sidebar .nav-link.active {
     background-color: rgba(255, 255, 255, 0.15);
     color: white;
-    border-left: 4px solid #ffc107; /* Aksen kuning Unila */
+    border-left: 4px solid #ffc107; /* Aksen Kuning Unila */
   }
 
   .sidebar .nav-link i {
@@ -39,12 +61,12 @@
     text-align: center;
   }
 
-  /* Hamburger Floating Button - Diperbaiki agar tidak tertimpa */
+  /* Hamburger Floating Button */
   #toggleSidebar {
     position: fixed;
     top: 15px;
     left: 15px;
-    z-index: 1100; /* Paling tinggi agar selalu bisa diklik */
+    z-index: 1100; /* Paling atas agar selalu bisa diklik */
     box-shadow: 0 4px 6px rgba(0,0,0,0.15);
     display: flex;
     align-items: center;
@@ -53,7 +75,8 @@
     height: 42px;
     border-radius: 8px;
     border: none;
-    transition: left 0.3s ease;
+    background-color: white;
+    color: #003875;
   }
 
   /* Submenu Style */
@@ -63,7 +86,7 @@
     background-color: rgba(0, 0, 0, 0.15);
   }
 
-  /* Penyesuaian Mobile */
+  /* Penyesuaian Mobile (Sidebar Menutup Layar) */
   @media (max-width: 991.98px) {
     .sidebar {
       position: fixed;
@@ -72,16 +95,17 @@
   }
 </style>
 
-<button class="btn btn-light" id="toggleSidebar" title="Toggle Sidebar">
+<button class="btn" id="toggleSidebar" title="Toggle Menu">
   <i class="bi bi-list fs-4"></i>
 </button>
 
 <% if (role === 'admin') { %>
 <div class="sidebar shadow-lg" id="sidebarMain">
-  <div class="py-4 px-3 text-center border-bottom border-white border-opacity-10">
+  
+  <div class="sidebar-header">
     <div class="d-flex align-items-center justify-content-center gap-2">
-       <img src="/images/unila.png" alt="Logo" style="height: 30px; width: auto;">
-       <span class="fw-bold tracking-wider">ADMIN PANEL</span>
+       <img src="/images/unila.png" alt="Logo" style="height: 35px; width: auto;">
+       <span class="fw-bold">ADMIN PANEL</span>
     </div>
   </div>
 
@@ -140,6 +164,12 @@
       </a>
     </li>
   </ul>
+
+  <div class="mt-auto border-top border-white border-opacity-10">
+    <a href="/logout" class="nav-link text-warning">
+      <i class="bi bi-box-arrow-left"></i> <span>Keluar</span>
+    </a>
+  </div>
 </div>
 <% } %>
 
@@ -156,12 +186,12 @@
       toggleBtn.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
         
-        // Simpan status ke localStorage agar tidak reset saat pindah halaman
+        // Simpan status ke localStorage 
         const isCollapsed = sidebar.classList.contains('collapsed');
         localStorage.setItem('sidebarCollapsed', isCollapsed);
       });
 
-      // Cek status terakhir dari localStorage
+      // Cek status terakhir dari localStorage agar tidak reset pas refresh
       const savedState = localStorage.getItem('sidebarCollapsed');
       if (savedState === 'true') {
         sidebar.classList.add('collapsed');
@@ -172,12 +202,12 @@
     if(toggleDaftar) {
       toggleDaftar.addEventListener('click', (e) => {
         e.preventDefault();
-        const isHidden = daftarSubmenu.style.display === 'none' || daftarSubmenu.style.display === '';
-        daftarSubmenu.style.display = isHidden ? 'block' : 'none';
+        const isHidden = (daftarSubmenu.style.display === 'none' || daftarSubmenu.style.display === '');
+        daftarSubmenu.style.display = isHidden ? 'block' : 'none'; [cite: 10]
         
-        // Animasi icon panah
-        iconDropdown.classList.toggle('bi-caret-down-fill', !isHidden);
-        iconDropdown.classList.toggle('bi-caret-up-fill', isHidden);
+        // Ganti icon panah
+        iconDropdown.classList.toggle('bi-caret-down-fill', !isHidden); [cite: 9]
+        iconDropdown.classList.toggle('bi-caret-up-fill', isHidden); [cite: 9]
       });
     }
   });
