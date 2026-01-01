@@ -1,12 +1,13 @@
 <style>
-  /* --- Style Sidebar --- */
+  /* --- Style Sidebar Utama --- */
   .sidebar {
     width: 250px;
     background-color: #003875; /* Biru Unila */
     color: white;
-    transition: all 0.3s;
+    transition: margin-left 0.3s ease; /* Transisi halus saat toggle */
     min-height: 100vh;
-    z-index: 1000;
+    z-index: 1050; /* Di bawah tombol hamburger tapi di atas main content */
+    position: relative;
   }
 
   /* Status Sidebar Tertutup */
@@ -14,69 +15,89 @@
     margin-left: -250px;
   }
 
+  /* Link Navigasi */
   .sidebar .nav-link {
     color: rgba(255, 255, 255, 0.8);
     padding: 12px 20px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
   }
 
   .sidebar .nav-link:hover, 
   .sidebar .nav-link.active {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.15);
     color: white;
+    border-left: 4px solid #ffc107; /* Aksen kuning Unila */
   }
 
   .sidebar .nav-link i {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    width: 20px;
+    text-align: center;
   }
 
-  /* Hamburger Floating Button */
+  /* Hamburger Floating Button - Diperbaiki agar tidak tertimpa */
   #toggleSidebar {
     position: fixed;
     top: 15px;
     left: 15px;
-    z-index: 1100;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1100; /* Paling tinggi agar selalu bisa diklik */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    border: none;
+    transition: left 0.3s ease;
   }
 
   /* Submenu Style */
   #daftarSubmenu .nav-link {
-    padding-left: 50px;
-    font-size: 0.9rem;
-    background-color: rgba(0, 0, 0, 0.1);
+    padding-left: 52px;
+    font-size: 0.88rem;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  /* Penyesuaian Mobile */
+  @media (max-width: 991.98px) {
+    .sidebar {
+      position: fixed;
+      height: 100vh;
+    }
   }
 </style>
 
-<button class="btn btn-light" id="toggleSidebar">
-  <i class="bi bi-list"></i>
+<button class="btn btn-light" id="toggleSidebar" title="Toggle Sidebar">
+  <i class="bi bi-list fs-4"></i>
 </button>
 
 <% if (role === 'admin') { %>
-<div class="sidebar shadow" id="sidebarMain">
-  <div class="py-4 text-center border-bottom border-secondary mb-2">
-    <h5 class="mb-0 fw-bold">ADMIN PANEL</h5>
+<div class="sidebar shadow-lg" id="sidebarMain">
+  <div class="py-4 px-3 text-center border-bottom border-white border-opacity-10">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+       <img src="/images/unila.png" alt="Logo" style="height: 30px; width: auto;">
+       <span class="fw-bold tracking-wider">ADMIN PANEL</span>
+    </div>
   </div>
 
-  <ul class="nav flex-column">
+  <ul class="nav flex-column mt-2">
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/admin/dashboard">
-        <i class="bi bi-house-door"></i> Beranda
+        <i class="bi bi-speedometer2"></i> <span>Beranda</span>
       </a>
     </li>
 
     <li class="nav-item">
       <a id="toggleDaftar" href="#" class="nav-link d-flex justify-content-between align-items-center <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'active' : '' %>">
-        <span><i class="bi bi-people"></i> Dosen & Mahasiswa</span>
-        <i id="iconDropdown" class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %>"></i>
+        <div class="d-flex align-items-center gap-2">
+           <i class="bi bi-people"></i> <span>Dosen & Mahasiswa</span>
+        </div>
+        <i id="iconDropdown" class="bi <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'bi-caret-up-fill' : 'bi-caret-down-fill' %> small"></i>
       </a>
 
       <ul class="nav flex-column" id="daftarSubmenu" style="display: <%= ['daftar-dosen','daftar-mahasiswa'].includes(activePage) ? 'block' : 'none' %>;">
@@ -91,31 +112,31 @@
 
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'bagi-dosbing' ? 'active' : '' %>" href="/admin/bagi-dosbing">
-        <i class="bi bi-person-check"></i> Dosen Pembimbing
+        <i class="bi bi-person-badge"></i> <span>Dosen Pembimbing</span>
       </a>
     </li>
     
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'verifikasi' ? 'active' : '' %>" href="/admin/verifikasi">
-        <i class="bi bi-file-earmark-check"></i> Verifikasi Pendaftaran
+        <i class="bi bi-patch-check"></i> <span>Verifikasi Berkas</span>
       </a>
     </li>
 
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'jadwal-ujian' ? 'active' : '' %>" href="/admin/jadwal-ujian">
-        <i class="bi bi-calendar-event"></i> Jadwal Ujian
+        <i class="bi bi-calendar3"></i> <span>Jadwal Ujian</span>
       </a>
     </li>
 
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'monitoring' ? 'active' : '' %>" href="/admin/monitoring">
-        <i class="bi bi-display"></i> Monitoring
+        <i class="bi bi-graph-up-arrow"></i> <span>Monitoring</span>
       </a>
     </li>
 
     <li class="nav-item">
       <a class="nav-link <%= activePage === 'kelola-akun' ? 'active' : '' %>" href="/admin/kelola-akun">
-        <i class="bi bi-gear"></i> Kelola Akun
+        <i class="bi bi-shield-lock"></i> <span>Kelola Akun</span>
       </a>
     </li>
   </ul>
@@ -131,18 +152,30 @@
     const iconDropdown = document.getElementById('iconDropdown');
 
     // --- Logika Hamburger (Sidebar Toggle) ---
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-    });
+    if(toggleBtn && sidebar) {
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        
+        // Simpan status ke localStorage agar tidak reset saat pindah halaman
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+      });
+
+      // Cek status terakhir dari localStorage
+      const savedState = localStorage.getItem('sidebarCollapsed');
+      if (savedState === 'true') {
+        sidebar.classList.add('collapsed');
+      }
+    }
 
     // --- Logika Dropdown Submenu ---
     if(toggleDaftar) {
       toggleDaftar.addEventListener('click', (e) => {
         e.preventDefault();
-        const isHidden = daftarSubmenu.style.display === 'none';
+        const isHidden = daftarSubmenu.style.display === 'none' || daftarSubmenu.style.display === '';
         daftarSubmenu.style.display = isHidden ? 'block' : 'none';
         
-        // Ganti icon panah
+        // Animasi icon panah
         iconDropdown.classList.toggle('bi-caret-down-fill', !isHidden);
         iconDropdown.classList.toggle('bi-caret-up-fill', isHidden);
       });
