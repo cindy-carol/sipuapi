@@ -1,12 +1,12 @@
 <style>
   .footer-clean {
-    background-color: #444444; /* Abu Terang (Senada Header) */
-    color: #444; /* Teks jadi abu gelap biar kebaca */
+    background-color: #444444; 
+    color: #fff; /* Pastikan teks utama putih agar kontras */
     font-size: 0.85rem; 
-    border-top: 1px solid #dcdcdc; /* Garis pemisah halus */
+    border-top: 1px solid #dcdcdc;
+    width: 100%;
   }
   
-  /* Link Biru Unila */
   .footer-link {
     color: #fff; 
     text-decoration: none;
@@ -17,33 +17,37 @@
     text-decoration: underline;
   }
 
-  /* Judul Alamat (PPI) */
   .footer-title {
-    color: #fff; /* Biru Unila */
+    color: #fff;
     font-weight: 700;
     margin-bottom: 4px;
     font-size: 0.95rem;
   }
+
+  /* Penyelaras Jarak: Gunakan container-fluid dengan padding yang sama dengan main content */
+  .footer-container {
+    width: 100%;
+    padding-right: 2rem; /* Sesuaikan angka ini dengan padding kanan dashboard */
+    padding-left: 2rem;  /* Sesuaikan angka ini dengan padding kiri dashboard */
+    margin-right: auto;
+    margin-left: auto;
+  }
 </style>
 
 <footer class="footer-clean py-3 mt-auto">
-  <div class="container px-4">
-    <div class="row align-items-center">
-      
-      <div class="col-md-6 mb-3 mb-md-0 text-md-start text-center">
+  <div class="footer-container"> <div class="row align-items-center g-0"> <div class="col-md-6 text-md-start text-center">
          <div class="footer-title">Program Profesi Insinyur</div>
-         
-         <div style="line-height: 1.4; color: #fff;">
+         <div style="line-height: 1.4;">
             Gedung A Fakultas Teknik Universitas Lampung<br> 
             Jl. Prof. Dr. Sumantri Brojonegoro No. 1, Kota Bandar Lampung
          </div>
       </div>
 
       <div class="col-md-6 text-md-end text-center">
-          <div class="mb-1">
-             <span>&copy; 2025 </span>
-             <a href="#" class="footer-link">Universitas Lampung</a>
-             <span>. All rights reserved.</span>
+          <div>
+              <span>&copy; 2025 </span>
+              <a href="#" class="footer-link">Universitas Lampung</a>
+              <span>. All rights reserved.</span>
           </div>
       </div>
       
