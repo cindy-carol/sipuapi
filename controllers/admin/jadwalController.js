@@ -12,22 +12,28 @@ calendarView: async (req, res) => {
 
 // Gantilah bagian .map di calendarView dengan ini:
 const events = jadwalList.map(j => {
-  const mode = (j.pelaksanaan || 'offline').toLowerCase();
-  
+  // PENGAMAN: Cek apakah jam_mulai dan jam_selesai ada isinya sebelum di-slice
+  const jamMulai = (j.jam_mulai && typeof j.jam_mulai === 'string') ? j.jam_mulai.slice(0, 5) : '08:00';
+  const jamSelesai = (j.jam_selesai && typeof j.jam_selesai === 'string') ? j.jam_selesai.slice(0, 5) : '09:00';
+  const tanggal = j.tanggal || '2026-01-01'; // Fallback tanggal jika kosong
+
+  // Agar pelaksanaan jadi label status (ONLINE/OFFLINE)
+  const modeUjian = (j.pelaksanaan || 'offline').toUpperCase();
+
   return {
-    title: `${j.nama} - (${mode.toUpperCase()})`,
-    start: `${j.tanggal}T${j.jam_mulai.slice(0,5)}`,
-    end: `${j.tanggal}T${j.jam_selesai.slice(0,5)}`,
-    
-    // Memberikan warna background berbeda berdasarkan label status pelaksanaan
-    backgroundColor: mode === 'online' ? '#0dcaf0' : '#198754',
-    borderColor: mode === 'online' ? '#0dcaf0' : '#198754',
-    
+    title: `${j.nama || 'Tanpa Nama'} - (${modeUjian})`,
+    start: `${tanggal}T${jamMulai}`,
+    end: `${tanggal}T${jamSelesai}`,
+    // Atur warna label otomatis
+    backgroundColor: modeUjian === 'ONLINE' ? '#0dcaf0' : '#198754',
+    borderColor: modeUjian === 'ONLINE' ? '#0dcaf0' : '#198754',
     extendedProps: {
-      mode: mode,
-      // pastikan semua properti modal ini terisi
-      tahun_ajaran: `${j.nama_tahun || ''} - ${j.semester || ''}`,
+      mode: j.pelaksanaan || 'offline',
+      status: j.status_label || 'Pending',
       tempat: j.tempat || '-',
+      tahun_ajaran: j.nama_tahun ? `${j.nama_tahun} - ${j.semester}` : '-',
+      dosbing1: j.dosbing1 || '-',
+      dosbing2: j.dosbing2 || '-',
       penguji: j.dosen_penguji || j.penguji || 'Belum Ditentukan'
     }
   };
