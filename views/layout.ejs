@@ -31,20 +31,20 @@
       overflow-y: auto;
     }
 
+    /* AREA KONTEN UTAMA */
+    .content-wrapper {
+      flex: 1; /* Ambil sisa ruang */
+      display: flex;
+      flex-direction: column;
+      height: 100vh; 
+      overflow-y: auto; /* Hanya area ini yang scroll */
+      min-width: 0; /* WAJIB: Biar gak nabrak pas push */
+      transition: all 0.3s ease;
+    }
 
-
-/* Update CSS yang sudah ada */
-.content-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* Ganti height jadi min-height agar bisa memanjang jika konten banyak */
-  transition: all 0.3s ease;
-}
-
-main {
-  flex: 1; /* Ini akan memaksa main mengambil sisa ruang dan mendorong footer ke bawah */
-}
+    main {
+      flex: 1 0 auto;
+    }
 
     .custom-container {
       width: 100%;
