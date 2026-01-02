@@ -270,6 +270,7 @@ module.exports = {
   getKaprodi,
   getMahasiswaBelumSurat,
   getSuratByMahasiswa,
+  getSuratLengkapByNPM,
   insertSurat,
   uploadSuratFinal,
   deleteSuratFile
