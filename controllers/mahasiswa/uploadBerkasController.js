@@ -39,7 +39,7 @@ const showUploadPage = async (req, res) => {
     res.render('mahasiswa/upload-berkas', {
       title: 'Upload Berkas',
       currentPage: 'upload-berkas',
-      role: 'Mahasiswa',
+      role: 'mahasiswa',
       nama: mhs.nama,
       npm: mhs.npm,
       thajaran: `${mhs.nama_tahun} ${mhs.semester}`,

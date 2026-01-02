@@ -154,7 +154,7 @@ const showDashboard = async (req, res) => {
     res.render('mahasiswa/dashboard', {
       title: 'Dashboard Mahasiswa',
       currentPage: 'dashboard',
-      role: 'Mahasiswa',
+      role: 'mahasiswa',
 
       // Data Identitas
       nama: mhs.nama,

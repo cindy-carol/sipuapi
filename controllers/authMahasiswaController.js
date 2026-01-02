@@ -87,7 +87,7 @@ const authMahasiswaController = {
       res.render('mahasiswa/dashboard', {
         title: 'Dashboard Mahasiswa',
         currentPage: 'dashboard',
-        role: 'Mahasiswa',
+        role: 'mahasiswa',
         nama: mhs.nama,
         npm: mhs.npm,
         thajaran: `${mhs.nama_tahun} ${mhs.semester}`,
