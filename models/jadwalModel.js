@@ -213,7 +213,13 @@ const getAllJadwal = async () => {
     id: r.jadwal_id,
     npm: r.npm,
     nama: r.nama_mahasiswa,
+    nama_tahun: r.nama_tahun, // <-- TAMBAHKAN INI
+    semester: r.semester,     // <-- TAMBAHKAN INI
     tanggal: r.tanggal,
+    jam_mulai: r.jam_mulai,   // <-- TAMBAHKAN INI
+    jam_selesai: r.jam_selesai, // <-- TAMBAHKAN INI
+    pelaksanaan: r.pelaksanaan, // <-- TAMBAHKAN INI
+    tempat: r.tempat,           // <-- TAMBAHKAN INI
     status_verifikasi: r.status_verifikasi,
     status_label: r.status_label,
     dosbing1: r.dosbing1,
