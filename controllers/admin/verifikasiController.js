@@ -1,20 +1,17 @@
 // controllers/admin/verifikasiController.js
-
 const Verifikasi = require('../../models/verifikasiModel');
 const SuratModel = require('../../models/suratUndanganModel'); 
 const AturSurat = require('../../models/aturSuratModel'); 
-const { Dosen } = require('../../models/dosenModel');
 const path = require('path');
 const fs = require('fs');
 const pool = require('../../config/db'); 
-const { Mahasiswa } = require('../../models/mahasiswaModel'); // Untuk catatan kaki
-const supabase = require('../../config/supabaseClient'); // 🔥 PENTING: Untuk Supabase Friendly
+const { Mahasiswa } = require('../../models/mahasiswaModel');
+const supabase = require('../../config/supabaseClient'); 
 
-// 🔥 TAMBAHAN UNTUK VERCEL & FIX ERROR GENERATE
+// 🔥 WAJIB ADA UNTUK VERCEL
 const ejs = require('ejs'); 
 const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
-
 const verifikasiController = {
   
   // =========================================================================
@@ -199,39 +196,32 @@ const verifikasiController = {
   // =========================================================================
   // 🖨️ GENERATE PDF (VERCEL READY)
   // =========================================================================
-// =========================================================================
-  // 🖨️ GENERATE PDF (VERCEL & SUPABASE READY)
-  // =========================================================================
-  generateUndanganPDF: async (req, res) => {
+generateUndanganPDF: async (req, res) => {
     try {
       const { npm } = req.params;
 
-      // 1. Mark as Downloaded (Logika aktivasi tombol Upload TTD lo)
+      // 1. Aktivasi Log (Penting buat logic tombol lo)
       await Verifikasi.markSuratDownloaded(npm);
       
-      // 2. Ambil data mahasiswa & jadwal
       const data = await SuratModel.getSuratByMahasiswa(npm); 
       const logoPathFile = path.join(process.cwd(), 'public', 'images', 'unila1.png');
 
-      if (!data) return res.status(404).send('Data surat undangan tidak ditemukan.');
+      if (!data) return res.status(404).send('Data tidak ditemukan.');
 
-      // 3. Ambil Settings Template & Rincian Catatan Kaki
-      const [templateSettings, listRincian] = await Promise.all([
-        AturSurat.getSettings('undangan'),
-        Mahasiswa.getAllRincian()
-      ]);
-
-      // 4. Logic Catatan Kaki Dinamis lo
+      const templateSettings = await AturSurat.getSettings('undangan');
+      const listRincian = await Mahasiswa.getAllRincian(); 
       const pelaksanaan = data.jadwal?.pelaksanaan ? data.jadwal.pelaksanaan.toLowerCase() : 'offline';
+
+      // Logic Catatan Kaki lo
       let catatanKaki = '';
       const note = listRincian.find(r => r.judul.toLowerCase().includes(pelaksanaan));
       catatanKaki = note ? note.keterangan : (templateSettings.catatan_kaki || '');
 
-      // 5. Logo Base64
       const logoBuffer = fs.readFileSync(logoPathFile);
-      const logoSrc = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+      const logoBase64 = logoBuffer.toString('base64');
+      const logoSrc = `data:image/png;base64,${logoBase64}`;
 
-      // 6. Render HTML pake EJS (Mapping variabel biar gak error undefined)
+      // Mapping EJS lo (Lengkap agar tidak undefined)
       const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
           layout: false,
           ...data,
@@ -257,7 +247,7 @@ const verifikasiController = {
           tanggalSurat: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       });
 
-      // 7. 🔥 KONFIGURASI PUPPETEER KHUSUS VERCEL
+      // 🔥 KONFIGURASI PUPPETEER CORE KHUSUS VERCEL
       const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
