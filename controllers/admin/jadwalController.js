@@ -6,31 +6,34 @@ const jadwalController = {
   // =========================================================================
   // 📅 1. CALENDAR VIEW (ADMIN) - Melihat Semua Jadwal
   // =========================================================================
+// =========================================================================
+  // 📅 1. CALENDAR VIEW (ADMIN) - Melihat Semua Jadwal
+  // =========================================================================
   calendarView: async (req, res) => {
     try {
-      // Mengambil seluruh data jadwal dari database
       const jadwalList = await Jadwal.getAllJadwal();
 
       const events = jadwalList.map(j => {
-        // Ambil string tanggal (format YYYY-MM-DD) dan jam
         const tanggal = j.tanggal; 
         const jamMulai = j.jam_mulai ? j.jam_mulai.slice(0, 5) : '00:00';
         const jamSelesai = j.jam_selesai ? j.jam_selesai.slice(0, 5) : '00:00';
 
+        // Perbaikan: Tambahkan pengecekan agar tidak error 500 jika data null
+        const namaMhs = j.nama || 'Tanpa Nama';
+        const modeUjian = j.pelaksanaan ? j.pelaksanaan.toUpperCase() : '???';
+
         return {
-          // Label yang muncul di kotak kalender
-          title: `${j.nama} - (${j.pelaksanaan.toUpperCase()})`,
-          // Format standar ISO tanpa timezone untuk FullCalendar
+          title: `${namaMhs} - (${modeUjian})`,
           start: `${tanggal}T${jamMulai}`,
           end: `${tanggal}T${jamSelesai}`,
           extendedProps: {
             npm: j.npm,
-            mode: j.pelaksanaan,
-            status: j.status_label,
-            tempat: j.tempat,
-            tahun_ajaran: `${j.nama_tahun} - ${j.semester}`,
-            dosbing1: j.dosbing1,
-            dosbing2: j.dosbing2,
+            mode: j.pelaksanaan || '-',
+            status: j.status_label || 'Pending',
+            tempat: j.tempat || '-',
+            tahun_ajaran: `${j.nama_tahun || ''} - ${j.semester || ''}`,
+            dosbing1: j.dosbing1 || '-',
+            dosbing2: j.dosbing2 || '-',
             penguji: j.dosen_penguji || 'Belum Ditentukan'
           }
         };
@@ -41,7 +44,6 @@ const jadwalController = {
         currentPage: 'jadwal-ujian',
         role: 'admin',
         user: req.session.user,
-        // Kirim data sebagai string JSON agar bisa dibaca script kalender
         events: JSON.stringify(events) 
       });
 
