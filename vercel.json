@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "controllers/admin/verifikasiController.js": {
+      "maxDuration": 60
+    }
+  }
+}

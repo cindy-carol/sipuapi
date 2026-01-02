@@ -1,7 +1,9 @@
 // controllers/admin/verifikasiController
 
 const Verifikasi = require('../../models/verifikasiModel');
-const puppeteer = require('puppeteer');
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
+const ejs = require('ejs'); // Tambahkan ini juga biar renderFile jalan
 const SuratModel = require('../../models/suratUndanganModel'); 
 const AturSurat = require('../../models/aturSuratModel'); 
 const { Dosen } = require('../../models/dosenModel');
@@ -269,9 +271,13 @@ const verifikasiController = {
         });
       });
 
-      const browser = await puppeteer.launch({ 
-        headless: "new", 
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+// 🔥 KONFIGURASI PUPPETEER KHUSUS VERCEL
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
       });
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });
