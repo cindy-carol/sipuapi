@@ -1,6 +1,19 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.js"
+    }
+  ],
   "functions": {
-    "controllers/admin/verifikasiController.js": {
+    "app.js": {
       "maxDuration": 60
     }
   }
