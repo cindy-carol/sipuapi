@@ -101,42 +101,45 @@ const Verifikasi = {
   // =========================
   // 3. Update status verifikasi jadwal
   // =========================
-  updateStatusVerifikasi: async (jadwalId, status, editorId) => {
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
+// models/verifikasiModel.js (BAGIAN updateStatusVerifikasi)
+updateStatusVerifikasi: async (jadwalId, status, editorId) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    await client.query(`
+      UPDATE jadwal SET status_verifikasi = $1, is_edited = TRUE, edited_by = $2, edited_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+    `, [status, editorId, jadwalId]);
 
-      await client.query(`
-        UPDATE jadwal 
-        SET status_verifikasi = $1, 
-            is_edited = TRUE, 
-            edited_by = $2, 
-            edited_at = CURRENT_TIMESTAMP
-        WHERE id = $3
-      `, [status, editorId, jadwalId]);
+    const { rows } = await client.query(`SELECT mahasiswa_id FROM jadwal WHERE id = $1`, [jadwalId]);
+    const mahasiswaId = rows[0]?.mahasiswa_id;
+    if (!mahasiswaId) throw new Error('Mahasiswa tidak ditemukan.');
 
-      const { rows } = await client.query(`SELECT mahasiswa_id FROM jadwal WHERE id = $1`, [jadwalId]);
-      const mahasiswaId = rows[0]?.mahasiswa_id;
-      if (!mahasiswaId) throw new Error('Mahasiswa tidak ditemukan.');
-
-      const { rows: existing } = await client.query(`SELECT id FROM daftar_ujian WHERE jadwal_id = $1`, [jadwalId]);
-      if (existing.length === 0) {
-        await client.query(
-          `INSERT INTO daftar_ujian (mahasiswa_id, jadwal_id, status_keseluruhan)
-           VALUES ($1, $2, FALSE)`,
-          [mahasiswaId, jadwalId]
-        );
-      }
-
-      await client.query('COMMIT');
-      return mahasiswaId;
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
+    // FIX: Cek manual sebelum INSERT untuk menghindari error 500
+    const { rows: existing } = await client.query(`SELECT id FROM daftar_ujian WHERE mahasiswa_id = $1`, [mahasiswaId]);
+    if (existing.length === 0) {
+      await client.query(
+        `INSERT INTO daftar_ujian (mahasiswa_id, jadwal_id, status_keseluruhan) VALUES ($1, $2, FALSE)`,
+        [mahasiswaId, jadwalId]
+      );
+    } else {
+      await client.query(
+        `UPDATE daftar_ujian SET jadwal_id = $1 WHERE mahasiswa_id = $2`,
+        [jadwalId, mahasiswaId]
+      );
     }
-  },
+
+    await client.query('COMMIT');
+    return mahasiswaId;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+},
+// ... sisa kode lainnya tetap sama
 
   // =========================
   // 4. Oper ke Kaprodi

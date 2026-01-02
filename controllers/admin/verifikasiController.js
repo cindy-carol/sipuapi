@@ -199,51 +199,43 @@ const verifikasiController = {
   // =========================================================================
   // 🖨️ GENERATE PDF (VERCEL READY)
   // =========================================================================
+// =========================================================================
+  // 🖨️ GENERATE PDF (VERCEL & SUPABASE READY)
+  // =========================================================================
   generateUndanganPDF: async (req, res) => {
     try {
       const { npm } = req.params;
 
-      // 1. Mark as Downloaded for UI Activation
+      // 1. Mark as Downloaded (Logika aktivasi tombol Upload TTD lo)
       await Verifikasi.markSuratDownloaded(npm);
       
+      // 2. Ambil data mahasiswa & jadwal
       const data = await SuratModel.getSuratByMahasiswa(npm); 
       const logoPathFile = path.join(process.cwd(), 'public', 'images', 'unila1.png');
 
       if (!data) return res.status(404).send('Data surat undangan tidak ditemukan.');
 
-      const templateSettings = await AturSurat.getSettings('undangan');
-      const listRincian = await Mahasiswa.getAllRincian(); 
+      // 3. Ambil Settings Template & Rincian Catatan Kaki
+      const [templateSettings, listRincian] = await Promise.all([
+        AturSurat.getSettings('undangan'),
+        Mahasiswa.getAllRincian()
+      ]);
+
+      // 4. Logic Catatan Kaki Dinamis lo
       const pelaksanaan = data.jadwal?.pelaksanaan ? data.jadwal.pelaksanaan.toLowerCase() : 'offline';
-
       let catatanKaki = '';
-      if (pelaksanaan === 'online') {
-          const note = listRincian.find(r => r.judul.toLowerCase().includes('online'));
-          catatanKaki = note ? note.keterangan : '';
-      } else {
-          const note = listRincian.find(r => r.judul.toLowerCase().includes('offline'));
-          catatanKaki = note ? note.keterangan : '';
-      }
+      const note = listRincian.find(r => r.judul.toLowerCase().includes(pelaksanaan));
+      catatanKaki = note ? note.keterangan : (templateSettings.catatan_kaki || '');
 
-      if (!catatanKaki) {
-          catatanKaki = templateSettings.catatan_kaki || '';
-      }
-
-      const now = new Date();
-      const tanggalHariIni = now.toLocaleDateString('id-ID', {
-          day: 'numeric', month: 'long', year: 'numeric'
-      });
-
+      // 5. Logo Base64
       const logoBuffer = fs.readFileSync(logoPathFile);
-      const logoBase64 = logoBuffer.toString('base64');
-      const logoSrc = `data:image/png;base64,${logoBase64}`;
+      const logoSrc = `data:image/png;base64,${logoBuffer.toString('base64')}`;
 
-      // FIX: Gunakan ejs.renderFile agar variabel terdefinisi
+      // 6. Render HTML pake EJS (Mapping variabel biar gak error undefined)
       const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
           layout: false,
           ...data,
-          title: 'Surat Undangan',
-          role: 'admin',
-          tanggalSurat: tanggalHariIni,
+          logoPath: logoSrc,
           namaMahasiswa: data.mahasiswa.nama,
           npm: data.mahasiswa.npm,
           tipeUjian: pelaksanaan, 
@@ -253,19 +245,19 @@ const verifikasiController = {
           linkZoom: data.jadwal?.linkZoom || '',
           meetingID: data.jadwal?.meetingID || '',
           passcode: data.jadwal?.passcode || '',
-          pembimbing1: data.dosbing[0],
-          pembimbing2: data.dosbing[1],
+          pembimbing1: data.dosbing[0] || '-', 
+          pembimbing2: data.dosbing[1] || '-',
           penguji: data.penguji || [],
           kaprodi: data.kaprodi || { nama: '', nip_dosen: '' },
-          logoPath: logoSrc,
           kopSurat: templateSettings.kop_surat_text,
           kalimatPembuka: templateSettings.pembuka,
           isi: templateSettings.isi,
           kalimatPenutup: templateSettings.penutup,
-          catatanKaki: catatanKaki 
+          catatanKaki: catatanKaki,
+          tanggalSurat: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       });
 
-      // 🔥 KONFIGURASI PUPPETEER KHUSUS VERCEL
+      // 7. 🔥 KONFIGURASI PUPPETEER KHUSUS VERCEL
       const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
@@ -292,7 +284,7 @@ const verifikasiController = {
       res.send(pdfBuffer);
 
     } catch (err) {
-      console.error('❌ Gagal generate PDF:', err);
+      console.error('❌ Error Generate PDF:', err);
       res.status(500).send(`Error: ${err.message}`);
     }
   },
