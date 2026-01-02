@@ -6,10 +6,7 @@ const jadwalController = {
   // =========================================================================
   // 📅 1. CALENDAR VIEW (ADMIN) - Melihat Semua Jadwal
   // =========================================================================
-// =========================================================================
-  // 📅 1. CALENDAR VIEW (ADMIN) - Melihat Semua Jadwal
-  // =========================================================================
-  calendarView: async (req, res) => {
+calendarView: async (req, res) => {
     try {
       const jadwalList = await Jadwal.getAllJadwal();
 
@@ -18,14 +15,17 @@ const jadwalController = {
         const jamMulai = j.jam_mulai ? j.jam_mulai.slice(0, 5) : '00:00';
         const jamSelesai = j.jam_selesai ? j.jam_selesai.slice(0, 5) : '00:00';
 
-        // Perbaikan: Tambahkan pengecekan agar tidak error 500 jika data null
+        // Ambil data pelaksanaan, default ke tanda tanya jika kosong
+        // Kita biarkan natural atau Uppercase sesuai keinginan kamu
+        const pelaksanaan = j.pelaksanaan ? j.pelaksanaan.toUpperCase() : '???';
         const namaMhs = j.nama || 'Tanpa Nama';
-        const modeUjian = j.pelaksanaan ? j.pelaksanaan.toUpperCase() : '???';
 
         return {
-          title: `${namaMhs} - (${modeUjian})`,
+          title: `${namaMhs} - (${pelaksanaan})`,
           start: `${tanggal}T${jamMulai}`,
           end: `${tanggal}T${jamSelesai}`,
+          // Tambahkan warna otomatis berdasarkan mode
+          color: j.pelaksanaan === 'online' ? '#0dcaf0' : '#198754', 
           extendedProps: {
             npm: j.npm,
             mode: j.pelaksanaan || '-',
@@ -34,7 +34,8 @@ const jadwalController = {
             tahun_ajaran: `${j.nama_tahun || ''} - ${j.semester || ''}`,
             dosbing1: j.dosbing1 || '-',
             dosbing2: j.dosbing2 || '-',
-            penguji: j.dosen_penguji || 'Belum Ditentukan'
+            // Cek properti dosen_penguji sesuai hasil JOIN di getAllJadwal
+            penguji: j.dosen_penguji || j.penguji || 'Belum Ditentukan'
           }
         };
       });
@@ -52,7 +53,6 @@ const jadwalController = {
       res.status(500).send('Gagal menampilkan kalender admin.');
     }
   },
-
 
   // =========================================================================
   // 🎓 2. RENDER ISI JADWAL (MAHASISWA) - Booking & Status

@@ -147,6 +147,32 @@ function handleAlasanChange() {
           </div>
         </div>
 
+        <% } else if (modalType === 'calendar') { %>
+    <div class="modal-body py-4 px-3" style="min-height: 350px;">
+        <h2 id="modalTitle" class="mt-0 text-center fw-bold" style="color: #1e4380;"></h2>
+        
+        <div class="container-fluid mt-4">
+            <div class="row mb-3 border-bottom pb-2">
+                <div class="col-4 fw-bold">Tahun Ajaran</div>
+                <div class="col-8" id="modalPeriode"></div> </div>
+            <div class="row mb-3 border-bottom pb-2">
+                <div class="col-4 fw-bold">Tanggal & Waktu</div>
+                <div class="col-8" id="modalTime"></div> </div>
+            <div class="row mb-3 border-bottom pb-2">
+                <div class="col-4 fw-bold">Pembimbing 1</div>
+                <div class="col-8" id="modalDospem1"></div> </div>
+            <div class="row mb-3 border-bottom pb-2">
+                <div class="col-4 fw-bold">Pembimbing 2</div>
+                <div class="col-8" id="modalDospem2"></div> </div>
+            <div class="row mb-3 border-bottom pb-2">
+                <div class="col-4 fw-bold">Penguji</div>
+                <div class="col-8" id="modalDospenguji"></div> </div>
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Tempat / Link</div>
+                <div class="col-8" id="modalPlace"></div> </div>
+        </div>
+    </div>
+
 
 <% } else if (modalType === 'tambahDosen') { %>
   <form id="formTambahDosen">
