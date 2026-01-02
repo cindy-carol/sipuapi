@@ -70,6 +70,8 @@ const Verifikasi = {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+      
+      // Update status di tabel jadwal
       await client.query(`
         UPDATE jadwal 
         SET status_verifikasi = $1, is_edited = TRUE, edited_by = $2, edited_at = CURRENT_TIMESTAMP
@@ -80,11 +82,23 @@ const Verifikasi = {
       const mahasiswaId = rows[0]?.mahasiswa_id;
       if (!mahasiswaId) throw new Error('Mahasiswa tidak ditemukan.');
 
-      await client.query(`
-        INSERT INTO daftar_ujian (mahasiswa_id, jadwal_id, status_keseluruhan)
-        VALUES ($1, $2, FALSE)
-        ON CONFLICT (mahasiswa_id) DO UPDATE SET jadwal_id = EXCLUDED.jadwal_id
-      `, [mahasiswaId, jadwalId]);
+      // FIX ON CONFLICT: Cek manual keberadaan data di daftar_ujian
+      const { rows: cekDaftar } = await client.query(
+        `SELECT id FROM daftar_ujian WHERE mahasiswa_id = $1`, 
+        [mahasiswaId]
+      );
+
+      if (cekDaftar.length > 0) {
+        await client.query(
+          `UPDATE daftar_ujian SET jadwal_id = $1, status_keseluruhan = FALSE WHERE mahasiswa_id = $2`,
+          [jadwalId, mahasiswaId]
+        );
+      } else {
+        await client.query(
+          `INSERT INTO daftar_ujian (mahasiswa_id, jadwal_id, status_keseluruhan) VALUES ($1, $2, FALSE)`,
+          [mahasiswaId, jadwalId]
+        );
+      }
 
       await client.query('COMMIT');
       return mahasiswaId;
@@ -101,23 +115,40 @@ const Verifikasi = {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+      
+      // Validasi Berkas
       const { rows: berkasCheck } = await client.query(`
         SELECT COUNT(*) FILTER (WHERE bu.status_verifikasi = FALSE) AS belum_verif
         FROM berkas_ujian bu JOIN daftar_ujian du ON bu.daftar_ujian_id = du.id WHERE du.mahasiswa_id = $1
       `, [mahasiswaId]);
       if (parseInt(berkasCheck[0].belum_verif, 10) > 0) throw new Error('Berkas belum diverifikasi.');
 
+      // Validasi Jadwal
       const { rows: jadwalCheck } = await client.query(`SELECT id FROM jadwal WHERE mahasiswa_id = $1`, [mahasiswaId]);
       if (jadwalCheck.length === 0) throw new Error('Jadwal belum ada.');
       
       const jadwalId = jadwalCheck[0].id;
       await client.query(`UPDATE jadwal SET status_verifikasi = TRUE, edited_by = $2 WHERE id = $1`, [jadwalId, editorId]); 
 
-      await client.query(`
-        INSERT INTO dosen_penguji (kaprodi_id, mahasiswa_id, dosen_id, status_verifikasi, updated_by, tanggal_penunjukan)
-        VALUES ($1, $2, NULL, FALSE, $3, NOW())
-        ON CONFLICT (mahasiswa_id) DO NOTHING
-      `, [kaprodiId, mahasiswaId, editorId]);
+      // FIX ON CONFLICT: Cek manual keberadaan data di dosen_penguji
+      const { rows: cekPenguji } = await client.query(
+        `SELECT id FROM dosen_penguji WHERE mahasiswa_id = $1`,
+        [mahasiswaId]
+      );
+
+      if (cekPenguji.length === 0) {
+        await client.query(`
+          INSERT INTO dosen_penguji (kaprodi_id, mahasiswa_id, dosen_id, status_verifikasi, updated_by, tanggal_penunjukan)
+          VALUES ($1, $2, NULL, FALSE, $3, NOW())
+        `, [kaprodiId, mahasiswaId, editorId]);
+      } else {
+        // Jika revisi, kembalikan status_verifikasi ke FALSE agar Kaprodi plot ulang
+        await client.query(`
+          UPDATE dosen_penguji 
+          SET status_verifikasi = FALSE, updated_by = $2, tanggal_penunjukan = NOW() 
+          WHERE mahasiswa_id = $1
+        `, [mahasiswaId, editorId]);
+      }
 
       await client.query('COMMIT');
       return true;
