@@ -10,35 +10,28 @@ calendarView: async (req, res) => {
     try {
       const jadwalList = await Jadwal.getAllJadwal();
 
-      const events = jadwalList.map(j => {
-        const tanggal = j.tanggal; 
-        const jamMulai = j.jam_mulai ? j.jam_mulai.slice(0, 5) : '00:00';
-        const jamSelesai = j.jam_selesai ? j.jam_selesai.slice(0, 5) : '00:00';
-
-        // Ambil data pelaksanaan, default ke tanda tanya jika kosong
-        // Kita biarkan natural atau Uppercase sesuai keinginan kamu
-        const pelaksanaan = j.pelaksanaan ? j.pelaksanaan.toUpperCase() : '???';
-        const namaMhs = j.nama || 'Tanpa Nama';
-
-        return {
-          title: `${namaMhs} - (${pelaksanaan})`,
-          start: `${tanggal}T${jamMulai}`,
-          end: `${tanggal}T${jamSelesai}`,
-          // Tambahkan warna otomatis berdasarkan mode
-          color: j.pelaksanaan === 'online' ? '#0dcaf0' : '#198754', 
-          extendedProps: {
-            npm: j.npm,
-            mode: j.pelaksanaan || '-',
-            status: j.status_label || 'Pending',
-            tempat: j.tempat || '-',
-            tahun_ajaran: `${j.nama_tahun || ''} - ${j.semester || ''}`,
-            dosbing1: j.dosbing1 || '-',
-            dosbing2: j.dosbing2 || '-',
-            // Cek properti dosen_penguji sesuai hasil JOIN di getAllJadwal
-            penguji: j.dosen_penguji || j.penguji || 'Belum Ditentukan'
-          }
-        };
-      });
+// Gantilah bagian .map di calendarView dengan ini:
+const events = jadwalList.map(j => {
+  const mode = (j.pelaksanaan || 'offline').toLowerCase();
+  
+  return {
+    title: `${j.nama} - (${mode.toUpperCase()})`,
+    start: `${j.tanggal}T${j.jam_mulai.slice(0,5)}`,
+    end: `${j.tanggal}T${j.jam_selesai.slice(0,5)}`,
+    
+    // Memberikan warna background berbeda berdasarkan label status pelaksanaan
+    backgroundColor: mode === 'online' ? '#0dcaf0' : '#198754',
+    borderColor: mode === 'online' ? '#0dcaf0' : '#198754',
+    
+    extendedProps: {
+      mode: mode,
+      // pastikan semua properti modal ini terisi
+      tahun_ajaran: `${j.nama_tahun || ''} - ${j.semester || ''}`,
+      tempat: j.tempat || '-',
+      penguji: j.dosen_penguji || j.penguji || 'Belum Ditentukan'
+    }
+  };
+});
 
       res.render('admin/jadwal-ujian', {
         title: 'Kalender Ujian Akhir',
