@@ -1,87 +1,88 @@
 <style>
 @font-face {
     font-family: 'Times New Roman Custom';
-    /* Tanda petik dua (") penting biar gak error */
     src: url("data:font/ttf;charset=utf-8;base64,<%= fontTMR %>") format("truetype");
     font-weight: normal;
     font-style: normal;
-  }
+}
 
+/* Reset Dasar */
 body {
     font-family: 'Times New Roman Custom', serif;
     font-size: 12pt;
-    line-height: 1.3; /* Atur agar spasi antar baris stabil */
-    letter-spacing: normal;
+    line-height: 1.2; /* Dikecilkan sedikit agar tidak meluber */
+    margin: 0;
+    padding: 0;
 }
-  
+
+.surat-wrapper {
+    width: 100%;
+    /* Gunakan font kustom secara global di wrapper */
+    font-family: 'Times New Roman Custom', serif; 
+}
+
+/* Bagian Kop Surat */
 .kop {
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  font-family: "Times New Roman", Times, serif;
-  font-stretch: condensed;
-  letter-spacing: 0.3px;
-  transform: scaleX(0.9);
-  transform-origin: left;
+    text-align: center;
+    /* Jangan gunakan scaleX atau transform jika font sudah benar, ini bikin teks pecah */
+    transform: none; 
 }
 
 .kop strong {
-  display: block;
-  font-weight: bold;
-  font-size: 12pt;
-  margin: 0;
-  padding: 0;
-  line-height: 1.1;
+    display: block;
+    font-weight: bold;
+    font-size: 13pt; /* Sedikit diperbesar agar tegas */
+    line-height: 1.1;
 }
 
 .kop h3 {
-  font-family: "Times New Roman", Times, serif;
-  font-size: 17pt;
-  font-weight: bold;
-  margin: 0;
-  padding: 0;
-  line-height: 1.1;
+    font-family: 'Times New Roman Custom', serif;
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 2px 0;
+    line-height: 1.1;
 }
 
 .kop .alamat {
-  font-family: "Cambria", Georgia, "Times New Roman", serif;
-  font-size: 10pt;
-  font-weight: normal;
-  margin: 0;
-  line-height: 1.2;
+    font-family: 'Times New Roman Custom', serif; /* Samakan font agar sinkron */
+    font-size: 9pt;
+    line-height: 1.2;
 }
 
 .kop-line {
-  border-top: 5px double black;
-  margin-top: 8px;
-  margin-bottom: 15px;
-  width: 100%;
+    border-top: 3px double black; /* Ketebalan disesuaikan */
+    margin-top: 5px;
+    margin-bottom: 15px;
+    width: 100%;
 }
 
-.surat-wrapper, p, table, ul, li {
-  font-size: 11pt;
-  font-family: "Times New Roman", Times, serif;
+/* Tabel Informasi & Isi */
+table {
+    border-collapse: collapse;
+    font-family: 'Times New Roman Custom', serif;
+    font-size: 11pt;
+    width: auto; /* Biarkan tabel mengikuti isi agar tidak hancur */
 }
 
 .baris-info, .informasi, .content, .signature, .catatan {
-  padding: 0 10mm 0 15mm;
-}
-
-.signature {
-    margin-top: 30px;
-    text-align: right;
-}
-.signature-content {
-    display: inline-block;
-    text-align: left;
-}
-
-.content table td {
-    vertical-align: top;
+    /* Padding disesuaikan agar pas di kertas A4 */
+    padding: 0 15mm 0 15mm; 
 }
 
 p {
-  margin-bottom: 0;
+    margin-bottom: 5px;
+    text-align: justify;
+    line-height: 1.4; /* Spasi antar baris di paragraf lebih lega agar enak dibaca */
+}
+
+.signature {
+    margin-top: 40px;
+    padding-right: 20mm; /* Geser tanda tangan agak ke tengah dari kanan */
+}
+
+.catatan {
+    margin-top: 30px;
+    font-size: 10pt;
 }
 </style>
 
