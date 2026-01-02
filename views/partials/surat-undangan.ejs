@@ -1,11 +1,17 @@
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Tinos:wght@400;700&display=swap');
-
-  body {
-    font-family: 'Tinos', serif; /* Ini pengganti Times New Roman */
-    font-size: 12pt;
+@font-face {
+    font-family: 'Times New Roman Custom';
+    /* Tanda petik dua (") penting biar gak error */
+    src: url("data:font/ttf;charset=utf-8;base64,<%= fontTMR %>") format("truetype");
+    font-weight: normal;
+    font-style: normal;
   }
 
+  body {
+    font-family: 'Times New Roman Custom', serif;
+    font-size: 12pt;
+  }
+  
 .kop {
   text-align: center;
   margin: 0;

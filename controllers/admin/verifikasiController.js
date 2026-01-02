@@ -200,7 +200,7 @@ generateUndanganPDF: async (req, res) => {
     try {
       const { npm } = req.params;
 
-      // 1. Aktivasi Log (Penting buat logic tombol lo)
+      // 1. Aktivasi Log
       await Verifikasi.markSuratDownloaded(npm);
       
       const data = await SuratModel.getSuratByMahasiswa(npm); 
@@ -208,11 +208,21 @@ generateUndanganPDF: async (req, res) => {
 
       if (!data) return res.status(404).send('Data tidak ditemukan.');
 
+      // --- 🚀 SUNTIKAN FONT SAKTI DISINI ---
+      // Pastikan path file .txt font lu bener ya!
+      const fontPath = path.join(process.cwd(), 'public', 'fonts', 'times-base64.txt'); 
+      let fontTMR = "";
+      try {
+          fontTMR = fs.readFileSync(fontPath, 'utf8').trim();
+      } catch (e) {
+          console.error("Font file gak ketemu, cek path-nya bos!");
+      }
+      // --------------------------------------
+
       const templateSettings = await AturSurat.getSettings('undangan');
       const listRincian = await Mahasiswa.getAllRincian(); 
       const pelaksanaan = data.jadwal?.pelaksanaan ? data.jadwal.pelaksanaan.toLowerCase() : 'offline';
 
-      // Logic Catatan Kaki lo
       let catatanKaki = '';
       const note = listRincian.find(r => r.judul.toLowerCase().includes(pelaksanaan));
       catatanKaki = note ? note.keterangan : (templateSettings.catatan_kaki || '');
@@ -221,10 +231,10 @@ generateUndanganPDF: async (req, res) => {
       const logoBase64 = logoBuffer.toString('base64');
       const logoSrc = `data:image/png;base64,${logoBase64}`;
 
-      // Mapping EJS lo (Lengkap agar tidak undefined)
       const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
           layout: false,
           ...data,
+          fontTMR: fontTMR, // <-- Kirim variabel font ke EJS
           logoPath: logoSrc,
           namaMahasiswa: data.mahasiswa.nama,
           npm: data.mahasiswa.npm,
@@ -247,7 +257,7 @@ generateUndanganPDF: async (req, res) => {
           tanggalSurat: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       });
 
-      // 🔥 KONFIGURASI PUPPETEER CORE KHUSUS VERCEL
+      // Konfigurasi Puppeteer
       const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
