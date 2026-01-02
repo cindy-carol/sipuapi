@@ -42,8 +42,8 @@
         <tr>
           <th>Upload</th>
           <th>Verifikasi</th>
-          <th>Upload</th>
           <th>Jadwal</th>
+          <th>Verifikasi</th>
           <th>Penguji</th>
           <th>Surat</th>
         </tr>
@@ -59,8 +59,8 @@
               <td><% if (mhs.uploadBerkas) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
               <td><% if (mhs.verifBerkas) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
               
-              <td><% if (mhs.jadwalUjianDone) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
               <td><%= mhs.jadwalUjian || '-' %></td>
+              <td><% if (mhs.jadwalUjianDone) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
               
               <td><% if (mhs.penguji) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
               <td><% if (mhs.suratUndangan) { %><i class="bi bi-check-circle-fill text-success fs-4"></i><% } else { %><i class="bi bi-x-circle-fill text-danger fs-4"></i><% } %></td>
