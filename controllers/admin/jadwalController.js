@@ -31,7 +31,7 @@ const events = jadwalList.map(j => {
       mode: j.pelaksanaan || 'offline',
       status: j.status_label || 'Pending',
       tempat: j.tempat || '-',
-      tahun_ajaran: j.nama_tahun ? `${j.nama_tahun} - ${j.semester}` : '-',
+      tahun_ajaran: `${j.nama_tahun} - ${j.semester}`,
       dosbing1: j.dosbing1 || '-',
       dosbing2: j.dosbing2 || '-',
       penguji: j.dosen_penguji || j.penguji || 'Belum Ditentukan'

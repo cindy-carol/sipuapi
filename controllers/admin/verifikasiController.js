@@ -32,14 +32,30 @@ const verifikasiController = {
           }));
           break;
 
-        case 'jadwal':
-          const rawJadwal = await Verifikasi.verifJadwal(tahunId);
-          jadwal = rawJadwal.map(j => ({
-            id: j.jadwal_id, nama: j.nama, npm: j.npm, nama_tahun: j.nama_tahun, semester: j.semester,
-            dosbing1: j.dosbing1 || '-', dosbing2: j.dosbing2 || '-', pelaksanaan: j.pelaksanaan || '-',
-            tempat: j.tempat || '-', jadwalUjian: j.formattedJadwal || '-', status: j.status_verifikasi ? 'Terverifikasi' : 'Menunggu Verifikasi'
-          }));
-          break;
+case 'jadwal':
+  const rawJadwal = await Verifikasi.verifJadwal(tahunId);
+  jadwal = rawJadwal.map(j => {
+    // Gabungkan tanggal dan jam secara manual jika formattedJadwal tidak ada
+    const tanggal = j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const jam = (j.jam_mulai && j.jam_selesai) ? `${j.jam_mulai.slice(0, 5)} - ${j.jam_selesai.slice(0, 5)} WIB` : '';
+    
+    const jadwalLengkap = (tanggal && jam) ? `${tanggal}, ${jam}` : '-';
+
+    return {
+      id: j.jadwal_id, 
+      nama: j.nama, 
+      npm: j.npm, 
+      nama_tahun: j.nama_tahun, 
+      semester: j.semester,
+      dosbing1: j.dosbing1 || '-', 
+      dosbing2: j.dosbing2 || '-', 
+      pelaksanaan: j.pelaksanaan || '-',
+      tempat: j.tempat || '-', 
+      jadwalUjian: j.formattedJadwal || jadwalLengkap, // Gunakan manual jika query kosong
+      status: j.status_verifikasi ? 'Terverifikasi' : 'Menunggu Verifikasi'
+    };
+  });
+  break;
 
         case 'surat':
           const [rawSurat, rawJadwalForSurat] = await Promise.all([
