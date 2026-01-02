@@ -143,43 +143,46 @@ case 'jadwal':
   // =========================================================================
   // 🖨️ GENERATE PDF (PUPPETEER)
   // =========================================================================
-  generateUndanganPDF: async (req, res) => {
-    try {
-      const { npm } = req.params;
-      await Verifikasi.markSuratDownloaded(npm);
-      const data = await SuratModel.getSuratByMahasiswa(npm); 
-      if (!data) return res.status(404).send('Data tidak ditemukan.');
+// controllers/admin/verifikasiController.js
 
-      const templateSettings = await AturSurat.getSettings('undangan');
-      
-      const logoPathFile = path.join(process.cwd(), 'public', 'images', 'unila1.png');
-      const logoBuffer = fs.readFileSync(logoPathFile);
-      const logoBase64 = logoBuffer.toString('base64');
+generateUndanganPDF: async (req, res) => {
+  try {
+    const { npm } = req.params;
+    // Pastikan query di model mengembalikan: dosbing1, dosbing2, penguji, nama, npm, tanggal, dll
+    const data = await SuratModel.getSuratLengkapByNPM(npm); 
 
-      const html = await new Promise((resv, rej) => {
-        res.render('partials/surat-undangan', { 
-          layout: false, 
-          ...data, 
-          logoPath: `data:image/png;base64,${logoBase64}`,
-          kopSurat: templateSettings.kop_surat_text, 
-          kalimatPembuka: templateSettings.pembuka, 
-          isi: templateSettings.isi, 
-          kalimatPenutup: templateSettings.penutup 
-        }, (err, h) => err ? rej(err) : resv(h));
-      });
+    if (!data) return res.status(404).send('Data tidak ditemukan');
 
-      const browser = await puppeteer.launch({ headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
-      const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-      await browser.close();
+    // Mapping manual untuk mencegah "is not defined" di EJS
+    const renderData = {
+      ...data,
+      pembimbing1: data.dosbing1 || '-',
+      pembimbing2: data.dosbing2 || '-',
+      penguji: data.penguji || '-',
+      namaMahasiswa: data.nama || '-',
+      tanggal_db: data.tanggal || '', // Sinkronisasi dengan yang dicari script modal
+      pelaksanaan: data.pelaksanaan || 'offline'
+    };
 
-      res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="Surat-${npm}.pdf"` });
-      res.send(pdfBuffer);
-    } catch (err) {
-      res.status(500).send(err.message);
-    }
-  },
+    const templatePath = path.join(__dirname, '../../views/partials/surat-undangan.ejs');
+    const html = await ejs.renderFile(templatePath, renderData);
+
+    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    await browser.close();
+
+    // UPDATE: Tandai bahwa surat sudah didownload agar tombol upload TTD muncul
+    await Verifikasi.markSuratDownloaded(npm);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error: ' + err.message);
+  }
+},
 
   // =========================================================================
   // ⚙️ SETTINGS TEMPLATE (MEMPERBAIKI ERROR TYPEERROR ROUTER)
