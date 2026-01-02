@@ -168,9 +168,9 @@ const assignPenguji = async (npm, dosenIds, kaprodiId, editorId) => {
           let suratId;
           if (cekSurat.rows.length === 0) {
               const { rows: suratRows } = await client.query(
-                `INSERT INTO surat (mahasiswa_id, dosbing1_id, dosbing2_id, dosen_penguji_id, jadwal_id, nama_surat, pelaksanaan, tanggal_dibuat)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) RETURNING id`,
-                [mahasiswaId, dosbing1_id, dosbing2_id, dosenPengujiId, jadwalId, 'Surat Undangan Ujian (Draft)', pelaksanaan]
+                `INSERT INTO surat (mahasiswa_id, dosbing1_id, dosbing2_id, dosen_penguji_id, jadwal_id, nama_surat, tanggal_dibuat)
+                 VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP) RETURNING id`,
+                [mahasiswaId, dosbing1_id, dosbing2_id, dosenPengujiId, jadwalId, 'Surat Undangan Ujian (Draft)']
               );
               suratId = suratRows[0].id;
           } else {
