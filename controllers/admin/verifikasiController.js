@@ -1,9 +1,6 @@
-// controllers/admin/verifikasiController
+// controllers/admin/verifikasiController.js
 
 const Verifikasi = require('../../models/verifikasiModel');
-const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
-const ejs = require('ejs'); // Tambahkan ini juga biar renderFile jalan
 const SuratModel = require('../../models/suratUndanganModel'); 
 const AturSurat = require('../../models/aturSuratModel'); 
 const { Dosen } = require('../../models/dosenModel');
@@ -11,6 +8,12 @@ const path = require('path');
 const fs = require('fs');
 const pool = require('../../config/db'); 
 const { Mahasiswa } = require('../../models/mahasiswaModel'); // Untuk catatan kaki
+const supabase = require('../../config/supabaseClient'); // 🔥 PENTING: Untuk Supabase Friendly
+
+// 🔥 TAMBAHAN UNTUK VERCEL & FIX ERROR GENERATE
+const ejs = require('ejs'); 
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
 
 const verifikasiController = {
   
@@ -125,7 +128,6 @@ const verifikasiController = {
           const rawSelesai = await Verifikasi.selesaiUjian(tahunId);
           
           selesai = rawSelesai.map(s => {
-            // Logic Format Tanggal & Jam (Biar Admin enak bacanya)
             let jadwalDisplay = '-';
             if (s.tanggal) {
                 const dateObj = new Date(s.tanggal);
@@ -143,13 +145,9 @@ const verifikasiController = {
               npm: s.npm,
               nama_tahun: s.nama_tahun,
               semester: s.semester,
-              
-              // 🔥 Data Lengkap buat Crosscheck
               dosbing1: s.dosbing1 || '-', 
               dosbing2: s.dosbing2 || '-',
               jadwalUjian: jadwalDisplay, 
-
-              // Status boolean di DB, kita ubah jadi Text buat tampilan
               status_keseluruhan: s.status_keseluruhan === true ? 'Selesai' : 'Menunggu Konfirmasi',
               tanggal_selesai: s.tanggal_selesai ? new Date(s.tanggal_selesai).toLocaleDateString('id-ID') : '-'
             };
@@ -199,12 +197,13 @@ const verifikasiController = {
   },
 
   // =========================================================================
-  // 🖨️ GENERATE PDF 
+  // 🖨️ GENERATE PDF (VERCEL READY)
   // =========================================================================
   generateUndanganPDF: async (req, res) => {
     try {
       const { npm } = req.params;
 
+      // 1. Mark as Downloaded for UI Activation
       await Verifikasi.markSuratDownloaded(npm);
       
       const data = await SuratModel.getSuratByMahasiswa(npm); 
@@ -213,7 +212,6 @@ const verifikasiController = {
       if (!data) return res.status(404).send('Data surat undangan tidak ditemukan.');
 
       const templateSettings = await AturSurat.getSettings('undangan');
-
       const listRincian = await Mahasiswa.getAllRincian(); 
       const pelaksanaan = data.jadwal?.pelaksanaan ? data.jadwal.pelaksanaan.toLowerCase() : 'offline';
 
@@ -239,8 +237,8 @@ const verifikasiController = {
       const logoBase64 = logoBuffer.toString('base64');
       const logoSrc = `data:image/png;base64,${logoBase64}`;
 
-      const html = await new Promise((resolve, reject) => {
-        res.render('partials/surat-undangan', { 
+      // FIX: Gunakan ejs.renderFile agar variabel terdefinisi
+      const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
           layout: false,
           ...data,
           title: 'Surat Undangan',
@@ -265,13 +263,9 @@ const verifikasiController = {
           isi: templateSettings.isi,
           kalimatPenutup: templateSettings.penutup,
           catatanKaki: catatanKaki 
-        }, (err, rendered) => {
-          if (err) reject(err);
-          else resolve(rendered);
-        });
       });
 
-// 🔥 KONFIGURASI PUPPETEER KHUSUS VERCEL
+      // 🔥 KONFIGURASI PUPPETEER KHUSUS VERCEL
       const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
@@ -279,6 +273,7 @@ const verifikasiController = {
         headless: chromium.headless,
         ignoreHTTPSErrors: true,
       });
+
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });
 
@@ -297,7 +292,7 @@ const verifikasiController = {
       res.send(pdfBuffer);
 
     } catch (err) {
-      console.error('Gagal generate PDF:', err);
+      console.error('❌ Gagal generate PDF:', err);
       res.status(500).send(`Error: ${err.message}`);
     }
   },
@@ -314,11 +309,9 @@ const verifikasiController = {
     }
   },
 
-saveTemplateSettings: async (req, res) => {
+  saveTemplateSettings: async (req, res) => {
     try {
-      // Tangkap 'isi' dari body
       const { kop_surat_text, pembuka, isi, penutup } = req.body;
-      
       await AturSurat.updateSettings({
         jenis_surat: 'undangan',
         kop_surat_text,
@@ -384,7 +377,7 @@ saveTemplateSettings: async (req, res) => {
     }
   },
 
-updateSuratDetail: async (req, res) => {
+  updateSuratDetail: async (req, res) => {
     try {
       const { jadwalId } = req.params;
       const {
@@ -393,41 +386,28 @@ updateSuratDetail: async (req, res) => {
       } = req.body;
       
       const editorId = req.session.user?.id || null;
-
       if (!jadwalId) return res.status(400).json({ success: false, message: 'Jadwal ID tidak ditemukan.' });
 
-      // 🔥 FIX LOGIC ONLINE/OFFLINE
-      // Pastikan string lowercasenya konsisten
       const modePelaksanaan = pelaksanaan ? pelaksanaan.toLowerCase() : 'offline';
       const isOnline = modePelaksanaan === 'online';
 
-      // Jika Offline, paksa data zoom jadi NULL biar database bersih
-      // Jika Online, paksa TEMPAT jadi string khusus (misal 'Zoom Meeting') atau biarkan inputan
-      
       await Verifikasi.updateJadwal(jadwalId, {
         tanggal, 
         jam_mulai, 
         jam_selesai, 
-        pelaksanaan: modePelaksanaan, // Simpan lowercase biar konsisten
-        
-        // Logic Tempat:
+        pelaksanaan: modePelaksanaan,
         tempat: isOnline ? 'Zoom Meeting' : tempat, 
-        
-        // Logic Zoom Data:
         link_zoom: isOnline ? link_zoom : null,
         meeting_id: isOnline ? meeting_id : null,
         passcode: isOnline ? passcode : null,
-        
         editorId 
       });
       
-      // Update Dosen Penguji jika ada perubahan
       if (dosen_penguji_id) {
          await Verifikasi.updateDosenPenguji(mahasiswaId, dosen_penguji_id, editorId);
       }
 
-await Verifikasi.resetStatusSurat(mahasiswaId, editorId);
-
+      await Verifikasi.resetStatusSurat(mahasiswaId, editorId);
       res.json({ success: true, message: 'Surat berhasil diperbarui & Revisi tercatat.' });
 
     } catch (err) {
@@ -447,48 +427,54 @@ await Verifikasi.resetStatusSurat(mahasiswaId, editorId);
   },
 
   // =========================================================================
-  // 🔥 ACTION HANDLERS (UPLOAD, DELETE, SELESAI)
+  // 🔥 ACTION HANDLERS (SUPABASE STORAGE FRIENDLY)
   // =========================================================================
-  
-// verifikasiController.js
-// verifikasiController.js
-// verifikasiController.js
-// controllers/admin/verifikasiController.js
-uploadSuratTTD: async (req, res) => {
-  try {
-    // Ambil dari params
-    const npm = req.params.npm; 
-    if (!npm) throw new Error("NPM tidak ditemukan.");
+  uploadSuratTTD: async (req, res) => {
+    try {
+      const npm = req.params.npm; 
+      const file = req.file;
+      if (!file) throw new Error("File surat tidak ditemukan.");
 
-    const relativePath = `/upload/mahasiswa/admin/surat_undangan_ttd/${req.file.filename}`;
-    
-    await SuratModel.uploadSuratFinal(npm, relativePath, req.session.user?.id);
-    
-    res.redirect('/admin/verifikasi?tab=surat');
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-},
+      // 🔥 VERCEL + SUPABASE: Upload ke Cloud Storage
+      const filePath = `surat/${npm}/Undangan-TTD-${Date.now()}.pdf`;
 
-  // 🔥 HANDLER HAPUS SURAT (YG TADI 404)
+      const { error: uploadError } = await supabase.storage
+        .from('storage_sipuapi')
+        .upload(filePath, file.buffer, { contentType: 'application/pdf', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from('storage_sipuapi').getPublicUrl(filePath);
+      
+      // Update DB dengan URL Publik Supabase
+      await SuratModel.uploadSuratFinal(npm, urlData.publicUrl, req.session.user?.id);
+      
+      res.redirect('/admin/verifikasi?tab=surat');
+    } catch (err) {
+      console.error('❌ Error uploadSuratTTD:', err);
+      res.status(500).send(err.message);
+    }
+  },
+
   deleteSuratTTD: async (req, res) => {
     try {
       const { npm } = req.body;
-      const oldData = await SuratModel.deleteSuratFile(npm);
+      const oldData = await SuratModel.getSuratByMahasiswa(npm); 
 
-      if (oldData && oldData.path_file) {
-         const fullPath = path.join(__dirname, '../../public', oldData.path_file);
-         if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      // 🔥 Hapus file di Supabase Cloud jika ada
+      if (oldData && oldData.path_file && oldData.path_file.includes('supabase')) {
+          const cleanPath = oldData.path_file.split('storage_sipuapi/').pop();
+          await supabase.storage.from('storage_sipuapi').remove([cleanPath]);
       }
-      res.json({ success: true, message: 'File surat berhasil dihapus.' });
 
+      await SuratModel.deleteSuratFile(npm);
+      res.json({ success: true, message: 'File surat di cloud berhasil dihapus.' });
     } catch (err) {
       console.error('❌ Error deleteSuratTTD:', err);
       res.status(500).json({ success: false, message: 'Gagal menghapus surat.' });
     }
   },
 
-  // 🔥 HANDLER TANDAI SELESAI
   tandaiSelesai: async (req, res) => {
     try {
       const { mahasiswaId } = req.body;
@@ -496,9 +482,7 @@ uploadSuratTTD: async (req, res) => {
 
       if (!mahasiswaId) return res.status(400).json({ success: false, message: 'ID mahasiswa wajib' });
       
-      // Update Boolean status jadi TRUE
       await Verifikasi.tandaiSelesai(mahasiswaId, editorId);
-      
       res.json({ success: true, message: 'Ujian mahasiswa berhasil ditandai selesai' });
     } catch (err) {
       console.error('❌ Error tandaiSelesai:', err.message);
