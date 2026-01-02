@@ -1,5 +1,22 @@
+const express = require('express');
+const router = express.Router();
+const path = require('path');
+const ejs = require('ejs');
+const puppeteer = require('puppeteer');
 const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
+// Controller
+const verifikasiController = require('../../controllers/admin/verifikasiController');
+
+// -----------------------------------------------------------------------------
+// 🧩 1️⃣ Route: Tampilkan daftar/preview surat undangan (di halaman web)
+// -----------------------------------------------------------------------------
+router.get('/surat-undangan/:npm', verifikasiController.getSuratDetail);
+
+// -----------------------------------------------------------------------------
+// 🧩 2️⃣ Route: Generate surat undangan jadi PDF pakai Puppeteer
+// -----------------------------------------------------------------------------
+
 
 router.get('/surat-undangan/:npm/generate', async (req, res) => {
   try {
@@ -37,3 +54,5 @@ router.get('/surat-undangan/:npm/generate', async (req, res) => {
     res.status(500).send('Gagal membuat PDF: ' + err.message);
   }
 });
+
+module.exports = router;
