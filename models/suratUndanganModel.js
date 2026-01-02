@@ -150,6 +150,55 @@ const getSuratByMahasiswa = async (npm) => {
   };
 };
 
+// models/suratModel.js
+
+// ... (kode formatTanggalIndonesia dan getKaprodi tetap sama)
+
+/**
+ * AMBIL DETAIL SURAT LENGKAP (Digunakan oleh Controller untuk render PDF)
+ */
+const getSuratLengkapByNPM = async (npm) => {
+  const { rows } = await pool.query(`
+    SELECT 
+      m.nama, m.npm,
+      d1.nama AS dosbing1,
+      d2.nama AS dosbing2,
+      j.tanggal, j.jam_mulai, j.jam_selesai, j.tempat, j.pelaksanaan,
+      s.nama_surat, s.tanggal_dibuat,
+      ARRAY_AGG(DISTINCT d.nama) AS penguji_list
+    FROM mahasiswa m
+    LEFT JOIN surat s ON s.mahasiswa_id = m.id
+    LEFT JOIN jadwal j ON j.id = s.jadwal_id
+    LEFT JOIN dosen d1 ON m.dosbing1_id = d1.id
+    LEFT JOIN dosen d2 ON m.dosbing2_id = d2.id
+    LEFT JOIN dosen_penguji dp ON dp.mahasiswa_id = m.id
+    LEFT JOIN dosen d ON dp.dosen_id = d.id
+    WHERE m.npm = $1
+    GROUP BY m.id, s.id, j.id, d1.id, d2.id
+  `, [npm]);
+
+  if (!rows[0]) return null;
+
+  const r = rows[0];
+  const kaprodi = await getKaprodi();
+
+  // Return data dalam format yang diekspektasikan template EJS surat-undangan.ejs
+  return {
+    namaMahasiswa: r.nama,
+    npm: r.npm,
+    pembimbing1: r.dosbing1 || '-',
+    pembimbing2: r.dosbing2 || '-',
+    penguji: r.penguji_list ? r.penguji_list.join(', ') : 'Belum Ditentukan',
+    tanggalUjian: formatTanggalIndonesia(r.tanggal),
+    waktuUjian: `${r.jam_mulai?.slice(0,5)} - ${r.jam_selesai?.slice(0,5)} WIB`,
+    tempatUjian: r.tempat || '-',
+    tipeUjian: r.pelaksanaan || 'offline',
+    nomorSurat: r.nama_surat || 'Draft',
+    tanggalSurat: formatTanggalIndonesia(r.tanggal_dibuat || new Date()),
+    kaprodi: kaprodi
+  };
+};
+
 /**
  * ============================================================
  * 📝 4. INSERT SURAT (DRAFT)
