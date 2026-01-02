@@ -210,7 +210,7 @@ generateUndanganPDF: async (req, res) => {
 
       // --- 🚀 SUNTIKAN FONT SAKTI DISINI ---
       // Pastikan path file .txt font lu bener ya!
-      const fontPath = path.join(process.cwd(), 'public', 'fonts', 'times-base64.txt'); 
+      const fontPath = path.join(process.cwd(), 'public', 'fonts', 'font-base64.txt'); 
       let fontTMR = "";
       try {
           fontTMR = fs.readFileSync(fontPath, 'utf8').trim();
