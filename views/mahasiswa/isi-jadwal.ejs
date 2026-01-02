@@ -98,24 +98,28 @@
               <input type="hidden" name="tempat" id="tempatInput" value="<%= tempat || '' %>">
             </div>
 
-<div class="d-flex align-items-center gap-2">
+<div class="mt-4 pt-3 border-top">
   <% if (locals.tanggal && locals.tanggal !== '') { %>
-    <button type="button" id="btnHapusJadwal" class="btn btn-outline-danger d-flex align-items-center gap-2">
-      <i class="bi bi-trash3-fill"></i> Hapus Jadwal
-    </button>
+    <div class="mb-3">
+      <button type="button" id="btnHapusJadwal" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-trash3-fill"></i> Batalkan / Hapus Jadwal Saya
+      </button>
+    </div>
   <% } %>
 
-  <div class="ms-auto d-flex gap-2">
-    <button type="button" id="btnReset" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+  <div class="d-flex gap-2">
+    <button type="button" id="btnReset" class="btn btn-outline-secondary flex-fill d-flex align-items-center justify-content-center gap-2">
       <i class="bi bi-arrow-counterclockwise"></i> Reset
     </button>
 
-    <%- include('../partials/button', { 
-        buttonType: 'submit', 
-        buttonLabel: 'Simpan', 
-        buttonTarget: '/mahasiswa/isi-jadwal', 
-        buttonStatus: '' 
-    }) %>
+    <div class="flex-fill">
+      <%- include('../partials/button', { 
+          buttonType: 'submit', 
+          buttonLabel: 'Simpan', 
+          buttonTarget: '/mahasiswa/isi-jadwal', 
+          buttonStatus: '' 
+      }) %>
+    </div>
   </div>
 </div>
 
