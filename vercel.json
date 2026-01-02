@@ -1,21 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "app.js",
-      "use": "@vercel/node"
+      "source": "/(.*)",
+      "destination": "/api/index.js"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.js"
-    }
-  ],
-  "functions": {
-    "app.js": {
-      "maxDuration": 60,
-      "memory": 1024
-    }
-  }
+  ]
 }
