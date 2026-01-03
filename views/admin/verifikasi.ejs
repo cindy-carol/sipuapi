@@ -426,7 +426,6 @@ async function bukaModalTemplate() {
       $('#editor-pembuka').summernote('code', data.pembuka || '');
       $('#editor-isi').summernote('code', data.isi || '');
       $('#editor-penutup').summernote('code', data.penutup || '');
-      $('#editor-catatan').summernote('code', data.catatan_kaki || '');
       
       const modalEl = document.getElementById('modalAturTemplate');
       const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
