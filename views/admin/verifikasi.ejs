@@ -340,6 +340,21 @@
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 
+<style>
+      @font-face {
+    font-family: 'Times New Roman Custom';
+    src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/times.ttf") format("truetype");
+}
+
+/* Load Cambria */
+@font-face {
+    font-family: 'Cambria Custom';
+    src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/cambria.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+</style>
+
 <div class="modal fade" id="modalAturTemplate" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
@@ -392,57 +407,62 @@
 
 <script>
 $(document).ready(function() {
-    // Inisialisasi SEMUA editor sekaligus
-    $('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup, #editor-catatan').summernote({
+    // Inisialisasi Summernote (Cukup panggil satu kali untuk semua editor)
+    $('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup').summernote({
         placeholder: 'Ketik isi di sini...',
         tabsize: 2,
         height: 150,
+        fontNames: ['Times New Roman Custom', 'Cambria Custom', 'Arial', 'Tahoma'],
+        fontNamesIgnoreCheck: ['Times New Roman Custom', 'Cambria Custom'],
+        addDefaultFonts: false,
         toolbar: [
-          ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
-          ['font', ['strikethrough', 'superscript', 'subscript']],
-          ['fontsize', ['fontsize']], 
-          ['color', ['color']],
-          ['para', ['ul', 'ol', 'paragraph']], 
-          ['height', ['height']],
-          ['view', ['fullscreen', 'codeview']]
+            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+            ['font', ['fontname', 'fontsize', 'strikethrough']], 
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']], 
+            ['view', ['fullscreen', 'codeview']] 
         ]
     });
 });
 
 async function bukaModalTemplate() {
   try {
-    // Set status loading di editor
-    const loadingText = 'Sedang memuat data...';
-    $('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup, #editor-catatan').summernote('code', loadingText);
+    // Beri indikasi loading
+    $('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup').summernote('code', 'Memuat data...');
 
-    // Ambil data dari backend
     const res = await fetch('/admin/verifikasi/api/template-surat');
     const json = await res.json();
     
     if (json.success) {
       const data = json.data;
-      // Masukkan data ke masing-masing editor
-      $('#editor-kop').summernote('code', data.kop_surat_text || ''); 
+      
+      // Template default jika database kosong (TMR untuk Instansi, Cambria untuk Alamat)
+      const defaultKop = `
+        <p style="text-align: center;"><span style="font-family: 'Times New Roman Custom'; font-size: 14pt;"><strong>KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</strong></span></p>
+        <p style="text-align: center;"><span style="font-family: 'Times New Roman Custom'; font-size: 12pt;"><strong>UNIVERSITAS LAMPUNG - FAKULTAS TEKNIK</strong></span></p>
+        <p style="text-align: center;"><span style="font-family: 'Cambria Custom'; font-size: 10pt;">Gedung A Dekanat FT, Jl. Prof. Dr. Soemantri Brojonegoro No. 1 Bandar Lampung</span></p>
+      `;
+
+      // Isi data ke editor [cite: 50, 51]
+      $('#editor-kop').summernote('code', data.kop_surat_text || defaultKop);
       $('#editor-pembuka').summernote('code', data.pembuka || '');
       $('#editor-isi').summernote('code', data.isi || '');
       $('#editor-penutup').summernote('code', data.penutup || '');
       
-      const modalEl = document.getElementById('modalAturTemplate');
-      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAturTemplate'));
       modal.show();
     } else {
-      alert('Gagal mengambil data: ' + json.message);
+      alert('Gagal: ' + json.message);
     }
   } catch (err) {
     console.error(err);
-    alert('Terjadi kesalahan koneksi saat mengambil template.');
+    alert('Gagal mengambil template.');
   }
 }
 
 async function simpanTemplate() {
   if(!confirm("Simpan perubahan template?")) return;
 
-  // Tarik data dari Summernote
   const data = {
     kop_surat_text: $('#editor-kop').summernote('code'), 
     pembuka: $('#editor-pembuka').summernote('code'),
@@ -450,7 +470,6 @@ async function simpanTemplate() {
     penutup: $('#editor-penutup').summernote('code'),
   };
 
-  // Validasi sederhana
   if(!data.kop_surat_text || data.kop_surat_text === '<p><br></p>') {
       alert("Kop surat tidak boleh kosong!");
       return;
@@ -466,18 +485,12 @@ async function simpanTemplate() {
     const hasil = await res.json();
     if (hasil.success) {
       alert('Berhasil disimpan!');
-      // Tutup modal
-      const modalEl = document.getElementById('modalAturTemplate');
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      modal.hide();
-      // Reload biar perubahan kelihatan saat generate PDF
-      location.reload();
+      location.reload(); // [cite: 59]
     } else {
-      alert('Gagal menyimpan: ' + hasil.message);
+      alert('Gagal: ' + hasil.message);
     }
   } catch (err) {
-    console.error(err);
-    alert('Error saat mencoba menghubungi server.');
+    alert('Terjadi kesalahan koneksi.');
   }
 }
 </script>
