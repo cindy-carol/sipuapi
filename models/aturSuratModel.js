@@ -12,34 +12,34 @@ const AturSurat = {
   },
 
   // Fungsi sakti biar data masuk ke database
-  updateSettings: async (data) => {
-    const { jenis_surat, kop_surat_text, pembuka, isi, penutup } = data;
+// models/aturSuratModel.js
+updateSettings: async (data) => {
+  const { jenis_surat, kop_surat_text, pembuka, isi, penutup } = data;
+  
+  try {
+    const query = `
+      INSERT INTO atur_surat (jenis_surat, kop_surat_text, pembuka, isi, penutup, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
+      ON CONFLICT (jenis_surat) 
+      DO UPDATE SET 
+        kop_surat_text = EXCLUDED.kop_surat_text,
+        pembuka = EXCLUDED.pembuka,
+        isi = EXCLUDED.isi,
+        penutup = EXCLUDED.penutup,
+        updated_at = NOW()
+      RETURNING *;
+    `;
     
-    try {
-      // ON CONFLICT butuh kolom yang punya UNIQUE constraint (jenis_surat)
-      const query = `
-        INSERT INTO atur_surat (jenis_surat, kop_surat_text, pembuka, isi, penutup, updated_at)
-        VALUES ($1, $2, $3, $4, $5, NOW())
-        ON CONFLICT (jenis_surat) 
-        DO UPDATE SET 
-          kop_surat_text = EXCLUDED.kop_surat_text,
-          pembuka = EXCLUDED.pembuka,
-          isi = EXCLUDED.isi,
-          penutup = EXCLUDED.penutup,
-          updated_at = NOW()
-        RETURNING *;
-      `;
-      
-      const values = [jenis_surat || 'undangan', kop_surat_text, pembuka, isi, penutup];
-      const result = await pool.query(query, values);
-      
-      console.log("✅ Database Updated:", result.rows[0]);
-      return true;
-    } catch (err) {
-      console.error('❌ Database Error:', err.message);
-      return false;
-    }
+    const values = [jenis_surat || 'undangan', kop_surat_text, pembuka, isi, penutup];
+    const result = await pool.query(query, values);
+    
+    console.log("✅ Sukses Push ke DB:", result.rows[0]); // Cek terminal, datanya pasti muncul
+    return true;
+  } catch (err) {
+    console.error('❌ Database Nolak Data:', err.message);
+    return false;
   }
+}
 };
 
 module.exports = AturSurat;
