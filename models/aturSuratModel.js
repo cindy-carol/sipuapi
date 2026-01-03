@@ -13,12 +13,13 @@ const AturSurat = {
 
   // Fungsi sakti biar data masuk ke database
 // models/aturSuratModel.js
+// models/aturSuratModel.js
 updateSettings: async (data) => {
-  const { jenis_surat, kop_surat_text, pembuka, isi, penutup} = data;
+  const { jenis_surat, kop_surat_text, pembuka, isi, penutup } = data;
   try {
     const query = `
       INSERT INTO atur_surat (jenis_surat, kop_surat_text, pembuka, isi, penutup, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      VALUES ($1, $2, $3, $4, $5, NOW())
       ON CONFLICT (jenis_surat) 
       DO UPDATE SET 
         kop_surat_text = EXCLUDED.kop_surat_text,
@@ -28,11 +29,20 @@ updateSettings: async (data) => {
         updated_at = NOW()
       RETURNING *;
     `;
-    const values = [jenis_surat || 'undangan', kop_surat_text, pembuka, isi, penutup];
-    await pool.query(query, values);
-    return true;
+    
+    // Pastikan urutan values sesuai dengan $1 sampai $5 di atas
+    const values = [
+      jenis_surat || 'undangan', 
+      kop_surat_text, 
+      pembuka, 
+      isi, 
+      penutup
+    ];
+
+    const result = await pool.query(query, values);
+    return result.rowCount > 0; // Mengembalikan true jika ada baris yang terpengaruh
   } catch (err) {
-    console.error(err);
+    console.error("❌ Database Error in updateSettings:", err);
     return false;
   }
 }

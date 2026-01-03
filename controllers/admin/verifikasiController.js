@@ -325,32 +325,22 @@ getTemplateSettings: async (req, res) => {
 
 saveTemplateSettings: async (req, res) => {
     try {
-        const { kop_surat_text, pembuka, isi, penutup, catatan_kaki } = req.body;
+        const { kop_surat_text, pembuka, isi, penutup } = req.body;
         
-        // 1. Cek apakah baris template 'undangan' sudah ada
-        const existing = await AturSurat.getSettings('undangan');
+        // Tambahkan validasi sederhana agar tidak menyimpan data kosong secara tidak sengaja
+        const success = await AturSurat.updateSettings({
+            jenis_surat: 'undangan',
+            kop_surat_text: kop_surat_text || '',
+            pembuka: pembuka || '',
+            isi: isi || '', 
+            penutup: penutup || ''
+        });
 
-        if (!existing) {
-            // 2. Jika KOSONG (Pertama kali), paksa buat baris baru
-            await AturSurat.updateSettings({ // Pastikan fungsi ini ada di Model
-                jenis_surat: 'undangan',
-                kop_surat_text,
-                pembuka,
-                isi, 
-                penutup,
-            });
+        if (success) {
+            res.json({ success: true, message: 'Template surat berhasil diperbarui.' });
         } else {
-            // 3. Jika ADA, baru lakukan Update (Replace)
-            await AturSurat.updateSettings({
-                jenis_surat: 'undangan',
-                kop_surat_text,
-                pembuka,
-                isi, 
-                penutup,
-            });
+            res.status(400).json({ success: false, message: 'Gagal menyimpan ke database.' });
         }
-        
-        res.json({ success: true, message: 'Template surat berhasil diperbarui.' });
     } catch (err) {
         console.error("Gagal save template:", err);
         res.status(500).json({ success: false, message: err.message });
