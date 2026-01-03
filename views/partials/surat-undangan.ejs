@@ -1,89 +1,31 @@
 <style>
 @font-face {
     font-family: 'Times New Roman Custom';
+    /* Gunakan tanda petik dua di dalam url() untuk keamanan */
     src: url("data:font/ttf;charset=utf-8;base64,<%= fontTMR %>") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
 
-/* Reset Dasar */
 body {
     font-family: 'Times New Roman Custom', serif;
     font-size: 12pt;
-    line-height: 1.2; /* Dikecilkan sedikit agar tidak meluber */
+    line-height: 1.2;
     margin: 0;
     padding: 0;
 }
 
 .surat-wrapper {
     width: 100%;
-    /* Gunakan font kustom secara global di wrapper */
     font-family: 'Times New Roman Custom', serif; 
 }
 
-/* Bagian Kop Surat */
-.kop {
-    text-align: center;
-    /* Jangan gunakan scaleX atau transform jika font sudah benar, ini bikin teks pecah */
-    transform: none; 
+/* Pastikan semua elemen menggunakan font custom agar tidak kembali ke default */
+.kop, .kop h3, .alamat, p, table, ul, li, .catatan {
+    font-family: 'Times New Roman Custom', serif !important;
 }
 
-.kop strong {
-    display: block;
-    font-weight: bold;
-    font-size: 13pt; /* Sedikit diperbesar agar tegas */
-    line-height: 1.1;
-}
-
-.kop h3 {
-    font-family: 'Times New Roman Custom', serif;
-    font-size: 16pt;
-    font-weight: bold;
-    margin: 2px 0;
-    line-height: 1.1;
-}
-
-.kop .alamat {
-    font-family: 'Times New Roman Custom', serif; /* Samakan font agar sinkron */
-    font-size: 9pt;
-    line-height: 1.2;
-}
-
-.kop-line {
-    border-top: 3px double black; /* Ketebalan disesuaikan */
-    margin-top: 5px;
-    margin-bottom: 15px;
-    width: 100%;
-}
-
-/* Tabel Informasi & Isi */
-table {
-    border-collapse: collapse;
-    font-family: 'Times New Roman Custom', serif;
-    font-size: 11pt;
-    width: auto; /* Biarkan tabel mengikuti isi agar tidak hancur */
-}
-
-.baris-info, .informasi, .content, .signature, .catatan {
-    /* Padding disesuaikan agar pas di kertas A4 */
-    padding: 0 15mm 0 15mm; 
-}
-
-p {
-    margin-bottom: 5px;
-    text-align: justify;
-    line-height: 1.4; /* Spasi antar baris di paragraf lebih lega agar enak dibaca */
-}
-
-.signature {
-    margin-top: 40px;
-    padding-right: 20mm; /* Geser tanda tangan agak ke tengah dari kanan */
-}
-
-.catatan {
-    margin-top: 30px;
-    font-size: 10pt;
-}
+/* Sisanya tetap gunakan CSS yang sudah kamu buat sebelumnya */
 </style>
 
 <div class="surat-wrapper">

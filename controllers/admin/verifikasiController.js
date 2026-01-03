@@ -196,6 +196,7 @@ const verifikasiController = {
   // =========================================================================
   // 🖨️ GENERATE PDF (VERCEL READY)
   // =========================================================================
+// Di dalam verifikasiController.js pada fungsi generateUndanganPDF
 generateUndanganPDF: async (req, res) => {
     try {
       const { npm } = req.params;
@@ -208,16 +209,16 @@ generateUndanganPDF: async (req, res) => {
 
       if (!data) return res.status(404).send('Data tidak ditemukan.');
 
-      // --- 🚀 SUNTIKAN FONT SAKTI DISINI ---
-      // Pastikan path file .txt font lu bener ya!
+      // --- START: SUNTIKAN FONT ---
+      // Pastikan file font-base64.txt ada di folder public/fonts/
       const fontPath = path.join(process.cwd(), 'public', 'fonts', 'font-base64.txt'); 
       let fontTMR = "";
       try {
           fontTMR = fs.readFileSync(fontPath, 'utf8').trim();
       } catch (e) {
-          console.error("Font file gak ketemu, cek path-nya bos!");
+          console.error("❌ Font file tidak ditemukan:", e.message);
       }
-      // --------------------------------------
+      // --- END: SUNTIKAN FONT ---
 
       const templateSettings = await AturSurat.getSettings('undangan');
       const listRincian = await Mahasiswa.getAllRincian(); 
@@ -231,10 +232,11 @@ generateUndanganPDF: async (req, res) => {
       const logoBase64 = logoBuffer.toString('base64');
       const logoSrc = `data:image/png;base64,${logoBase64}`;
 
+      // Mapping EJS - Pastikan semua variabel dari templateSettings dilempar ke EJS
       const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
           layout: false,
           ...data,
-          fontTMR: fontTMR, // <-- Kirim variabel font ke EJS
+          fontTMR: fontTMR, // Tambahkan ini
           logoPath: logoSrc,
           namaMahasiswa: data.mahasiswa.nama,
           npm: data.mahasiswa.npm,
@@ -249,15 +251,16 @@ generateUndanganPDF: async (req, res) => {
           pembimbing2: data.dosbing[1] || '-',
           penguji: data.penguji || [],
           kaprodi: data.kaprodi || { nama: '', nip_dosen: '' },
-          kopSurat: templateSettings.kop_surat_text,
-          kalimatPembuka: templateSettings.pembuka,
-          isi: templateSettings.isi,
-          kalimatPenutup: templateSettings.penutup,
+          // Pastikan variabel di bawah ini merujuk ke templateSettings yang benar
+          kopSurat: templateSettings.kop_surat_text || '',
+          kalimatPembuka: templateSettings.pembuka || '',
+          isi: templateSettings.isi || '',
+          kalimatPenutup: templateSettings.penutup || '',
           catatanKaki: catatanKaki,
           tanggalSurat: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       });
 
-      // Konfigurasi Puppeteer
+      // Konfigurasi Puppeteer Core Khusus Vercel
       const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
@@ -272,6 +275,7 @@ generateUndanganPDF: async (req, res) => {
       const pdfBuffer = await page.pdf({ 
         format: 'A4', 
         printBackground: true, 
+        preferCSSPageSize: true, // Tambahkan ini agar layout tidak berantakan
         margin: { top: '10mm', right: '10mm', bottom: '20mm', left: '10mm' } 
       });
 
@@ -287,7 +291,7 @@ generateUndanganPDF: async (req, res) => {
       console.error('❌ Error Generate PDF:', err);
       res.status(500).send(`Error: ${err.message}`);
     }
-  },
+},
 
   // =========================================================================
   // ⚙️ SETTINGS TEMPLATE
