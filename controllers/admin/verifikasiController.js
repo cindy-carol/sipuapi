@@ -310,21 +310,41 @@ generateUndanganPDF: async (req, res) => {
     }
   },
 
-  saveTemplateSettings: async (req, res) => {
+saveTemplateSettings: async (req, res) => {
     try {
-      const { kop_surat_text, pembuka, isi, penutup } = req.body;
-      await AturSurat.updateSettings({
-        jenis_surat: 'undangan',
-        kop_surat_text,
-        pembuka,
-        isi, 
-        penutup,
-      });
-      res.json({ success: true, message: 'Template surat berhasil diperbarui.' });
+        const { kop_surat_text, pembuka, isi, penutup, catatan_kaki } = req.body;
+        
+        // 1. Cek apakah baris template 'undangan' sudah ada
+        const existing = await AturSurat.getSettings('undangan');
+
+        if (!existing) {
+            // 2. Jika KOSONG (Pertama kali), paksa buat baris baru
+            await AturSurat.createSettings({ // Pastikan fungsi ini ada di Model
+                jenis_surat: 'undangan',
+                kop_surat_text,
+                pembuka,
+                isi, 
+                penutup,
+                catatan_kaki
+            });
+        } else {
+            // 3. Jika ADA, baru lakukan Update (Replace)
+            await AturSurat.updateSettings({
+                jenis_surat: 'undangan',
+                kop_surat_text,
+                pembuka,
+                isi, 
+                penutup,
+                catatan_kaki
+            });
+        }
+        
+        res.json({ success: true, message: 'Template surat berhasil diperbarui.' });
     } catch (err) {
-      res.status(500).json({ success: false, message: err.message });
+        console.error("Gagal save template:", err);
+        res.status(500).json({ success: false, message: err.message });
     }
-  },
+},
 
   // =========================================================================
   // 🛠️ API & MODAL HELPER

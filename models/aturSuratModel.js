@@ -1,16 +1,9 @@
 // models/aturSuratModel.js
 const pool = require('../config/db');
 
-/**
- * ============================================================
- * 📝 MODEL: ATUR SURAT
- * ============================================================
- * Mengelola template teks untuk pembuatan Surat Undangan Ujian.
- * Memungkinkan admin mengubah Kop, Pembuka, dan Penutup secara dinamis.
- */
 const AturSurat = {
   
-  // 1️⃣ Ambil pengaturan surat (Default jenis: 'undangan')
+  // 1️⃣ Ambil settings dengan Fallback yang kuat
   getSettings: async (jenis = 'undangan') => {
     try {
       const { rows } = await pool.query(
@@ -18,53 +11,50 @@ const AturSurat = {
         [jenis]
       );
 
-      // 🛡️ Fallback: Jika data belum ada di DB, kirim objek default agar sistem tidak crash
       if (!rows[0]) {
+        // Balikin objek default supaya Frontend gak kosong pas pertama kali buka
         return {
           jenis_surat: 'undangan',
           kop_surat_text: 'KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI\nUNIVERSITAS LAMPUNG - FAKULTAS TEKNIK',
           pembuka: 'Sebagai salah satu syarat untuk menyelesaikan studi pada Program Studi Program Profesi Insinyur (PS-PPI) Universitas Lampung (Unila), maka kami mengundang Bapak/Ibu/Sdr pada:',
-          isi: null, // Isi biasanya berisi data dinamis mahasiswa
+          isi: 'Untuk melaksanakan Ujian Akhir Profesi Mahasiswa:',
           penutup: 'Demikian atas perhatian dan kerjasama yang baik kami ucapkan terima kasih.',
         };
       }
       return rows[0];
     } catch (err) {
-      console.error('❌ Error getSettings Surat:', err);
+      console.error('❌ Error getSettings:', err);
       throw err;
     }
   },
 
-  // 2️⃣ Update atau Insert pengaturan surat (UPSERT Logic)
+  // 2️⃣ Update atau Insert (UPSERT) - ANTI GAGAL
   updateSettings: async (data) => {
     const { jenis_surat, kop_surat_text, pembuka, isi, penutup } = data;
     
     try {
-      // Cek apakah pengaturan untuk jenis surat tersebut sudah ada
-      const cek = await pool.query(
-        `SELECT id FROM atur_surat WHERE jenis_surat = $1`, 
-        [jenis_surat]
-      );
+      // Pake ON CONFLICT (untuk PostgreSQL) biar otomatis INSERT kalau belum ada
+      // Tanpa perlu SELECT manual dulu. Lebih cepet dan aman.
+      const query = `
+        INSERT INTO atur_surat (jenis_surat, kop_surat_text, pembuka, isi, penutup, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        ON CONFLICT (jenis_surat) 
+        DO UPDATE SET 
+          kop_surat_text = EXCLUDED.kop_surat_text,
+          pembuka = EXCLUDED.pembuka,
+          isi = EXCLUDED.isi,
+          penutup = EXCLUDED.penutup,
+          updated_at = NOW()
+        RETURNING *;
+      `;
       
-      if (cek.rows.length > 0) {
-        // Logika UPDATE jika data sudah ada
-        await pool.query(
-          `UPDATE atur_surat 
-           SET kop_surat_text = $1, pembuka = $2, isi = $3, penutup = $4, updated_at = NOW()
-           WHERE jenis_surat = $5`,
-          [kop_surat_text, pembuka, isi, penutup, jenis_surat]
-        );
-      } else {
-        // Logika INSERT jika data benar-benar baru
-        await pool.query(
-          `INSERT INTO atur_surat (jenis_surat, kop_surat_text, pembuka, isi, penutup, created_at)
-           VALUES ($1, $2, $3, $4, $5, NOW())`,
-          [jenis_surat, kop_surat_text, pembuka, isi, penutup]
-        );
-      }
+      const values = [jenis_surat || 'undangan', kop_surat_text, pembuka, isi, penutup];
+      const { rows } = await pool.query(query, values);
+      
+      console.log("✅ Data berhasil di-upsert:", rows[0].jenis_surat);
       return true;
     } catch (err) {
-      console.error('❌ Error updateSettings Surat:', err);
+      console.error('❌ Error updateSettings:', err);
       return false;
     }
   }
