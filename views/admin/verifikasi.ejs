@@ -362,54 +362,35 @@
             <label class="form-label fw-bold">Kop Surat</label>
             <textarea id="editor-kop" name="kop_surat_text"></textarea>
           </div>
+
           <div class="mb-3">
-             <label class="form-label fw-bold">Kalimat Pembuka</label>
-             <textarea id="editor-pembuka" name="pembuka"></textarea>
-          </div>          
-          <div>
-          <table style="border: none; margin-top: 10px;">
-            <tr>
-                <td style="width: 130px;">Hari / Tanggal</td>
-                <td style="width: 10px;">:</td>
-            </tr>
-            <tr>
-                <td>Waktu</td>
-                <td>:</td>
-            </tr>    
-            <tr>
-                <td style="vertical-align: top;">Tempat</td>
-                <td style="vertical-align: top;">:</td>
-                <td>
-                  Ruang Sidang PSPPI/Zoom Meeting <br>
-                  ID Rapat : <br>
-                  Kode Sandi :  <br>
-                  Link Zoom : <br>
-                  catatan: ID Rapat, Kode Sandi, dan Link Zoom diisi jika ujian dilakukan secara online.
-                </td>
-            </tr>
-          </table>          
-          <table style="border: none; margin-top: 10px;">
-            <tr>
-                <td style="width: 130px;">Pembimbing I</td>
-                <td style="width: 10px;">:</td>
-            </tr>
-            <tr>
-                <td>Pembimbing II</td>
-                <td>:</td>
-            </tr>    
-            <tr>
-                <td>Penguji</td>
-                <td>:</td>
-            </tr>
-          </table>
+            <label class="form-label fw-bold">Kalimat Pembuka</label>
+            <textarea id="editor-pembuka" name="pembuka"></textarea>
           </div>
-          <div class="mb-3">
-             <label class="form-label fw-bold">Kalimat Isi</label>
-             <textarea id="editor-isi" name="isi"></textarea>
+
+          <div class="p-3 mb-3 border rounded bg-light">
+            <small class="text-muted d-block mb-2">Struktur Jadwal & Dosen (Otomatis):</small>
+            <table style="font-size: 0.85rem; color: #666;">
+              <tr><td style="width: 120px;">Hari / Tanggal</td><td>: [Data Jadwal]</td></tr>
+              <tr><td>Waktu</td><td>: [Data Jadwal]</td></tr>
+              <tr><td>Tempat</td><td>: [Data Jadwal / Zoom]</td></tr>
+              <tr><td>Pembimbing</td><td>: [Data Dosen]</td></tr>
+            </table>
           </div>
+
           <div class="mb-3">
-             <label class="form-label fw-bold">Kalimat Penutup</label>
-             <textarea id="editor-penutup" name="penutup"></textarea>
+            <label class="form-label fw-bold">Kalimat Isi (Setelah Daftar Dosen)</label>
+            <textarea id="editor-isi" name="isi"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Kalimat Penutup</label>
+            <textarea id="editor-penutup" name="penutup"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Catatan Kaki (Default)</label>
+            <textarea id="editor-catatan" name="catatan_kaki"></textarea>
           </div>
         </form>
       </div>
@@ -425,8 +406,9 @@
 
 <script>
 $(document).ready(function() {
-    $('#editor-kop, #editor-pembuka, #editor-penutup').summernote({
-        placeholder: 'Sedang memuat data...',
+    // Inisialisasi SEMUA editor sekaligus
+    $('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup, #editor-catatan').summernote({
+        placeholder: 'Ketik isi di sini...',
         tabsize: 2,
         height: 150,
         toolbar: [
@@ -443,20 +425,22 @@ $(document).ready(function() {
 
 async function bukaModalTemplate() {
   try {
-    $('#editor-kop').summernote('code', 'Sedang memuat...');
-    $('#editor-pembuka').summernote('code', 'Sedang memuat...');
-    $('#editor-isi').summernote('code', 'Sedang memuat...');
-    $('#editor-penutup').summernote('code', 'Sedang memuat...');
+    // Set status loading di editor
+    const loadingText = 'Sedang memuat data...';
+    $('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup, #editor-catatan').summernote('code', loadingText);
 
+    // Ambil data dari backend
     const res = await fetch('/admin/verifikasi/api/template-surat');
     const json = await res.json();
     
     if (json.success) {
       const data = json.data;
+      // Masukkan data ke masing-masing editor
       $('#editor-kop').summernote('code', data.kop_surat_text || ''); 
       $('#editor-pembuka').summernote('code', data.pembuka || '');
       $('#editor-isi').summernote('code', data.isi || '');
       $('#editor-penutup').summernote('code', data.penutup || '');
+      $('#editor-catatan').summernote('code', data.catatan_kaki || '');
       
       const modalEl = document.getElementById('modalAturTemplate');
       const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -466,35 +450,50 @@ async function bukaModalTemplate() {
     }
   } catch (err) {
     console.error(err);
-    alert('Terjadi kesalahan koneksi.');
+    alert('Terjadi kesalahan koneksi saat mengambil template.');
   }
 }
 
 async function simpanTemplate() {
   if(!confirm("Simpan perubahan template?")) return;
+
+  // Tarik data dari Summernote
   const data = {
     kop_surat_text: $('#editor-kop').summernote('code'), 
     pembuka: $('#editor-pembuka').summernote('code'),
     isi: $('#editor-isi').summernote('code'),
     penutup: $('#editor-penutup').summernote('code'),
+    catatan_kaki: $('#editor-catatan').summernote('code')
   };
+
+  // Validasi sederhana
+  if(!data.kop_surat_text || data.kop_surat_text === '<p><br></p>') {
+      alert("Kop surat tidak boleh kosong!");
+      return;
+  }
+
   try {
     const res = await fetch('/admin/verifikasi/api/template-surat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
+
     const hasil = await res.json();
     if (hasil.success) {
       alert('Berhasil disimpan!');
+      // Tutup modal
       const modalEl = document.getElementById('modalAturTemplate');
       const modal = bootstrap.Modal.getInstance(modalEl);
       modal.hide();
+      // Reload biar perubahan kelihatan saat generate PDF
+      location.reload();
     } else {
-      alert('Gagal: ' + hasil.message);
+      alert('Gagal menyimpan: ' + hasil.message);
     }
   } catch (err) {
-    alert('Error saat menyimpan.');
+    console.error(err);
+    alert('Error saat mencoba menghubungi server.');
   }
 }
 </script>
