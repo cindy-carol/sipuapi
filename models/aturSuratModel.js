@@ -30,13 +30,14 @@ updateSettings: async (data) => {
       RETURNING *;
     `;
     
+    // Kita paksa jenis_surat-nya 'undangan' biar gak kosong
     const values = [jenis_surat || 'undangan', kop_surat_text, pembuka, isi, penutup];
     const result = await pool.query(query, values);
     
-    console.log("✅ Sukses Push ke DB:", result.rows[0]); // Cek terminal, datanya pasti muncul
+    console.log("✅ Berhasil! Data di DB sekarang:", result.rows[0]);
     return true;
   } catch (err) {
-    console.error('❌ Database Nolak Data:', err.message);
+    console.error('❌ Gagal total karena:', err.message);
     return false;
   }
 }
