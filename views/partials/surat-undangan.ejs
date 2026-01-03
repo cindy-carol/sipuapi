@@ -1,28 +1,77 @@
 <style>
-@font-face {
+    @font-face {
     font-family: 'Times New Roman Custom';
     src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/times.ttf") format("truetype");
 }
-
-body {
-    font-family: 'Times New Roman Custom', serif;
-    font-size: 12pt;
-    line-height: 1.2;
-    margin: 0;
-    padding: 0;
+.kop {
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  font-family: "Times New Roman Custom", Times, serif;
+  font-stretch: condensed;
+  letter-spacing: 0.3px;
+  transform: scaleX(0.9);
+  transform-origin: left;
 }
 
-.surat-wrapper {
-    width: 100%;
-    font-family: 'Times New Roman Custom', serif; 
+.kop strong {
+  display: block;
+  font-weight: bold;
+  font-size: 12pt;
+  margin: 0;
+  padding: 0;
+  line-height: 1.1;
 }
 
-/* Pastikan semua elemen menggunakan font custom agar tidak kembali ke default */
-.kop, .kop h3, .alamat, p, table, ul, li, .catatan {
-    font-family: 'Times New Roman Custom', serif !important;
+.kop h3 {
+  font-family: "Times New Roman Custom", Times, serif;
+  font-size: 17pt;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  line-height: 1.1;
 }
 
-/* Sisanya tetap gunakan CSS yang sudah kamu buat sebelumnya */
+.kop .alamat {
+  font-family: "Cambria", Georgia, "Times New Roman Custom", serif;
+  font-size: 10pt;
+  font-weight: normal;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.kop-line {
+  border-top: 5px double black;
+  margin-top: 8px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.surat-wrapper, p, table, ul, li {
+  font-size: 11pt;
+  font-family: "Times New Roman Custom", Times, serif;
+}
+
+.baris-info, .informasi, .content, .signature, .catatan {
+  padding: 0 10mm 0 15mm;
+}
+
+.signature {
+    margin-top: 30px;
+    text-align: right;
+}
+.signature-content {
+    display: inline-block;
+    text-align: left;
+}
+
+.content table td {
+    vertical-align: top;
+}
+
+p {
+  margin-bottom: 0;
+}
 </style>
 
 <div class="surat-wrapper">
@@ -201,5 +250,3 @@ body {
         <%- catatanKaki %>
     </div>
 </div>
-
-
