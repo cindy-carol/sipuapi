@@ -301,14 +301,27 @@ generateUndanganPDF: async (req, res) => {
   // =========================================================================
   // ⚙️ SETTINGS TEMPLATE
   // =========================================================================
-  getTemplateSettings: async (req, res) => {
-    try {
-      const settings = await AturSurat.getSettings('undangan');
-      res.json({ success: true, data: settings });
-    } catch (err) {
-      res.status(500).json({ success: false, message: err.message });
+getTemplateSettings: async (req, res) => {
+  try {
+    let settings = await AturSurat.getSettings('undangan');
+
+    // 🔥 JIKA DI DB KOSONG, KASIH DATA DEFAULT LANGSUNG DARI SINI
+    if (!settings || Object.keys(settings).length === 0) {
+      settings = {
+        jenis_surat: 'undangan',
+        kop_surat_text: `KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI\n<strong>UNIVERSITAS LAMPUNG - FAKULTAS TEKNIK</strong>\n<h3>PROGRAM STUDI PROGRAM PROFESI INSINYUR</h3>`,
+        pembuka: `Sebagai salah satu syarat untuk menyelesaikan studi pada Program Studi Program Profesi Insinyur (PS-PPI) Universitas Lampung (Unila), maka kami mengundang Bapak/Ibu/Sdr pada:`,
+        isi: `Untuk melaksanakan Ujian Akhir Profesi Mahasiswa **):`,
+        penutup: `Demikian atas perhatian dan kerjasama yang baik kami ucapkan terima kasih.`,
+        catatan_kaki: `1. Mohon hadir 15 menit sebelum acara dimulai.\n2. Menggunakan pakaian formal.`
+      };
     }
-  },
+
+    res.json({ success: true, data: settings });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+},
 
 saveTemplateSettings: async (req, res) => {
     try {

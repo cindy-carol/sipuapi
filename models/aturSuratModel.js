@@ -14,30 +14,26 @@ const AturSurat = {
   // Fungsi sakti biar data masuk ke database
 // models/aturSuratModel.js
 updateSettings: async (data) => {
-  const { jenis_surat, kop_surat_text, pembuka, isi, penutup } = data;
-  
+  const { jenis_surat, kop_surat_text, pembuka, isi, penutup, catatan_kaki } = data;
   try {
     const query = `
-      INSERT INTO atur_surat (jenis_surat, kop_surat_text, pembuka, isi, penutup, updated_at)
-      VALUES ($1, $2, $3, $4, $5, NOW())
+      INSERT INTO atur_surat (jenis_surat, kop_surat_text, pembuka, isi, penutup, catatan_kaki, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
       ON CONFLICT (jenis_surat) 
       DO UPDATE SET 
         kop_surat_text = EXCLUDED.kop_surat_text,
         pembuka = EXCLUDED.pembuka,
         isi = EXCLUDED.isi,
         penutup = EXCLUDED.penutup,
+        catatan_kaki = EXCLUDED.catatan_kaki,
         updated_at = NOW()
       RETURNING *;
     `;
-    
-    // Kita paksa jenis_surat-nya 'undangan' biar gak kosong
-    const values = [jenis_surat || 'undangan', kop_surat_text, pembuka, isi, penutup];
-    const result = await pool.query(query, values);
-    
-    console.log("✅ Berhasil! Data di DB sekarang:", result.rows[0]);
+    const values = [jenis_surat || 'undangan', kop_surat_text, pembuka, isi, penutup, catatan_kaki];
+    await pool.query(query, values);
     return true;
   } catch (err) {
-    console.error('❌ Gagal total karena:', err.message);
+    console.error(err);
     return false;
   }
 }
