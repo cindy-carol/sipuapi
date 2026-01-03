@@ -1,109 +1,80 @@
 <style>
+    /* 1. Definisikan Font */
     @font-face {
-    font-family: 'Times New Roman Custom';
-    src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/times.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
+        font-family: 'Times New Roman Custom';
+        src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/times.ttf") format("truetype");
+    }
+    @font-face {
+        font-family: 'Cambria Custom';
+        src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/cambria.ttf") format("truetype");
+    }
 
-/* Load Cambria */
-@font-face {
-    font-family: 'Cambria Custom';
-    src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/cambria.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
-.kop {
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  font-family: "Times New Roman Custom", Times, serif;
-  font-stretch: condensed;
-  letter-spacing: 0.3px;
-  transform: scaleX(0.9);
-  transform-origin: left;
-}
+    /* 2. RESET MARGIN UNTUK SUMMERNOTE (PENTING!) */
+    /* Ini untuk mengatasi masalah jarak yang "jauh" karena tag <p> dari editor */
+    .kop-render p, .content-render p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.2 !important;
+    }
 
-.kop strong {
-  display: block;
-  font-weight: bold;
-  font-size: 12pt;
-  margin: 0;
-  padding: 0;
-  line-height: 1.1;
-}
+    .surat-wrapper {
+        font-size: 11.5pt;
+        font-family: "Times New Roman Custom", serif;
+        line-height: 1.3;
+    }
 
-.kop h3 {
-  font-family: "Times New Roman Custom", Times, serif;
-  font-size: 17pt;
-  font-weight: bold;
-  margin: 0;
-  padding: 0;
-  line-height: 1.1;
-}
+    /* Kop Styling */
+    .kop-render {
+        text-align: center;
+        font-family: "Times New Roman Custom", serif;
+    }
 
-.kop .alamat {
-  font-family: "Cambria Custom", Georgia, "Times New Roman Custom", serif;
-  font-size: 10pt;
-  font-weight: normal;
-  margin: 0;
-  line-height: 1.2;
-}
+    .alamat-default {
+        font-family: "Cambria Custom", serif;
+        font-size: 10pt;
+        margin-top: 5px;
+    }
 
-.kop-line {
-  border-top: 5px double black;
-  margin-top: 8px;
-  margin-bottom: 15px;
-  width: 100%;
-}
+    .kop-line {
+        border-top: 5px double black;
+        margin: 10px 0 15px 0;
+    }
 
-.surat-wrapper, p, table, ul, li {
-  font-size: 11.5pt;
-  font-family: "Times New Roman Custom", Times, serif;
-}
+    .baris-info, .informasi, .content-render, .signature, .catatan {
+        padding: 0 10mm 0 15mm;
+    }
 
-.baris-info, .informasi, .content, .signature, .catatan {
-  padding: 0 10mm 0 15mm;
-}
-
-.signature {
-    margin-top: 30px;
-    text-align: right;
-}
-.signature-content {
-    display: inline-block;
-    text-align: left;
-}
-
-.content table td {
-    vertical-align: top;
-}
-
-p {
-  margin-bottom: 0;
-}
+    .signature {
+        margin-top: 30px;
+        text-align: right;
+    }
+    .signature-content {
+        display: inline-block;
+        text-align: left;
+    }
 </style>
 
 <div class="surat-wrapper">
-    <div style="display: flex; align-items: flex-start; gap: 15px;">
+    <div style="display: flex; align-items: flex-start; gap: 15px; padding: 0 10mm 0 15mm;">
         <div style="flex-shrink: 0;">
-            <img src="<%= logoPath %>" alt="Logo Kampus" style="width: 125px; height: auto;">
+            <img src="<%= logoPath %>" alt="Logo" style="width: 110px; height: auto;">
         </div>
 
-        <div class="kop" style="flex-grow: 1;">
-            <% if (typeof kopSurat !== 'undefined' && kopSurat) { %>
-                <%- kopSurat.replace(/\n/g, '<br>') %>
-            <% } else { %>
-                KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
-                <strong>UNIVERSITAS LAMPUNG - FAKULTAS TEKNIK</strong>
-                <h3>PROGRAM STUDI PROGRAM PROFESI INSINYUR</h3>
-            <% } %>
+        <div style="flex-grow: 1;">
+            <div class="kop-render">
+                <% if (typeof kopSurat !== 'undefined' && kopSurat) { %>
+                    <%- kopSurat %> <% } else { %>
+                    KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI<br>
+                    <strong>UNIVERSITAS LAMPUNG - FAKULTAS TEKNIK</strong><br>
+                    <h3 style="margin:0;">PROGRAM STUDI PROGRAM PROFESI INSINYUR</h3>
+                <% } %>
+            </div>
 
-            <div class="alamat">
+            <div class="alamat-default" style="text-align: center;">
                 Gedung A Dekanat Fakultas Teknik <br>
                 Jalan Prof. Dr. Soemantri Brojonegoro No. 1 Bandar Lampung 35145 <br>
                 Telepon (0721) 704947 Fax. (0721) 704947 <br>
-                Email: <a href="mailto:ppi@eng.unila.ac.id">ppi@eng.unila.ac.id</a>
+                Email: ppi@eng.unila.ac.id
             </div>
         </div>
     </div>
@@ -115,7 +86,7 @@ p {
             <tr>
                 <td style="width: 50px;">Nomor</td>
                 <td>:</td>
-                <td style="text-indent: 1.5em;">/UN26.15.17/PPI.00/2025</td>
+                <td><%= nomorSurat %></td>
             </tr>
             <tr>
                 <td>Hal</td>
@@ -123,43 +94,24 @@ p {
                 <td>Undangan Ujian Akhir Profesi</td>
             </tr>
         </table>
-
-        <div style="flex-shrink: 0;">
-            <%= tanggalSurat %>
-        </div>
+        <div><%= tanggalSurat %></div>
     </div>
 
     <div class="informasi">
-      <div style="margin-top: 10px;">
-          Yth.<br>
-          <strong><%= pembimbing1 || '-' %></strong><br>
-          <strong><%= pembimbing2 || '-' %></strong><br>
-          <strong><%= penguji || '-' %></strong><br>
-          <strong><%= namaMahasiswa %> (Mahasiswa)</strong><br>
-          
-          <div style="margin-top: 10px;">
-              di
-              <div style="text-indent: 1.5em;">
-                  Tempat
-              </div>
-          </div>
-      </div>
-
-      <p style="margin-top: 20px;">
-          Dengan hormat,
-      </p>
+        Yth.<br>
+        <strong><%= pembimbing1 || '-' %></strong><br>
+        <strong><%= pembimbing2 || '-' %></strong><br>
+        <strong><%= penguji || '-' %></strong><br>
+        <strong><%= namaMahasiswa %> (Mahasiswa)</strong><br>
+        <div style="margin-top: 5px; text-indent: 1.5em;">di Tempat</div>
+        <p style="margin-top: 15px;">Dengan hormat,</p>
     </div>
 
-    <div class="content">
-        <p style="text-align: justify;">
-            <% if (typeof kalimatPembuka !== 'undefined' && kalimatPembuka) { %>
-                <%- kalimatPembuka.replace(/\n/g, '<br>') %>
-            <% } else { %>
-                Sebagai salah satu syarat untuk menyelesaikan studi pada Program Studi Program Profesi Insinyur (PS-PPI) Universitas Lampung (Unila), maka kami mengundang Bapak/Ibu/Sdr pada:
-            <% } %>
-        </p>
+    <div class="content-render">
+        <div style="text-align: justify;">
+            <%- kalimatPembuka %> </div>
 
-        <table style="border: none; margin-top: 10px;">
+        <table style="border: none; margin-top: 10px; width: 100%;">
             <tr>
                 <td style="width: 130px;">Hari / Tanggal</td>
                 <td style="width: 10px;">:</td>
@@ -168,95 +120,53 @@ p {
             <tr>
                 <td>Waktu</td>
                 <td>:</td>
-                <td><%= waktuUjian || '-' %> WIB </td>
+                <td><%= waktuUjian || '-' %></td>
             </tr>    
             <tr>
-                <td>Tempat</td>
-                <td>:</td>
-                <td class="jadwal" style="vertical-align: top;">
+                <td style="vertical-align: top;">Tempat</td>
+                <td style="vertical-align: top;">:</td>
+                <td>
                     <% if (tipeUjian === 'offline') { %>
                         <%= tempatUjian %>
-                
-                    <% } else if (tipeUjian === 'online') { %>
-                        Zoom Meeting <br>
-                
-                        <% if (meetingID) { %>
-                            ID Rapat : <%= meetingID %> <br>
-                        <% } %>
-                
-                        <% if (passcode) { %>
-                            Kode Sandi : <%= passcode %> <br>
-                        <% } %>
-                
-                        <% if (linkZoom) { %>
-                            <a href="<%= linkZoom %>" target="_blank" style="color: blue; text-decoration: underline; word-break: break-all;">
-                                <%= linkZoom %>
-                            </a>
-                        <% } %>
-                
+                    <% } else { %>
+                        Zoom Meeting<br>
+                        ID Rapat: <%= meetingID %><br>
+                        Passcode: <%= passcode %><br>
+                        <a href="<%= linkZoom %>" style="color: blue; text-decoration: underline;"><%= linkZoom %></a>
                     <% } %>
                 </td>
             </tr>
         </table>
         
         <br>
-        <table style="border: none; ">
-            <tr>
-                <td style="width: 130px;">Pembimbing I</td>
-                <td style="width: 10px;">:</td>
-                <td><%= pembimbing1 || '-' %></td>
-            </tr>    
-            <tr>
-                <td>Pembimbing II</td>
-                <td style="width: 10px;">:</td>
-                <td><%= pembimbing2 || '-' %></td>
-            </tr>
-            <tr>
-                <td>Penguji</td>
-                <td style="width: 10px;">:</td>
-                <td><%= penguji || '-' %></td>
-            </tr>    
+        <table style="border: none; width: 100%;">
+            <tr><td style="width: 130px;">Pembimbing I</td><td style="width: 10px;">:</td><td><%= pembimbing1 %></td></tr>
+            <tr><td>Pembimbing II</td><td>:</td><td><%= pembimbing2 %></td></tr>
+            <tr><td>Penguji</td><td>:</td><td><%= penguji %></td></tr>
         </table>
         
-        <br>
-        <% if (typeof isi !== 'undefined' && isi) { %>
-            <%- isi.replace(/\n/g, '<br>') %>
-            <% } else { %>
-            Untuk melaksanakan Ujian Akhir Profesi Mahasiswa **):
-            <% } %>
-        <table style="border: none; ">
-            <tr>
-                <td style="width: 130px;">Nama</td>
-                <td style="width: 10px;">:</td>
-                <td><%= namaMahasiswa %></td>
-            </tr>
-            <tr>
-                <td>NPM</td>
-                <td style="width: 10px;">:</td>
-                <td><%= npm %></td>
-            </tr>
+        <div style="margin-top: 15px;">
+            <%- isi %> </div>
+
+        <table style="border: none; width: 100%; margin-top: 5px;">
+            <tr><td style="width: 130px;">Nama</td><td style="width: 10px;">:</td><td><%= namaMahasiswa %></td></tr>
+            <tr><td>NPM</td><td>:</td><td><%= npm %></td></tr>
         </table>
 
-        <p style="margin-top: 10px;">
-            <% if (typeof kalimatPenutup !== 'undefined' && kalimatPenutup) { %>
-                <%- kalimatPenutup.replace(/\n/g, '<br>') %>
-            <% } else { %>
-                Demikian atas perhatian dan kerjasama yang baik kami ucapkan terima kasih.
-            <% } %>
-        </p>
+        <div style="margin-top: 10px;">
+            <%- kalimatPenutup %> </div>
     </div>
 
     <div class="signature">
         <div class="signature-content">
-            Ketua,<br>
-            <br><br><br>
-            <%= kaprodi?.nama || '-' %><br>
+            Ketua,<br><br><br><br>
+            <strong><%= kaprodi?.nama || '-' %></strong><br>
             NIP <%= kaprodi?.nip_dosen || '-' %>
         </div>
     </div>
 
-    <div class="catatan" style="font-family: 'Times New Roman Custom', serif; font-size: 11.5pt; white-space: pre-line;">
-        <div style="font-weight: bold;">Catatan:</div>
-        <%- catatanKaki %>
+    <div class="catatan" style="margin-top: 20px;">
+        <div style="font-weight: bold; text-decoration: underline;">Catatan:</div>
+        <div style="font-size: 10pt;"><%- catatanKaki %></div>
     </div>
 </div>
