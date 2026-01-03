@@ -281,7 +281,7 @@ generateUndanganPDF: async (req, res) => {
         format: 'A4', 
         printBackground: true, 
         preferCSSPageSize: true, // Gunakan margin dari CSS EJS
-        margin: { top: '10mm', right: '5mm', bottom: '20mm', left: '0mm' } 
+        margin: { top: '10mm', right: '5mm', bottom: '20mm', left: '2.5mm' } 
       });
 
       await browser.close();
