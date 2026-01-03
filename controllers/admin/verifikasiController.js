@@ -332,7 +332,7 @@ saveTemplateSettings: async (req, res) => {
 
         if (!existing) {
             // 2. Jika KOSONG (Pertama kali), paksa buat baris baru
-            await AturSurat.createSettings({ // Pastikan fungsi ini ada di Model
+            await AturSurat.updateSettings({ // Pastikan fungsi ini ada di Model
                 jenis_surat: 'undangan',
                 kop_surat_text,
                 pembuka,
