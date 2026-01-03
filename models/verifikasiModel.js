@@ -354,7 +354,7 @@ resetStatusSurat: async (mahasiswaId, editorId) => {
     // Logic: Isi last_download_at biar Dot Merah HILANG
     const query = `
       UPDATE surat 
-      SET last_download_at = NOW() 
+      SET last_download_at = CURRENT_TIMESTAMP
       WHERE mahasiswa_id = (SELECT id FROM mahasiswa WHERE npm = $1)
     `;
     await pool.query(query, [npm]);

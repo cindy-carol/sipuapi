@@ -164,7 +164,9 @@ const getSuratLengkapByNPM = async (npm) => {
       d1.nama AS dosbing1,
       d2.nama AS dosbing2,
       j.tanggal, j.jam_mulai, j.jam_selesai, j.tempat, j.pelaksanaan,
-      s.nama_surat, s.tanggal_dibuat,
+      j.link_zoom, j.meeting_id, j.passcode,
+      s.nama_surat, 
+      CURRENT_TIMESTAMP AS tanggal_cetak, -- Set variabel tanggalSurat jadi NOW
       ARRAY_AGG(DISTINCT d.nama) AS penguji_list
     FROM mahasiswa m
     LEFT JOIN surat s ON s.mahasiswa_id = m.id
@@ -182,7 +184,6 @@ const getSuratLengkapByNPM = async (npm) => {
   const r = rows[0];
   const kaprodi = await getKaprodi();
 
-  // Return data dalam format yang diekspektasikan template EJS surat-undangan.ejs
   return {
     namaMahasiswa: r.nama,
     npm: r.npm,
@@ -193,8 +194,11 @@ const getSuratLengkapByNPM = async (npm) => {
     waktuUjian: `${r.jam_mulai?.slice(0,5)} - ${r.jam_selesai?.slice(0,5)} WIB`,
     tempatUjian: r.tempat || '-',
     tipeUjian: r.pelaksanaan || 'offline',
+    linkZoom: r.link_zoom,
+    meetingID: r.meeting_id,
+    passcode: r.passcode,
     nomorSurat: r.nama_surat || 'Draft',
-    tanggalSurat: formatTanggalIndonesia(r.tanggal_dibuat || new Date()),
+    tanggalSurat: formatTanggalIndonesia(r.tanggal_cetak), // Output: Tanggal Hari Ini (NOW)
     kaprodi: kaprodi
   };
 };
