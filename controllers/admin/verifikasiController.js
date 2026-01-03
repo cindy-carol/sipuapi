@@ -338,7 +338,6 @@ saveTemplateSettings: async (req, res) => {
                 pembuka,
                 isi, 
                 penutup,
-                catatan_kaki
             });
         } else {
             // 3. Jika ADA, baru lakukan Update (Replace)
@@ -348,7 +347,6 @@ saveTemplateSettings: async (req, res) => {
                 pembuka,
                 isi, 
                 penutup,
-                catatan_kaki
             });
         }
         
