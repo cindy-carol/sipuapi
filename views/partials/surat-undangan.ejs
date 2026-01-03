@@ -3,6 +3,14 @@
     font-family: 'Times New Roman Custom';
     src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/times.ttf") format("truetype");
 }
+
+/* Load Cambria */
+@font-face {
+    font-family: 'Cambria Custom';
+    src: url("https://pqhvckeycgcqlnjcjqvp.supabase.co/storage/v1/object/public/storage_sipuapi/cambria.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
 .kop {
   text-align: center;
   margin: 0;
@@ -33,7 +41,7 @@
 }
 
 .kop .alamat {
-  font-family: "Cambria", Georgia, "Times New Roman Custom", serif;
+  font-family: "Cambria Custom", Georgia, "Times New Roman Custom", serif;
   font-size: 10pt;
   font-weight: normal;
   margin: 0;
@@ -48,7 +56,7 @@
 }
 
 .surat-wrapper, p, table, ul, li {
-  font-size: 12pt;
+  font-size: 11.5pt;
   font-family: "Times New Roman Custom", Times, serif;
 }
 
@@ -245,7 +253,7 @@ p {
         </div>
     </div>
 
-    <div class="catatan" style="font-family: 'Times New Roman', serif; font-size: 11pt; white-space: pre-line;">
+    <div class="catatan" style="font-family: 'Times New Roman Custom', serif; font-size: 11.5pt; white-space: pre-line;">
         <div style="font-weight: bold;">Catatan:</div>
         <%- catatanKaki %>
     </div>

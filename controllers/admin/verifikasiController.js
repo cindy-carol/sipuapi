@@ -196,34 +196,39 @@ const verifikasiController = {
   // =========================================================================
   // 🖨️ GENERATE PDF (VERCEL READY)
   // =========================================================================
-// Di dalam verifikasiController.js pada fungsi generateUndanganPDF
 generateUndanganPDF: async (req, res) => {
     try {
       const { npm } = req.params;
 
-      // 1. Aktivasi Log
+      // 1. Aktivasi Log & Ambil Data Mahasiswa
       await Verifikasi.markSuratDownloaded(npm);
-      
       const data = await SuratModel.getSuratByMahasiswa(npm); 
       const logoPathFile = path.join(process.cwd(), 'public', 'images', 'unila1.png');
 
       if (!data) return res.status(404).send('Data tidak ditemukan.');
 
-      // --- START: SUNTIKAN FONT ---
-      // Pastikan file font-base64.txt ada di folder public/fonts/
-      const fontPath = path.join(process.cwd(), 'public', 'fonts', 'font-base64.txt'); 
-      let fontTMR = "";
-      try {
-          fontTMR = fs.readFileSync(fontPath, 'utf8').trim();
-      } catch (e) {
-          console.error("❌ Font file tidak ditemukan:", e.message);
-      }
-      // --- END: SUNTIKAN FONT ---
-
+      // 2. AMBIL SETTINGAN DASHBOARD
       const templateSettings = await AturSurat.getSettings('undangan');
       const listRincian = await Mahasiswa.getAllRincian(); 
       const pelaksanaan = data.jadwal?.pelaksanaan ? data.jadwal.pelaksanaan.toLowerCase() : 'offline';
 
+      // --- 🚀 PROSES DUA FONT (Times & Cambria) ---
+      // Sesuaikan nama file dengan yang kamu buat (font-base64.txt dan cambria-base64.txt)
+      const pathTimes = path.join(process.cwd(), 'public', 'fonts', 'font-base64.txt'); 
+      const pathCambria = path.join(process.cwd(), 'public', 'fonts', 'cambria-base64.txt'); 
+
+      let timesBase64 = "";
+      let cambriaBase64 = "";
+
+      try {
+          timesBase64 = fs.readFileSync(pathTimes, 'utf8').trim();
+          cambriaBase64 = fs.readFileSync(pathCambria, 'utf8').trim();
+      } catch (e) {
+          console.error("Gagal membaca file font:", e.message);
+      }
+      // --------------------------------------------
+
+      // Logic Catatan Kaki
       let catatanKaki = '';
       const note = listRincian.find(r => r.judul.toLowerCase().includes(pelaksanaan));
       catatanKaki = note ? note.keterangan : (templateSettings.catatan_kaki || '');
@@ -232,11 +237,12 @@ generateUndanganPDF: async (req, res) => {
       const logoBase64 = logoBuffer.toString('base64');
       const logoSrc = `data:image/png;base64,${logoBase64}`;
 
-      // Mapping EJS - Pastikan semua variabel dari templateSettings dilempar ke EJS
+      // 3. Render HTML dengan EJS
       const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
           layout: false,
           ...data,
-          fontTMR: fontTMR, // Tambahkan ini
+          fontTMR: timesBase64,       // Variabel untuk Times New Roman
+          fontCambria: cambriaBase64, // Variabel untuk Cambria
           logoPath: logoSrc,
           namaMahasiswa: data.mahasiswa.nama,
           npm: data.mahasiswa.npm,
@@ -251,7 +257,6 @@ generateUndanganPDF: async (req, res) => {
           pembimbing2: data.dosbing[1] || '-',
           penguji: data.penguji || [],
           kaprodi: data.kaprodi || { nama: '', nip_dosen: '' },
-          // Pastikan variabel di bawah ini merujuk ke templateSettings yang benar
           kopSurat: templateSettings.kop_surat_text || '',
           kalimatPembuka: templateSettings.pembuka || '',
           isi: templateSettings.isi || '',
@@ -260,7 +265,7 @@ generateUndanganPDF: async (req, res) => {
           tanggalSurat: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       });
 
-      // Konfigurasi Puppeteer Core Khusus Vercel
+      // 4. Konfigurasi Puppeteer
       const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
@@ -270,12 +275,12 @@ generateUndanganPDF: async (req, res) => {
       });
 
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: ['networkidle0', 'load'] });
 
       const pdfBuffer = await page.pdf({ 
         format: 'A4', 
         printBackground: true, 
-        preferCSSPageSize: true, // Tambahkan ini agar layout tidak berantakan
+        preferCSSPageSize: true, // Gunakan margin dari CSS EJS
         margin: { top: '10mm', right: '10mm', bottom: '20mm', left: '10mm' } 
       });
 
@@ -291,7 +296,7 @@ generateUndanganPDF: async (req, res) => {
       console.error('❌ Error Generate PDF:', err);
       res.status(500).send(`Error: ${err.message}`);
     }
-},
+  },
 
   // =========================================================================
   // ⚙️ SETTINGS TEMPLATE
