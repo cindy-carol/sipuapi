@@ -408,21 +408,30 @@
 <script>
 $(document).ready(function() {
     // Inisialisasi Summernote (Cukup panggil satu kali untuk semua editor)
-    $('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup').summernote({
-        placeholder: 'Ketik isi di sini...',
-        tabsize: 2,
-        height: 150,
-        fontNames: ['Times New Roman Custom', 'Cambria Custom', 'Arial', 'Tahoma'],
-        fontNamesIgnoreCheck: ['Times New Roman Custom', 'Cambria Custom'],
-        addDefaultFonts: false,
-        toolbar: [
-            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
-            ['font', ['fontname', 'fontsize', 'strikethrough']], 
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']], 
-            ['view', ['fullscreen', 'codeview']] 
-        ]
-    });
+$('#editor-kop, #editor-pembuka, #editor-isi, #editor-penutup').summernote({
+    placeholder: 'Ketik isi di sini...',
+    tabsize: 2,
+    height: 150,
+    fontNames: ['Times New Roman Custom', 'Cambria Custom', 'Arial', 'Tahoma'],
+    fontNamesIgnoreCheck: ['Times New Roman Custom', 'Cambria Custom'],
+    addDefaultFonts: false,
+    // TAMBAHKAN STYLE TAGS KUSTOM DI SINI
+    styleTags: [
+        'p', 
+        { title: 'Normal', tag: 'span', className: 'fw-normal', value: 'span' },
+        { title: 'Semi Bold', tag: 'span', style: 'font-weight: 600;', value: 'span' },
+        { title: 'Bold', tag: 'span', style: 'font-weight: 700;', value: 'span' },
+        { title: 'Bolder', tag: 'span', style: 'font-weight: 900;', value: 'span' }
+    ],
+    toolbar: [
+        ['style', ['style']], // Menampilkan dropdown 'Style' yang sudah kita kustom di atas
+        ['font', ['bold', 'italic', 'underline', 'clear']],
+        ['fontname', ['fontname', 'fontsize']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']], 
+        ['view', ['fullscreen', 'codeview']] 
+    ]
+});
 });
 
 async function bukaModalTemplate() {
