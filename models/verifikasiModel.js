@@ -90,7 +90,7 @@ const Verifikasi = {
 
     return result.rows.map(row => ({
       ...row,
-      formattedJadwal: require('@utils/jadwalHelper')({
+      formattedJadwal: require('../utils/jadwalHelper')({
         tanggal: row.tanggal,
         jam_mulai: row.jam_mulai,
         jam_selesai: row.jam_selesai
