@@ -1,5 +1,39 @@
 <h1 class="mb-4 text-center text-md-start">Selamat Datang di Sistem Informasi Pendaftaran Ujian Akhir Profesi</h1>
 
+<div class="card shadow-sm mb-4 border-0" style="border-radius: 12px; background: #ffffff;">
+  <div class="card-body py-4">
+    <div class="d-flex justify-content-between position-relative px-5">
+      <div class="position-absolute top-50 start-0 end-0 translate-middle-y bg-light" style="height: 4px; z-index: 0; margin: 0 80px;"></div>
+      
+      <% 
+        const isBerkasDone = statusOverall !== 'Lengkapi Berkas';
+        const isJadwalDone = jadwalUjian.status_verifikasi === true;
+        const isAdminDone = hasPenguji && hasSurat;
+      %>
+      <div class="text-center position-relative" style="z-index: 1;">
+        <div class="rounded-circle <%= isBerkasDone ? 'bg-success' : 'bg-secondary' %> text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+          <i class="bi bi-file-earmark-text"></i>
+        </div>
+        <p class="small fw-bold mt-2 mb-0">Berkas</p>
+      </div>
+
+      <div class="text-center position-relative" style="z-index: 1;">
+        <div class="rounded-circle <%= isJadwalDone ? 'bg-success' : 'bg-secondary' %> text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+          <i class="bi bi-calendar-check"></i>
+        </div>
+        <p class="small fw-bold mt-2 mb-0">Jadwal</p>
+      </div>
+
+      <div class="text-center position-relative" style="z-index: 1;">
+        <div class="rounded-circle <%= statusOverall === 'Siap Ujian' ? 'bg-success' : 'bg-secondary' %> text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <p class="small fw-bold mt-2 mb-0">Siap Ujian</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row g-3 mb-4">
   <div class="col-md-6">
     <div class="card shadow-sm" style="border-top: 5px solid #1e4380;">

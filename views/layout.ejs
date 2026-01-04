@@ -22,7 +22,7 @@
     
     body {
       display: flex;
-      flex-direction: row; /* Sidebar kiri, Konten kanan */
+      flex-direction: row;
       background-color: #f8f9fa;
     }
 
@@ -31,14 +31,13 @@
       overflow-y: auto;
     }
 
-    /* AREA KONTEN UTAMA */
     .content-wrapper {
-      flex: 1; /* Ambil sisa ruang */
+      flex: 1;
       display: flex;
       flex-direction: column;
       height: 100vh; 
-      overflow-y: auto; /* Hanya area ini yang scroll */
-      min-width: 0; /* WAJIB: Biar gak nabrak pas push */
+      overflow-y: auto;
+      min-width: 0;
       transition: all 0.3s ease;
     }
 
@@ -50,6 +49,19 @@
       width: 100%;
       margin: 0 auto;
       padding: 0 15px;
+    }
+
+    /* Efek glowing & interaksi buat Badge Panduan */
+    .btn-warning-custom {
+        background-color: #ffc107 !important;
+        border: none !important;
+        font-weight: 600 !important;
+        color: #000 !important;
+        transition: transform 0.2s !important;
+    }
+    .btn-warning-custom:hover {
+        transform: scale(1.05);
+        background-color: #ffca2c !important;
     }
 
     @media (min-width: 992px) {
@@ -69,6 +81,23 @@
 
   <div class="content-wrapper">
     <%- include('partials/header') %>
+
+<% if (role === 'mahasiswa') { %>
+  <div class="container-fluid mt-2 px-4 d-flex justify-content-end">
+    <button type="button" class="btn btn-warning-custom btn-sm shadow-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#previewModal-panduan">
+       <i class="bi bi-question-circle-fill me-1"></i> Panduan Penggunaan
+    </button>
+  </div>
+
+  <%- include('partials/modal', {
+      id: 'previewModal-panduan', // ID harus match sama data-bs-target
+      type: 'preview',           // Tipe preview biar nampilin iframe
+      title: 'Panduan Penggunaan SIPUAPI',
+      src: '/dokumen/panduan_mahasiswa.pdf', // Path file PDF lo
+      body: '', 
+      catatan: ''
+  }) %>
+<% } %>
 
     <% if (role === 'kaprodi' && !hideSidebar) { %>
       <%- include('partials/navbar', {activePage: currentPage, role: 'kaprodi'}) %>
@@ -97,5 +126,5 @@
   <script src="/js/partials/modal-handler.js"></script>
   <script src="/js/partials/upload-button.js"></script>
   <script src="/js/partials/section-toggle.js"></script>
-  </body>
+</body>
 </html>
