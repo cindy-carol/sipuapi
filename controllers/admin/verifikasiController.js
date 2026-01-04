@@ -270,7 +270,7 @@ generateUndanganPDF: async (req, res) => {
             format: 'A4', 
             printBackground: true, 
             preferCSSPageSize: true, 
-            margin: { top: '10mm', right: '5mm', bottom: '20mm', left: '2.5mm' } 
+            margin: { top: '5mm', right: '5mm', bottom: '20mm', left: '2.5mm' } 
         });
 
         await browser.close();
