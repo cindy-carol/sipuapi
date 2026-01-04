@@ -288,6 +288,7 @@ module.exports = {
   getMahasiswaBelumSurat,
   getSuratByMahasiswa,
   getSuratLengkapByNPM,
+  updateLastDownload,
   insertSurat,
   uploadSuratFinal,
   deleteSuratFile
