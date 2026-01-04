@@ -174,7 +174,10 @@ const showDashboard = async (req, res) => {
 
       // Konten Informasi
       syaratPendaftaran,
-      syaratBawa
+      syaratBawa,
+
+      hasPenguji, 
+      hasSurat, 
     });
 
   } catch (err) {
