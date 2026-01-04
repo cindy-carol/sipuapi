@@ -203,6 +203,19 @@ const getSuratLengkapByNPM = async (npm) => {
   };
 };
 
+// models/suratModel.js
+const updateLastDownload = async (npm) => {
+  const query = `
+    UPDATE surat
+    SET last_download_at = NOW(), -- Refresh waktu ke detik ini
+        is_diterbitkan = TRUE 
+    WHERE mahasiswa_id = (SELECT id FROM mahasiswa WHERE npm = $1)
+    RETURNING last_download_at;
+  `;
+  const { rows } = await pool.query(query, [npm]);
+  return rows[0];
+};
+
 /**
  * ============================================================
  * 📝 4. INSERT SURAT (DRAFT)

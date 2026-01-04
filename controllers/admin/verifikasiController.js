@@ -198,105 +198,95 @@ const verifikasiController = {
   // =========================================================================
 generateUndanganPDF: async (req, res) => {
     try {
-      const { npm } = req.params;
+        const { npm } = req.params;
 
-      // 1. Aktivasi Log & Ambil Data Mahasiswa
-      await Verifikasi.markSuratDownloaded(npm);
-      const data = await SuratModel.getSuratByMahasiswa(npm); 
-      const logoPathFile = path.join(process.cwd(), 'public', 'images', 'unila1.png');
+        // 1. REFRESH STATUS DOWNLOAD & AMBIL DATA TERBARU
+        // Kita panggil update ini di awal agar saat query getSuratLengkap, 
+        // data tanggal_dibuat/last_download sudah yang paling baru (NOW).
+        await SuratModel.updateLastDownload(npm);
+        
+        // Mengambil data lengkap (Mahasiswa, Jadwal, Kaprodi, & Tanggal NOW)
+        const data = await SuratModel.getSuratLengkapByNPM(npm);
 
-      if (!data) return res.status(404).send('Data tidak ditemukan.');
+        if (!data) return res.status(404).send('Data tidak ditemukan.');
 
-      // 2. AMBIL SETTINGAN DASHBOARD
-      const templateSettings = await AturSurat.getSettings('undangan');
-      const listRincian = await Mahasiswa.getAllRincian(); 
-      const pelaksanaan = data.jadwal?.pelaksanaan ? data.jadwal.pelaksanaan.toLowerCase() : 'offline';
+        // 2. AMBIL SETTINGAN DASHBOARD (Kop, Pembuka, dll)
+        const templateSettings = await AturSurat.getSettings('undangan');
+        const listRincian = await Mahasiswa.getAllRincian(); 
+        const pelaksanaan = data.tipeUjian ? data.tipeUjian.toLowerCase() : 'offline';
 
-      // --- 🚀 PROSES DUA FONT (Times & Cambria) ---
-      // Sesuaikan nama file dengan yang kamu buat (font-base64.txt dan cambria-base64.txt)
-      const pathTimes = path.join(process.cwd(), 'public', 'fonts', 'font-base64.txt'); 
-      const pathCambria = path.join(process.cwd(), 'public', 'fonts', 'cambria-base64.txt'); 
+        // 3. LOAD ASSETS (Logo & Fonts)
+        const logoPathFile = path.join(process.cwd(), 'public', 'images', 'unila1.png');
+        const pathTimes = path.join(process.cwd(), 'public', 'fonts', 'font-base64.txt'); 
+        const pathCambria = path.join(process.cwd(), 'public', 'fonts', 'cambria-base64.txt'); 
 
-      let timesBase64 = "";
-      let cambriaBase64 = "";
+        let timesBase64 = "";
+        let cambriaBase64 = "";
+        try {
+            timesBase64 = fs.readFileSync(pathTimes, 'utf8').trim();
+            cambriaBase64 = fs.readFileSync(pathCambria, 'utf8').trim();
+        } catch (e) {
+            console.error("Gagal membaca file font:", e.message);
+        }
 
-      try {
-          timesBase64 = fs.readFileSync(pathTimes, 'utf8').trim();
-          cambriaBase64 = fs.readFileSync(pathCambria, 'utf8').trim();
-      } catch (e) {
-          console.error("Gagal membaca file font:", e.message);
-      }
-      // --------------------------------------------
+        const logoBuffer = fs.readFileSync(logoPathFile);
+        const logoSrc = `data:image/png;base64,${logoBuffer.toString('base64')}`;
 
-      // Logic Catatan Kaki
-      let catatanKaki = '';
-      const note = listRincian.find(r => r.judul.toLowerCase().includes(pelaksanaan));
-      catatanKaki = note ? note.keterangan : (templateSettings.catatan_kaki || '');
+        // 4. LOGIC CATATAN KAKI (Sesuai Pelaksanaan)
+        let catatanKaki = '';
+        const note = listRincian.find(r => r.judul.toLowerCase().includes(pelaksanaan));
+        catatanKaki = note ? note.keterangan : (templateSettings.catatan_kaki || '');
 
-      const logoBuffer = fs.readFileSync(logoPathFile);
-      const logoBase64 = logoBuffer.toString('base64');
-      const logoSrc = `data:image/png;base64,${logoBase64}`;
+        // 5. RENDER HTML DENGAN EJS
+        // Kita gunakan spread operator (...data) agar variabel seperti namaMahasiswa, 
+        // npm, tanggalSurat (yang sudah NOW), dll langsung terbaca.
+        const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
+            layout: false,
+            ...data,           // Berisi: namaMahasiswa, npm, pembimbing, penguji, tanggalSurat (NOW), dll
+            fontTMR: timesBase64,
+            fontCambria: cambriaBase64,
+            logoPath: logoSrc,
+            kopSurat: templateSettings.kop_surat_text || '',
+            kalimatPembuka: templateSettings.pembuka || '',
+            isi: templateSettings.isi || '',
+            kalimatPenutup: templateSettings.penutup || '',
+            catatanKaki: catatanKaki
+        });
 
-      // 3. Render HTML dengan EJS
-      const html = await ejs.renderFile(path.join(process.cwd(), 'views/partials/surat-undangan.ejs'), {
-          layout: false,
-          ...data,
-          fontTMR: timesBase64,       // Variabel untuk Times New Roman
-          fontCambria: cambriaBase64, // Variabel untuk Cambria
-          logoPath: logoSrc,
-          namaMahasiswa: data.mahasiswa.nama,
-          npm: data.mahasiswa.npm,
-          tipeUjian: pelaksanaan, 
-          tanggalUjian: data.jadwal?.tanggal || '',
-          waktuUjian: data.jadwal?.waktu || '',
-          tempatUjian: data.jadwal?.tempat || '',
-          linkZoom: data.jadwal?.linkZoom || '',
-          meetingID: data.jadwal?.meetingID || '',
-          passcode: data.jadwal?.passcode || '',
-          pembimbing1: data.dosbing[0] || '-', 
-          pembimbing2: data.dosbing[1] || '-',
-          penguji: data.penguji || [],
-          kaprodi: data.kaprodi || { nama: '', nip_dosen: '' },
-          kopSurat: templateSettings.kop_surat_text || '',
-          kalimatPembuka: templateSettings.pembuka || '',
-          isi: templateSettings.isi || '',
-          kalimatPenutup: templateSettings.penutup || '',
-          catatanKaki: catatanKaki,
-          tanggalSurat: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-      });
+        // 6. KONFIGURASI PUPPETEER
+        const browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+            ignoreHTTPSErrors: true,
+        });
 
-      // 4. Konfigurasi Puppeteer
-      const browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-        ignoreHTTPSErrors: true,
-      });
+        const page = await browser.newPage();
+        // Networkidle0 penting agar font base64 ter-load sempurna sebelum difoto
+        await page.setContent(html, { waitUntil: ['networkidle0', 'load'] });
 
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: ['networkidle0', 'load'] });
+        const pdfBuffer = await page.pdf({ 
+            format: 'A4', 
+            printBackground: true, 
+            preferCSSPageSize: true, 
+            margin: { top: '10mm', right: '5mm', bottom: '20mm', left: '2.5mm' } 
+        });
 
-      const pdfBuffer = await page.pdf({ 
-        format: 'A4', 
-        printBackground: true, 
-        preferCSSPageSize: true, // Gunakan margin dari CSS EJS
-        margin: { top: '10mm', right: '5mm', bottom: '20mm', left: '2.5mm' } 
-      });
+        await browser.close();
 
-      await browser.close();
-
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="Surat-Undangan-${npm}.pdf"`
-      });
-      res.send(pdfBuffer);
+        // 7. KIRIM FILE KE BROWSER
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="Surat-Undangan-${npm}.pdf"`
+        });
+        res.send(pdfBuffer);
 
     } catch (err) {
-      console.error('❌ Error Generate PDF:', err);
-      res.status(500).send(`Error: ${err.message}`);
+        console.error('❌ Error Generate PDF:', err);
+        res.status(500).send(`Error: ${err.message}`);
     }
-  },
+},
 
   // =========================================================================
   // ⚙️ SETTINGS TEMPLATE
