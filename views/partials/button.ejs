@@ -45,19 +45,19 @@
 <% } else if (type === 'downloadSurat') { %>
   <% if (target && target !== '#') { %>
       <% 
+        // Mengambil NPM dari target path (asumsi path mengandung NPM) 
+        // atau gunakan variabel npm jika Anda mengirimkannya lewat include
         const namaFileDownload = (typeof npm !== 'undefined') ? `Surat_Undangan_${npm}.pdf` : 'Surat_Undangan.pdf';
       %>
       <a href="<%= target %>" 
-         target="_blank" 
          download="<%= namaFileDownload %>" 
          class="btn btn-primary">
          <i class="bi bi-file-earmark-arrow-down-fill"></i> <%= label %>
       </a>
       
       <small class="text-success fst-italic d-block text-center mt-1" style="font-size: 0.8rem;">
-          <i class="bi bi-check-all"></i> Surat siap diunduh.
+         <i class="bi bi-check-all"></i> Surat siap diunduh.
       </small>
-  <% } %>
 
 <% } else { %>
 
