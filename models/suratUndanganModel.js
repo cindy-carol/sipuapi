@@ -6,12 +6,22 @@ const pool = require('../config/db');
  * 🔧 UTILITY: FORMAT TANGGAL INDONESIA
  * ============================================================
  */
+// Fungsi standar (pake hari) buat Jadwal Ujian
 const formatTanggalIndonesia = (tanggal) => {
   if (!tanggal) return null;
-
   return new Date(tanggal).toLocaleDateString('id-ID', {
     weekday: 'long',
     day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
+// FUNGSI KHUSUS (Tanpa hari) buat Tanggal Surat di pojok kanan atas
+const formatTanggalSurat = (tanggal) => {
+  if (!tanggal) return null;
+  return new Date(tanggal).toLocaleDateString('id-ID', {
+    day: 'numeric', // Tanpa 0 di depan (misal: 4 Januari 2026)
     month: 'long',
     year: 'numeric'
   });
@@ -133,7 +143,7 @@ const getSuratByMahasiswa = async (npm) => {
   return {
     surat_id: rows[0].surat_id,
     nomor_surat: rows[0].nama_surat,
-    tanggalSurat: formatTanggalIndonesia(rows[0].tanggal_dibuat),
+    tanggalSurat: formatTanggalSurat(rows[0].tanggal_dibuat),
     kaprodi: kaprodi || null,
     mahasiswa: { npm: rows[0].npm, nama: rows[0].nama_mahasiswa },
     dosbing: [rows[0].dosbing1, rows[0].dosbing2],
@@ -284,6 +294,7 @@ const deleteSuratFile = async (npm) => {
 
 module.exports = {
   formatTanggalIndonesia,
+  formatTanggalSurat,
   getKaprodi,
   getMahasiswaBelumSurat,
   getSuratByMahasiswa,
