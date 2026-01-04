@@ -10,6 +10,7 @@ const pool = require('../config/db');
 const formatTanggalIndonesia = (tanggal) => {
   if (!tanggal) return null;
   return new Date(tanggal).toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta', // Paksa ke WIB agar hari tidak meleset
     weekday: 'long',
     day: '2-digit',
     month: 'long',
@@ -21,6 +22,7 @@ const formatTanggalIndonesia = (tanggal) => {
 const formatTanggalSurat = (tanggal) => {
   if (!tanggal) return null;
   return new Date(tanggal).toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta', // Paksa ke WIB
     day: 'numeric', // Tanpa 0 di depan (misal: 4 Januari 2026)
     month: 'long',
     year: 'numeric'
@@ -46,10 +48,6 @@ const getKaprodi = async () => {
  * ============================================================
  * 📌 2. DAFTAR ANTREAN SURAT (MAHASISWA SIAP SURAT)
  * ============================================================
- * Mengambil mahasiswa yang:
- * - Berkas sudah ACC
- * - Penguji sudah di-plot oleh Kaprodi
- * - Surat belum diterbitkan
  */
 const getMahasiswaBelumSurat = async (tahunId = null) => {
   const params = [];
@@ -160,10 +158,6 @@ const getSuratByMahasiswa = async (npm) => {
   };
 };
 
-// models/suratModel.js
-
-// ... (kode formatTanggalIndonesia dan getKaprodi tetap sama)
-
 /**
  * AMBIL DETAIL SURAT LENGKAP (Digunakan oleh Controller untuk render PDF)
  */
@@ -176,7 +170,7 @@ const getSuratLengkapByNPM = async (npm) => {
       j.tanggal, j.jam_mulai, j.jam_selesai, j.tempat, j.pelaksanaan,
       j.link_zoom, j.meeting_id, j.passcode,
       s.nama_surat, 
-      CURRENT_TIMESTAMP AS tanggal_cetak, -- Set variabel tanggalSurat jadi NOW
+      CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Jakarta' AS tanggal_cetak, -- Konversi SQL ke WIB
       ARRAY_AGG(DISTINCT d.nama) AS penguji_list
     FROM mahasiswa m
     LEFT JOIN surat s ON s.mahasiswa_id = m.id
@@ -200,7 +194,7 @@ const getSuratLengkapByNPM = async (npm) => {
     pembimbing1: r.dosbing1 || '-',
     pembimbing2: r.dosbing2 || '-',
     penguji: r.penguji_list ? r.penguji_list.join(', ') : 'Belum Ditentukan',
-    tanggalUjian: formatTanggalIndonesia(r.tanggal),
+    tanggalUjian: formatTanggalIndonesia(r.tanggal), // Tetap pake hari
     waktuUjian: `${r.jam_mulai?.slice(0,5)} - ${r.jam_selesai?.slice(0,5)} WIB`,
     tempatUjian: r.tempat || '-',
     tipeUjian: r.pelaksanaan || 'offline',
@@ -208,16 +202,18 @@ const getSuratLengkapByNPM = async (npm) => {
     meetingID: r.meeting_id,
     passcode: r.passcode,
     nomorSurat: r.nama_surat || 'Draft',
-    tanggalSurat: formatTanggalIndonesia(r.tanggal_cetak), // Output: Tanggal Hari Ini (NOW)
+    tanggalSurat: formatTanggalSurat(r.tanggal_cetak), // SEKARANG TANPA HARI (MANTAP!)
     kaprodi: kaprodi
   };
 };
 
-// models/suratModel.js
+/**
+ * REFRESH WAKTU DOWNLOAD TERAKHIR
+ */
 const updateLastDownload = async (npm) => {
   const query = `
     UPDATE surat
-    SET last_download_at = NOW(), -- Refresh waktu ke detik ini
+    SET last_download_at = NOW(),
         is_diterbitkan = TRUE 
     WHERE mahasiswa_id = (SELECT id FROM mahasiswa WHERE npm = $1)
     RETURNING last_download_at;
