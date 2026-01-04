@@ -50,6 +50,7 @@
         const namaFileDownload = (typeof npm !== 'undefined') ? `Surat_Undangan_${npm}.pdf` : 'Surat_Undangan.pdf';
       %>
       <a href="<%= target %>" 
+        target="_blank"
          download="<%= namaFileDownload %>" 
          class="btn btn-primary">
          <i class="bi bi-file-earmark-arrow-down-fill"></i> <%= label %>
