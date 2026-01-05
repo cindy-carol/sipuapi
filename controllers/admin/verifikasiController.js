@@ -350,10 +350,14 @@ saveTemplateSettings: async (req, res) => {
           j.id AS jadwal_id,
           j.tanggal, j.jam_mulai, j.jam_selesai, j.pelaksanaan, j.tempat,
           j.link_zoom, j.meeting_id, j.passcode,
+          d1.nama AS nama_dosbing1,
+          d2.nama AS nama_dosbing2,
           dp.dosen_id AS penguji_id
         FROM mahasiswa m
         LEFT JOIN jadwal j ON j.mahasiswa_id = m.id
         LEFT JOIN dosen_penguji dp ON dp.mahasiswa_id = m.id
+        LEFT JOIN dosen d1 ON d1.id = m.dosbing1_id
+        LEFT JOIN dosen d2 ON d2.id = m.dosbing2_id
         WHERE TRIM(m.npm) = $1
         ORDER BY j.id DESC LIMIT 1
       `, [npm]);

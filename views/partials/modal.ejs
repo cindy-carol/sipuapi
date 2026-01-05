@@ -211,7 +211,7 @@ function handleAlasanChange() {
 </form>
 
       <% } else if (modalType === 'editSurat') { %>
-        <div class="modal-body py-4 px-3" style="overflow-y: auto; max-height: 400px;">
+        <div class="modal-body py-4 px-3" style="overflow-y: auto; max-height: 500px;">
           <form id="formEditSurat" data-npm="">
             <!-- Hidden IDs -->
             <input type="hidden" name="mahasiswaId" id="edit-mahasiswa-id">
@@ -270,6 +270,18 @@ function handleAlasanChange() {
                   </div>
               </div>
             </div>
+
+            <div class="mb-3 p-2 bg-light rounded border border-warning shadow-sm">
+  <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-person-badge"></i> Dosen Pembimbing</label>
+  <div class="row g-1">
+    <div class="col-12">
+      <div id="display-dosbing1" class="fw-bold text-dark small" style="font-size: 0.85rem;">-</div>
+    </div>
+    <div class="col-12">
+      <div id="display-dosbing2" class="fw-bold text-dark small" style="font-size: 0.85rem;">-</div>
+    </div>
+  </div>
+</div>
             
             <!-- Dosen Penguji -->
             <div class="mb-3">
