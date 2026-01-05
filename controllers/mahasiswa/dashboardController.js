@@ -100,7 +100,7 @@ const showDashboard = async (req, res) => {
     const mapStatusUI = (code) => {
       switch (code) {
         case 3: return { label: "Diterima", bg: "bg-success", text: "text-light", icon: "bi-check-circle" };
-        case 2: return { label: "Ditolak", bg: "bg-danger", text: "text-light", icon: "bi-x-circle" };
+        case 2: return { label: "Perlu Revisi", bg: "bg-danger", text: "text-light", icon: "bi-x-circle" };
         case 1: return { label: "Menunggu", bg: "bg-warning", text: "text-dark", icon: "bi-hourglass-split" };
         default: return { label: "Belum Ada", bg: "bg-secondary", text: "text-dark", icon: "bi-dash-circle" };
       }
