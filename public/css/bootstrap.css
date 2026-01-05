@@ -2128,7 +2128,6 @@ progress {
 }
 .form-label {
   margin-bottom: 0.5rem;
-  color: #fff;
 }
 
 .col-form-label {
@@ -2362,7 +2361,7 @@ textarea.form-control-lg {
   font-size: clamp(1rem, 1.25vw, 1.25rem);
   font-weight: 500;
   line-height: 1.5;
-  color: var(--bs-body-color);
+  color: #fff;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
