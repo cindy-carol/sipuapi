@@ -384,7 +384,9 @@ saveTemplateSettings: async (req, res) => {
             linkZoom: d.link_zoom || '',
             meetingID: d.meeting_id || '',
             passcode: d.passcode || ''
-          }
+          },
+          dosbing1: d.nama_dosbing1 || '',
+          dosbing2: d.nama_dosbing2 || ''
         }
       });
     } catch (err) {

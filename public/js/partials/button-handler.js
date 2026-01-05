@@ -823,6 +823,12 @@ document.querySelectorAll('.btn-edit-surat').forEach(btn => {
         const d = json.data;
         const j = d.jadwal;
 
+        const dos1 = document.getElementById('display-dosbing1');
+    const dos2 = document.getElementById('display-dosbing2');
+    
+    if (dos1) dos1.innerText = `1. ${d.dosbing1 || '-'}`;
+    if (dos2) dos2.innerText = `2. ${d.dosbing2 || '-'}`;
+
         // 2. Isi Form (Pastikan ID input di modal.ejs cocok)
         document.getElementById('edit-mahasiswa-id').value = d.mahasiswa_id;
         document.getElementById('edit-jadwal-id').value = d.jadwal_id;
