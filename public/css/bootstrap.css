@@ -2361,11 +2361,11 @@ textarea.form-control-lg {
   font-size: clamp(1rem, 1.25vw, 1.25rem);
   font-weight: 500;
   line-height: 1.5;
-  color: #fff;
+  color: var(--bs-body-color);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-color: var(--bs-body-bg);
+  background-color: #fff;
   background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
