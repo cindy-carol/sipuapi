@@ -116,7 +116,8 @@ const getIsiJadwal = async (req, res) => {
       tanggal: formatDateInput(myJadwal.tanggal),
       jamMulai: myJadwal.jam_mulai ? myJadwal.jam_mulai.substring(0, 5) : '', 
       pelaksanaan: myJadwal.pelaksanaan || '',
-      events: JSON.stringify(events) 
+      events: JSON.stringify(events),
+      jadwalUjian: dataJadwal || null 
     });
 
   } catch (err) {
