@@ -126,14 +126,24 @@
   </div>
 </div>
 
-<%- include('../partials/modal', {
-    id: 'modalHapusJadwal', 
-    type: 'hapusJadwal',
-    title: 'Batalkan Jadwal?', 
-    body: 'Apakah Anda yakin ingin menghapus jadwal ujian ini? Slot Anda akan menjadi kosong kembali.',
-    catatan: '',
-    src: ''
-}) %>
+<% if (jadwalUjian && jadwalUjian.status_verifikasi !== true) { %>
+    <button type="button" id="btnHapusJadwal" class="btn btn-outline-danger w-100">
+        <i class="bi bi-trash"></i> Batalkan / Hapus Jadwal Saya
+    </button>
+    
+    <%- include('../partials/modal', {
+        id: 'modalHapusJadwal', 
+        type: 'hapusJadwal',
+        title: 'Batalkan Jadwal?', 
+        body: 'Apakah Anda yakin ingin menghapus jadwal ujian ini? Slot Anda akan menjadi kosong kembali.',
+        catatan: '',
+        src: ''
+    }) %>
+<% } else if (jadwalUjian && jadwalUjian.status_verifikasi === true) { %>
+    <div class="alert alert-success text-center">
+        <i class="bi bi-check-circle-fill"></i> Jadwal telah disetujui. Opsi pembatalan dikunci.
+    </div>
+<% } %>
 
       </div>
     </div>

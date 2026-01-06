@@ -163,6 +163,19 @@ const postIsiJadwal = async (req, res) => {
 const hapusJadwal = async (req, res) => {
   try {
     const npm = req.session.user.npm;
+
+    // 1. Cek dulu status jadwalnya sebelum dihapus
+    const jadwal = await getJadwalByNPM(npm);
+    
+    // 2. Filter: Jika sudah diverifikasi (true), TOLAK penghapusan
+    if (jadwal && jadwal.status_verifikasi === true) {
+        return res.status(403).json({
+            success: false,
+            message: 'Gagal! Jadwal yang sudah diverifikasi (ACC) tidak dapat dibatalkan.'
+        });
+    }
+
+    // 3. Jika belum di-ACC, baru jalankan fungsi hapus
     await deleteJadwalByNPM(npm); 
     
     return res.status(200).json({
@@ -170,11 +183,8 @@ const hapusJadwal = async (req, res) => {
       message: 'Jadwal berhasil dibatalkan.'
     });
   } catch (err) {
-    console.error('❌ Error hapusJadwal:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Gagal membatalkan jadwal pendaftaran.'
-    });
+    console.error('❌ Gagal Hapus Jadwal:', err.message);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
