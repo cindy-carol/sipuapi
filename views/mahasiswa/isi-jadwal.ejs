@@ -109,12 +109,25 @@
           </div>
         </form>
 
-<% if (locals.tanggal && locals.tanggal !== '') { %> 
-    <div class="mt-3 pt-3 border-top text-start">
-        <button type="button" id="btnHapusJadwal" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2 shadow-sm">
-            <i class="bi bi-trash3-fill"></i> Batalkan / Hapus Jadwal Saya
+<% if (locals.jadwalUjian && jadwalUjian.id) { %>
+    <% if (jadwalUjian.status_verifikasi !== true) { %>
+        <button type="button" id="btnHapusJadwal" class="btn btn-outline-danger w-100">
+            <i class="bi bi-trash"></i> Batalkan / Hapus Jadwal Saya
         </button>
-    </div>
+        
+        <%- include('../partials/modal', {
+            id: 'modalHapusJadwal', 
+            type: 'hapusJadwal',
+            title: 'Batalkan Jadwal?', 
+            body: 'Apakah Anda yakin ingin menghapus jadwal ujian ini? Slot Anda akan menjadi kosong kembali.',
+            catatan: '',
+            src: ''
+        }) %>
+    <% } else { %>
+        <div class="alert alert-success text-center">
+            <i class="bi bi-check-circle-fill"></i> Jadwal telah disetujui. Opsi pembatalan dikunci.
+        </div>
+    <% } %>
 <% } %>
 
       </div>
@@ -126,10 +139,6 @@
   </div>
 </div>
 
-<% if (jadwalUjian && jadwalUjian.status_verifikasi !== true) { %>
-    <button type="button" id="btnHapusJadwal" class="btn btn-outline-danger w-100">
-        <i class="bi bi-trash"></i> Batalkan / Hapus Jadwal Saya
-    </button>
     
     <%- include('../partials/modal', {
         id: 'modalHapusJadwal', 
@@ -139,11 +148,7 @@
         catatan: '',
         src: ''
     }) %>
-<% } else if (jadwalUjian && jadwalUjian.status_verifikasi === true) { %>
-    <div class="alert alert-success text-center">
-        <i class="bi bi-check-circle-fill"></i> Jadwal telah disetujui. Opsi pembatalan dikunci.
-    </div>
-<% } %>
+
 
       </div>
     </div>
