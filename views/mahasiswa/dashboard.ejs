@@ -100,22 +100,26 @@
       </div>
       <div class="card-body d-flex flex-column">
       
-      <% for (const [key, value] of Object.entries(statusBerkas)) { 
-           // 1. Skip Overall (Logic lama)
-           if (key === 'overall') continue; 
+<% for (const [key, value] of Object.entries(statusBerkas)) { 
+    if (key === 'overall') continue; 
 
-           // 2. 🔥 LOGIC BARU TARUH DISINI 🔥
-           if (['asistensi_2', 'asistensi_3'].includes(key) && value.label === 'Belum Ada') {
-               continue; 
-           }
-
-           // 3. Bikin Label yang cantik
-           let displayLabel = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-           if (key.includes('asistensi_')) {
-               const num = key.split('_')[1];
-               displayLabel = `Asistensi (Bukti ${num})`;
-           }
-      %>
+    // --- LOGIC: HANYA TAMPIL JIKA SUDAH UPLOAD ---
+    // Khusus untuk asistensi_2 dan asistensi_3
+    if (['asistensi_2', 'asistensi_3'].includes(key)) {
+        // Jika statusnya masih 'Belum Ada', jangan tampilkan barisnya
+        if (value.label === 'Belum Ada') {
+            continue; 
+        }
+    }
+    // Catatan: asistensi_1 tidak di-filter supaya tetap muncul sebagai pengingat "Minimal 1"
+    
+    // --- PENAMAAN LABEL ---
+    let displayLabel = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    if (key.includes('asistensi_')) {
+        const num = key.split('_')[1];
+        displayLabel = `Asistensi (Bukti ${num})`;
+    }
+%>
 
         <div class="row mb-2 align-items-center">
           <div class="col-5 fw-medium small">
