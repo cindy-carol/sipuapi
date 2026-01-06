@@ -240,8 +240,9 @@ const deleteJadwalByNPM = async (npm) => {
         const jadRes = await pool.query('SELECT id FROM jadwal WHERE mahasiswa_id = $1', [mahasiswaId]);
         if (jadRes.rows.length > 0) {
             const jadwalId = jadRes.rows[0].id;
-            await pool.query(`UPDATE daftar_ujian SET jadwal_id = NULL, surat_id = NULL WHERE jadwal_id = $1`, [jadwalId]);
+            await pool.query(`UPDATE daftar_ujian SET jadwal_id = NULL, dosen_penguji_id = NULL, surat_id = NULL WHERE jadwal_id = $1`, [jadwalId]);
             await pool.query('DELETE FROM surat WHERE mahasiswa_id = $1', [mahasiswaId]);
+            await pool.query('DELETE FROM dosen_penguji WHERE mahasiswa_id = $1', [mahasiswaId]);
             await pool.query('DELETE FROM jadwal WHERE id = $1', [jadwalId]);
         }
     }
