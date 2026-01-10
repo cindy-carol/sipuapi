@@ -56,13 +56,7 @@
                         </td>
                         <td class="text-center">
                             <% if (user.id !== akun.id) { %>
-                                <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-edit" 
-                                        data-id="<%= akun.id %>" 
-                                        data-nama="<%= akun.nama %>"
-                                        data-username="<%= akun.username %>"
-                                        title="Edit Data Akun">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
+
 <button class="btn btn-sm btn-outline-secondary me-1" 
         onclick="resetPassword('<%= akun.id %>', '<%= akun.nama %>')"
         title="Reset Password ke Default"> <i class="bi bi-key"></i>
