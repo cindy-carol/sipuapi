@@ -196,12 +196,12 @@ const logout = (req, res) => {
     }
 
     // 2. Bersihkan cookie dengan path '/' agar benar-benar terhapus di browser
-    res.clearCookie('connect.sid', { path: '/' }); 
+    res.clearCookie('connect.sid', { path: '/portal/login' }); 
 
     // 3. Logika pengalihan (Redirect)
     if (role === 'mahasiswa') {
       // Sesuaikan dengan rute login mahasiswa di app.js
-      return res.redirect('/login'); 
+      return res.redirect('/'); 
     } else {
       // Staff (Admin/Kaprodi) diarahkan ke root atau login staff
       return res.redirect('/'); 
