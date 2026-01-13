@@ -108,7 +108,7 @@ const authMahasiswaController = {
     req.session.destroy((err) => {
       if (err) console.error('❌ Logout Error:', err);
       res.clearCookie('connect.sid', { path: '/' }); // Bersihkan cookie secara global
-      res.redirect('/login'); 
+      res.redirect('/'); 
     });
   },
 };
