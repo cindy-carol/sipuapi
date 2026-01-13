@@ -4,7 +4,7 @@ const authController = require('../controllers/authController');
 const { ensureAuthenticated, onlyAdmin, onlyKaprodi } = require('../middlewares/auth');
 
 // Halaman login untuk Admin & Kaprodi
-router.get('/staff/login', (req, res) => {
+router.get('/portal/login', (req, res) => {
   res.render('login-admin-kaprodi', { 
     title: 'Login Admin/Kaprodi',
     currentPage: 'login-admin-kaprodi',
