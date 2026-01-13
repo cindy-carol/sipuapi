@@ -17,10 +17,10 @@ const showDashboard = async (req, res) => {
     const [mhs, berkas, jadwalList, statusData, infoList, suratData] = await Promise.all([
       Mahasiswa.findByNPM(npm),
       Mahasiswa.getStatusBerkasByNPM(npm),
-      Mahasiswa.getJadwalUjianByNPM(npm), // Mengandung data jadwal & daftar_ujian
+      Mahasiswa.getJadwalUjianByNPM(npm),
       Status.getStatusMahasiswaByNPM(npm),
       Mahasiswa.getAllRincian(),
-      Mahasiswa.getSuratByNPM(npm) // Data surat undangan
+      Mahasiswa.getSuratByNPM(npm)
     ]);
 
     if (!mhs) return res.status(404).send('Data mahasiswa tidak ditemukan');
@@ -28,18 +28,26 @@ const showDashboard = async (req, res) => {
     // ============================================================
     // 🔹 2. LOGIC PENENTUAN STATUS OVERALL (WATERFALL)
     // ============================================================
-    let statusOverall = 'Belum Mendaftar';
-    let badge = { color: 'bg-secondary', text: 'text-light', icon: 'bi-circle' };
-
-    // A. Cek Kelengkapan Berkas (Code: 3=Diterima, 2=Ditolak, 1=Menunggu, 0=Kosong)
+    
+    // --- AMBIL SEMUA STATUS CODE ---
     const rpl = berkas?.rpl || 0;
     const art = berkas?.artikel || 0;
     const as1 = berkas?.kartu_asistensi_1 || 0;
+    const as2 = berkas?.kartu_asistensi_2 || 0; 
+    const as3 = berkas?.kartu_asistensi_3 || 0; 
 
+    // Kelompokkan berkas wajib dan semua berkas
     const docsWajib = [rpl, art, as1];
-    const isBerkasLengkap = docsWajib.every(code => code === 3);
-    const isBerkasPending = docsWajib.some(code => code === 1);
-    const isBerkasRejected = docsWajib.some(code => code === 2);
+    const docsSemua = [rpl, art, as1, as2, as3]; // Untuk cek Reject/Pending di semua file
+
+    // Logika Status
+    const isWajibLengkap = docsWajib.every(code => code === 3); // Cek apakah 3 wajib sudah ACC
+    const isWajibTerisi = docsWajib.every(code => code >= 1);   // Cek apakah 3 wajib minimal sudah upload
+    const isAdaRejected = docsSemua.some(code => code === 2);   // Cek jika ada yg Merah (wajib/opsional)
+    const isAdaPending = docsSemua.some(code => code === 1);    // Cek jika ada yg Kuning (wajib/opsional)
+
+    let statusOverall = 'Belum Mendaftar';
+    let badge = { color: 'bg-secondary', text: 'text-light', icon: 'bi-circle' };
 
     // B. Cek Data Jadwal
     const jadwal = jadwalList ? jadwalList[0] : null;
@@ -56,17 +64,24 @@ const showDashboard = async (req, res) => {
       statusOverall = 'Selesai';
       badge = { color: 'bg-success', text: 'text-white', icon: 'bi-check-circle-fill' };
 
-    } else if (isBerkasRejected) {
+    } else if (isAdaRejected) {
       statusOverall = 'Perbaiki Berkas';
       badge = { color: 'bg-danger', text: 'text-white', icon: 'bi-exclamation-triangle-fill' };
 
-    } else if (isBerkasPending) {
+    } else if (!isWajibTerisi) {
+      // Jika 3 berkas utama belum diupload
+      statusOverall = 'Lengkapi Berkas';
+      badge = { color: 'bg-secondary', text: 'text-white', icon: 'bi-cloud-upload' };
+
+    } else if (isAdaPending) {
+      // Jika wajib sudah upload, tapi ada yang masih kuning (termasuk opsional)
       statusOverall = 'Menunggu Verifikasi Berkas';
       badge = { color: 'bg-warning', text: 'text-dark', icon: 'bi-hourglass-split' };
 
-    } else if (!isBerkasLengkap) {
-      statusOverall = 'Lengkapi Berkas';
-      badge = { color: 'bg-secondary', text: 'text-white', icon: 'bi-cloud-upload' };
+    } else if (!isWajibLengkap) {
+      // Jika wajib sudah upload tapi belum semua di-ACC (Hijau)
+      statusOverall = 'Berkas Sedang Diverifikasi';
+      badge = { color: 'bg-info', text: 'text-white', icon: 'bi-info-circle' };
 
     } else if (!isJadwalFilled) {
       statusOverall = 'Silakan Isi Jadwal';
@@ -107,11 +122,11 @@ const showDashboard = async (req, res) => {
     };
 
     const statusBerkas = {
-      dokumen_rpl: mapStatusUI(berkas?.rpl),
-      draft_artikel: mapStatusUI(berkas?.artikel),
-      asistensi_1: mapStatusUI(berkas?.kartu_asistensi_1),
-      asistensi_2: mapStatusUI(berkas?.kartu_asistensi_2),
-      asistensi_3: mapStatusUI(berkas?.kartu_asistensi_3)
+      dokumen_rpl: mapStatusUI(rpl),
+      draft_artikel: mapStatusUI(art),
+      asistensi_1: mapStatusUI(as1),
+      asistensi_2: mapStatusUI(as2), 
+      asistensi_3: mapStatusUI(as3)
     };
 
     // ===============================
