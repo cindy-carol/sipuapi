@@ -72,7 +72,7 @@ const authMahasiswaController = {
   showDashboardMahasiswa: async (req, res) => {
     try {
       if (!req.session.user || !req.session.user.npm) {
-        return res.redirect('/login');
+        return res.redirect('/');
       }
 
       const { npm } = req.session.user;
