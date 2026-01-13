@@ -29,6 +29,7 @@ const Verifikasi = {
     query += `
       GROUP BY m.id, m.nama, m.npm, t.nama_tahun, t.semester, a.id
       HAVING SUM(CASE WHEN bu.status_verifikasi = TRUE THEN 1 ELSE 0 END) < COUNT(bu.berkas_id)
+      AND COUNT(bu.berkas_id) >= 3
       ORDER BY m.npm ASC; -- 🔥 Wajib urut NPM dulu kalo pake DISTINCT ON
     `;
     const result = await pool.query(query, params);
