@@ -204,7 +204,7 @@ const logout = (req, res) => {
       return res.redirect('/'); 
     } else {
       // Staff (Admin/Kaprodi) diarahkan ke root atau login staff
-      return res.redirect('/'); 
+      return res.redirect('/portal/login'); 
     }
   });
 };

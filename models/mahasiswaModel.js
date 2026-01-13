@@ -177,6 +177,8 @@ findByNPM: async (npm) => {
       if (row.jenis_berkas === 'dokumen_rpl') status.rpl = row.status_code;
       if (row.jenis_berkas === 'draft_artikel') status.artikel = row.status_code;
       if (row.jenis_berkas === 'kartu_asistensi_1') status.kartu_asistensi_1 = row.status_code;
+      if (row.jenis_berkas === 'kartu_asistensi_2') status.kartu_asistensi_2 = row.status_code;
+      if (row.jenis_berkas === 'kartu_asistensi_3') status.kartu_asistensi_3 = row.status_code;
     });
     return status;
   },
