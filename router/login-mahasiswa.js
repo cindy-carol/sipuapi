@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
 });
 
 // Proses login mahasiswa (tanpa password, cukup NPM)
-router.post('/', authMahasiswaController.loginMahasiswa);
+router.post('/login', authMahasiswaController.loginMahasiswa);
 
 // Dashboard mahasiswa
 router.get('/dashboard', ensureAuthenticated, onlyMahasiswa, authMahasiswaController.showDashboardMahasiswa);
