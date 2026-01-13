@@ -4,7 +4,7 @@ const authMahasiswaController = require('../controllers/authMahasiswaController'
 const { ensureAuthenticated, onlyMahasiswa } = require('../middlewares/auth');
 
 // Halaman login mahasiswa
-router.get('/login', (req, res) => {
+router.get('/', (req, res) => {
   res.render('login-mahasiswa', { 
     title: 'Login Mahasiswa',
     currentPage: 'login-mahasiswa',
@@ -14,7 +14,7 @@ router.get('/login', (req, res) => {
 });
 
 // Proses login mahasiswa (tanpa password, cukup NPM)
-router.post('/login', authMahasiswaController.loginMahasiswa);
+router.post('/', authMahasiswaController.loginMahasiswa);
 
 // Dashboard mahasiswa
 router.get('/dashboard', ensureAuthenticated, onlyMahasiswa, authMahasiswaController.showDashboardMahasiswa);
