@@ -65,7 +65,7 @@ case 'jadwal':
         const mode = j.pelaksanaan ? j.pelaksanaan.toLowerCase() : '-';
 
         // Gabungkan sesuai format permintaan
-        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB<br>${mode}`;
+        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB`;
     } else {
         jadwalDisplay = j.formattedJadwal || '-';
     }
@@ -110,7 +110,7 @@ case 'jadwal':
         const selesai = s.jadwal.jam_selesai ? s.jadwal.jam_selesai.toString().slice(0, 5).replace(':', '.') : '00.00';
         
         // Gabungkan sesuai format permintaan
-        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB<br>${mode}`;
+        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB<br>`;
     }
 
     return {

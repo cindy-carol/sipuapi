@@ -146,6 +146,10 @@
           <i class="bi bi-gear-fill"></i> Atur Template Surat
       </button>
   </div>
+  <div class="alert alert-warning py-1 px-2 mb-0 shadow-sm" style="font-size: 0.75rem; border-left: 4px solid #ffc107;">
+    <i class="bi bi-info-circle-fill me-1"></i>
+    <strong>Info:</strong> Khusus pelaksanaan <u>Online</u>, wajib melengkapi <b>Link Zoom</b> pada <b>Edit Info Ujian</b> agar tombol Download Draft aktif.
+  </div>
 <table class="table table-bordered text-center align-middle">
   <thead class="table-light">
     <tr>
@@ -197,7 +201,7 @@
                       <% } %>
 
                       <%- include('../partials/button', {
-                          buttonType: 'editSurat', buttonLabel: 'Edit', buttonTarget: mhs.npm, buttonStatus: 'btn-sm'
+                          buttonType: 'editSurat', buttonLabel: 'Edit Info Ujian', buttonTarget: mhs.npm, buttonStatus: 'btn-sm'
                       }) %>
                   </div>
               </div>
