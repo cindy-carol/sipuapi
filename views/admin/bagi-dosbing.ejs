@@ -63,61 +63,69 @@
         <th style="width:10%">Aksi</th>
       </tr>
     </thead>
-    <tbody>
-      <% if (dosbing && dosbing.length > 0) { %>
-        <% dosbing.forEach((m, i) => { %>
+<tbody>
+  <% if (dosbing && dosbing.length > 0) { %>
+    <% dosbing.forEach((m, i) => { %>
+      <tr data-id="<%= m.npm %>" class="dosbing-row align-middle">
+        <th scope="row"><%= i + 1 %></th>
+        
+        <td class="text-start">
+          <div class="fw-bold"><%= m.nama %></div>
+          <small class="text-muted"><%= m.npm %></small>
+        </td>
 
-          <tr data-id="<%= m.npm %>" class="dosbing-row">
-            <th scope="row"><%= i + 1 %></th>
-            <td><%= m.npm %></td>
-            <td class="text-start fw-bold"><%= m.nama %></td>
-
-            <td class="editable-cell text-start position-relative" data-field="dosbing1_id">
+        <td class="text-start">
+          <div class="mb-2 d-flex align-items-start gap-1">
+            <span class="fw-bold">1.</span>
+            <div class="editable-cell flex-grow-1 position-relative" data-field="dosbing1_id">
               <span class="view-content"><%= m.dosbing1 || '-' %></span>
-              
               <select class="edit-input d-none form-select form-select-sm shadow-sm">
                 <option value="">-- Pilih Dosen --</option>
                 <% if(dosenKeMahasiswa && dosenKeMahasiswa.length > 0) { %>
                   <% dosenKeMahasiswa.forEach(d => { %>
-                     <option value="<%= d.dosen_id %>" <%= m.dosbing1_id == d.dosen_id ? 'selected' : '' %>>
-                       [<%= d.kode_dosen %>] <%= d.nama %>
-                     </option>
+                    <option value="<%= d.dosen_id %>" <%= m.dosbing1_id == d.dosen_id ? 'selected' : '' %>>
+                      [<%= d.kode_dosen %>] <%= d.nama %>
+                    </option>
                   <% }) %>
                 <% } %>
               </select>
-            </td>
+            </div>
+          </div>
 
-            <td class="editable-cell text-start position-relative" data-field="dosbing2_id">
+          <div class="d-flex align-items-start gap-1">
+            <span class="fw-bold">2.</span>
+            <div class="editable-cell flex-grow-1 position-relative" data-field="dosbing2_id">
               <span class="view-content"><%= m.dosbing2 || '-' %></span>
-              
               <select class="edit-input d-none form-select form-select-sm shadow-sm">
                 <option value="">-- Pilih Dosen --</option>
                 <% if(dosenKeMahasiswa && dosenKeMahasiswa.length > 0) { %>
                   <% dosenKeMahasiswa.forEach(d => { %>
-                     <option value="<%= d.dosen_id %>" <%= m.dosbing2_id == d.dosen_id ? 'selected' : '' %>>
-                       [<%= d.kode_dosen %>] <%= d.nama %>
-                     </option>
+                    <option value="<%= d.dosen_id %>" <%= m.dosbing2_id == d.dosen_id ? 'selected' : '' %>>
+                      [<%= d.kode_dosen %>] <%= d.nama %>
+                    </option>
                   <% }) %>
                 <% } %>
               </select>
-            </td>
+            </div>
+          </div>
+        </td>
 
-            <td>
-              <%- include('../partials/button', {
-                buttonType: 'editDosbing', 
-                buttonLabel: '',
-                buttonTarget: '', 
-                buttonStatus: '' 
-              }) %>
-            </td>
-          </tr>
-        <% }) %>
-      <% } else { %>
-        <tr>
-          <td colspan="6" class="text-muted fst-italic py-4">Belum ada data mahasiswa untuk tahun ajaran ini.</td>
-        </tr>
-      <% } %>
-    </tbody>
+        <td>
+          <%- include('../partials/button', {
+            buttonType: 'editDosbing', 
+            buttonLabel: '',
+            buttonTarget: '', 
+            buttonStatus: 'btn-sm' 
+          }) %>
+        </td>
+      </tr>
+    <% }) %>
+  <% } else { %>
+    <tr>
+      <td colspan="4" class="text-muted fst-italic py-4">Belum ada data mahasiswa untuk tahun ajaran ini.</td>
+    </tr>
+  <% } %>
+</tbody>
   </table>
 </div>
 <% } %>

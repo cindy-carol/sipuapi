@@ -103,11 +103,11 @@
               </ol>
             </td>
             <td>
-              <%- mhs.jadwalUjian || '-' %>
+              <%- mhs.jadwalUjian || '-' %> <br>
               <% if(mhs.pelaksanaan === 'online') { %>
                 <span class="badge bg-info" style="font-size: 0.8rem;">Online</span>
             <% } else if(mhs.pelaksanaan === 'offline') { %>
-                <span class="badge bg-secondary" style="font-size: 0.8rem;">Offline</span>
+                <span class="badge bg-success" style="font-size: 0.8rem;">Offline</span>
             <% } else { %>
                 <span class="text-muted small">-</span>
             <% } %>
@@ -164,11 +164,11 @@
           <td><%= mhs.npm %></td>
           <td class="text-start"><%= mhs.nama %></td>
           <td><small><%= mhs.nama_tahun + ' ' + mhs.semester %></small></td>
-          <td class="text-nowrap"><%- mhs.jadwalUjian %>
+          <td class="text-nowrap"><%- mhs.jadwalUjian %> <br>
             <% if(mhs.pelaksanaan === 'online') { %>
                 <span class="badge bg-info" style="font-size: 0.8rem;">Online</span>
             <% } else if(mhs.pelaksanaan === 'offline') { %>
-                <span class="badge bg-secondary" style="font-size: 0.8rem;">Offline</span>
+                <span class="badge bg-success" style="font-size: 0.8rem;">Offline</span>
             <% } else { %>
                 <span class="text-muted small">-</span>
             <% } %>
