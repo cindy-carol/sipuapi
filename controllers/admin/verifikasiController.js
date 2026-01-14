@@ -110,7 +110,7 @@ case 'jadwal':
         const selesai = s.jadwal.jam_selesai ? s.jadwal.jam_selesai.toString().slice(0, 5).replace(':', '.') : '00.00';
         
         // Gabungkan sesuai format permintaan
-        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB<br>`;
+        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB`;
     }
 
     return {
