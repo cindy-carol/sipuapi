@@ -111,6 +111,7 @@
         let widthClass = 'container-default';
         if (role === 'mahasiswa') widthClass = 'container-mhs';
         else if (role === 'kaprodi') widthClass = 'container-kaprodi';
+        else if (role === 'kaprodi' && hideSidebar) widthClass = 'container-admin-cek';
         else if (role === 'admin' && hideSidebar) widthClass = 'container-admin-cek';
       %>
       <div class="custom-container <%= widthClass %>">
