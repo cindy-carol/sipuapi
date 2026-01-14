@@ -104,6 +104,13 @@
             </td>
             <td>
               <%- mhs.jadwalUjian || '-' %>
+              <% if(mhs.pelaksanaan === 'online') { %>
+                <span class="badge bg-info" style="font-size: 0.8rem;">Online</span>
+            <% } else if(mhs.pelaksanaan === 'offline') { %>
+                <span class="badge bg-secondary" style="font-size: 0.8rem;">Offline</span>
+            <% } else { %>
+                <span class="text-muted small">-</span>
+            <% } %>
             </td>
             <td>
               <form action="/admin/verifikasi/oper-kaprodi" method="POST">
@@ -146,7 +153,7 @@
       <th class="text-start">Nama Mahasiswa</th>
       <th>Tahun Ajaran</th>
       <th>Jadwal Ujian</th>
-      <th>Mode</th> <th>Aksi</th>
+      <th>Aksi</th>
     </tr>
   </thead>
   <tbody>
@@ -157,12 +164,11 @@
           <td><%= mhs.npm %></td>
           <td class="text-start"><%= mhs.nama %></td>
           <td><small><%= mhs.nama_tahun + ' ' + mhs.semester %></small></td>
-          <td class="text-nowrap"><%- mhs.jadwalUjian %></td>
-          <td>
+          <td class="text-nowrap"><%- mhs.jadwalUjian %>
             <% if(mhs.pelaksanaan === 'online') { %>
-                <span class="badge bg-info text-dark" style="font-size: 0.75rem;">Online</span>
+                <span class="badge bg-info" style="font-size: 0.8rem;">Online</span>
             <% } else if(mhs.pelaksanaan === 'offline') { %>
-                <span class="badge bg-secondary" style="font-size: 0.75rem;">Offline</span>
+                <span class="badge bg-secondary" style="font-size: 0.8rem;">Offline</span>
             <% } else { %>
                 <span class="text-muted small">-</span>
             <% } %>
