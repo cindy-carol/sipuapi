@@ -80,7 +80,7 @@
     <thead class="table-light">
       <tr>
         <th style="width:1%">No.</th>
-        <th style="width:1%">Nama & NPM Mahasiswa</th>
+        <th style="width:10%">Nama & NPM Mahasiswa</th>
         <th style="width:10%">Tahun Ajaran</th>
         <th style="width:10%">Dosen Pembimbing</th>
         <th style="width:10%">Jadwal</th>
@@ -169,7 +169,7 @@
           <div class="fw-bold"><%= mhs.nama %></div>
           <small class="text-muted"><%= mhs.npm %></small>
         </td>
-          <td><small><%= mhs.nama_tahun + ' ' + mhs.semester %></small></td>
+          <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
           <td class="text-nowrap"><%- mhs.jadwalUjian %> <br>
             <% if(mhs.pelaksanaan === 'online') { %>
                 <span class="badge bg-info" style="font-size: 0.8rem;">Online</span>
