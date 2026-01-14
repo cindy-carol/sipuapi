@@ -210,15 +210,15 @@ updateStatusVerifikasi: async (jadwalId, status, editorId) => {
 // =========================
   // 5. Surat & Selesai ujian (DISTINCT ON NPM)
   // =========================
-// models/verifikasiModel.js
-
-  suratUndangan: async (tahunId = null) => {
+// models/verifikasiModel.js 
+suratUndangan: async (tahunId = null) => {
     const params = [];
     let query = `
       SELECT DISTINCT ON (m.npm)
         m.id, m.nama, m.npm, t.nama_tahun, t.semester,
-        s.id, s.nama_surat, s.path_file, s.is_diterbitkan, s.last_download_at,
-        j.tanggal, j.jam_mulai, j.tempat,
+        s.id AS surat_id, s.nama_surat, s.path_file, s.is_diterbitkan, s.last_download_at,
+        j.tanggal, j.jam_mulai, j.jam_selesai, j.tempat, j.pelaksanaan, 
+        j.link_zoom, j.meeting_id, j.passcode,
         d1.nama AS dosbing1, d2.nama AS dosbing2, d3.nama AS penguji, dp.dosen_id AS dosen_penguji_id,
         BOOL_AND(dp.status_verifikasi) AS penguji_terverifikasi,
         BOOL_AND(bu.status_verifikasi) AS berkas_terverifikasi
@@ -246,7 +246,9 @@ updateStatusVerifikasi: async (jadwalId, status, editorId) => {
         m.id, m.nama, m.npm, t.nama_tahun, t.semester, 
         s.id, s.nama_surat, s.path_file, s.is_diterbitkan, 
         s.last_download_at,
-        j.tanggal, j.jam_mulai, j.tempat, du.ujian_selesai, d1.nama, d2.nama, d3.nama, dp.dosen_id
+        j.tanggal, j.jam_mulai, j.jam_selesai, j.tempat, j.pelaksanaan, 
+        j.link_zoom, j.meeting_id, j.passcode,
+        du.ujian_selesai, d1.nama, d2.nama, d3.nama, dp.dosen_id
       HAVING 
         BOOL_AND(dp.status_verifikasi) = TRUE AND
         BOOL_AND(bu.status_verifikasi) = TRUE AND
@@ -257,29 +259,20 @@ updateStatusVerifikasi: async (jadwalId, status, editorId) => {
 
     const result = await pool.query(query, params);
     
-    // 🔥 UPDATE 3: MAPPING RETURN
     return result.rows.map(row => ({
-      id: row.id, 
-      nama: row.nama, 
-      npm: row.npm, 
-      nama_tahun: row.nama_tahun, 
-      semester: row.semester,
-      nama_surat: row.nama_surat, 
-      path_file: row.path_file, 
-      is_diterbitkan: row.is_diterbitkan,
-      last_download_at: row.last_download_at,
-
+      ...row,
       jadwal: { 
           tanggal: row.tanggal, 
           jam_mulai: row.jam_mulai, 
-          pelaksanaan: row.tempat?.toLowerCase().includes('zoom') ? 'Online' : 'Offline', 
-          tempat: row.tempat 
-      },
-      dosbing1: row.dosbing1 || '-', 
-      dosbing2: row.dosbing2 || '-', 
-      penguji: [row.penguji || '-']
+          jam_selesai: row.jam_selesai,
+          pelaksanaan: row.pelaksanaan, 
+          tempat: row.tempat,
+          link_zoom: row.link_zoom,
+          meeting_id: row.meeting_id,
+          passcode: row.passcode
+      }
     }));
-  },
+},
 
   // =========================
   // Helper functions

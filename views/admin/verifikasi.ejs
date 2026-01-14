@@ -138,92 +138,79 @@
           <i class="bi bi-gear-fill"></i> Atur Template Surat
       </button>
   </div>
-  <table class="table table-bordered text-center align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>No.</th>
-        <th>NPM</th>
-        <th class="text-start">Nama Mahasiswa</th>
-        <th>Tahun Ajaran</th>
-        <th>Jadwal Ujian</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-<tbody>
-  <% if (surat && surat.length > 0) { %>
-    <% surat.forEach((mhs, index) => { %>
-      <tr>
-        <th scope="row"><%= index + 1 %></th>
-        <td><%= mhs.npm %></td>
-        <td class="text-start"><%= mhs.nama %></td>
-        <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
-        <td>
-          <%- mhs.jadwalUjian || '-' %>
-        </td>
-        <td class="p-0 align-middle position-relative">
-            <div class="d-flex flex-column justify-content-center align-items-center p-2" 
-                 style="border-bottom: 1px solid #dee2e6; min-height: 80px;">
-                
-                <div class="d-flex gap-1 align-items-center"> 
-                    
-<% if (mhs.last_download_at) { %>
-    
-    <%- include('../partials/button', { 
-        buttonType: 'download', 
-        buttonLabel: 'Download Ulang', 
-        buttonTarget: mhs.npm, 
-        buttonStatus: 'btn-outline-info border-2',
-        isNew: false
-    }) %>
-
-<% } else { %>
-
-    <%- include('../partials/button', { 
-        buttonType: 'download', 
-        buttonLabel: 'Download Draft', 
-        buttonTarget: mhs.npm, 
-        buttonStatus: 'btn-info',
-        isNew: true
-    }) %>
-
-<% } %>
-
-                    <%- include('../partials/button', {
-                        buttonType: 'editSurat',
-                        buttonLabel: 'Edit Info Ujian',
-                        buttonTarget: mhs.npm, 
-                        buttonStatus: ''
-                    }) %>
-                </div>
-            </div>
-
-<div class="d-flex justify-content-center align-items-center gap-1 p-2">
-    <% if (mhs.last_download_at) { %>
-        <%- include("../partials/upload", { 
-            namaFile: `surat_${mhs.npm}`, 
-            fieldName: "surat_undangan", 
-            formAction: `/admin/verifikasi/upload-surat/${mhs.npm}`, 
-            buttonLabel: "Upload TTD", 
-            existingFile: mhs.suratUndanganPath !== '#' ? mhs.suratUndanganPath : null,
-            allowDelete: true, 
-            customFields: { npm: mhs.npm } 
-        }) %>
-    <% } else { %>
-        <span class="badge bg-secondary-subtle text-muted p-2">
-            <i class="bi bi-lock-fill"></i> Download draf dulu
-        </span>
-    <% } %>
-</div>
-        </td>
-      </tr>
-    <% }) %>
-  <% } else { %>
+<table class="table table-bordered text-center align-middle">
+  <thead class="table-light">
     <tr>
-      <td colspan="5" class="text-center text-muted py-3">Belum ada surat siap download</td>
+      <th>No.</th>
+      <th>NPM</th>
+      <th class="text-start">Nama Mahasiswa</th>
+      <th>Tahun Ajaran</th>
+      <th>Jadwal Ujian</th>
+      <th>Mode</th> <th>Aksi</th>
     </tr>
-  <% } %> 
-</tbody>
-  </table>
+  </thead>
+  <tbody>
+    <% if (surat && surat.length > 0) { %>
+      <% surat.forEach((mhs, index) => { %>
+        <tr>
+          <th scope="row"><%= index + 1 %></th>
+          <td><%= mhs.npm %></td>
+          <td class="text-start"><%= mhs.nama %></td>
+          <td><small><%= mhs.nama_tahun + ' ' + mhs.semester %></small></td>
+          <td class="text-nowrap"><%- mhs.jadwalUjian %></td>
+          <td>
+            <% if(mhs.pelaksanaan === 'online') { %>
+                <span class="badge bg-info text-dark" style="font-size: 0.75rem;">Online</span>
+            <% } else if(mhs.pelaksanaan === 'offline') { %>
+                <span class="badge bg-secondary" style="font-size: 0.75rem;">Offline</span>
+            <% } else { %>
+                <span class="text-muted small">-</span>
+            <% } %>
+          </td>
+          <td class="p-0 align-middle position-relative">
+              <div class="d-flex flex-column justify-content-center align-items-center p-2" style="border-bottom: 1px solid #dee2e6; min-height: 80px;">
+                  <div class="d-flex gap-1 align-items-center"> 
+                      <% if (mhs.last_download_at) { %>
+                          <%- include('../partials/button', { 
+                              buttonType: 'download', buttonLabel: 'Unduh Ulang', buttonTarget: mhs.npm, 
+                              buttonStatus: 'btn-outline-info border-2', isNew: false 
+                          }) %>
+                      <% } else { %>
+                          <% if (mhs.canDownloadDraft) { %>
+                              <%- include('../partials/button', { 
+                                  buttonType: 'download', buttonLabel: 'Download Draft', buttonTarget: mhs.npm, 
+                                  buttonStatus: 'btn-info', isNew: true 
+                              }) %>
+                          <% } else { %>
+                              <button class="btn btn-sm btn-info disabled" title="Data Jadwal/Zoom belum lengkap">
+                                  Download Draft <i class="bi bi-lock"></i>
+                              </button>
+                          <% } %>
+                      <% } %>
+
+                      <%- include('../partials/button', {
+                          buttonType: 'editSurat', buttonLabel: 'Edit', buttonTarget: mhs.npm, buttonStatus: 'btn-sm'
+                      }) %>
+                  </div>
+              </div>
+              <div class="d-flex justify-content-center align-items-center gap-1 p-2">
+                  <% if (mhs.last_download_at) { %>
+                      <%- include("../partials/upload", { 
+                          namaFile: `surat_${mhs.npm}`, fieldName: "surat_undangan", 
+                          formAction: `/admin/verifikasi/upload-surat/${mhs.npm}`, 
+                          buttonLabel: "Upload TTD", existingFile: mhs.suratUndanganPath !== '#' ? mhs.suratUndanganPath : null,
+                          allowDelete: true, customFields: { npm: mhs.npm } 
+                      }) %>
+                  <% } else { %>
+                      <span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-lock-fill"></i> Unduh draf dulu</span>
+                  <% } %>
+              </div>
+          </td>
+        </tr>
+      <% }) %>
+    <% } %>
+  </tbody>
+</table>
 </div>
 <% } %>
 

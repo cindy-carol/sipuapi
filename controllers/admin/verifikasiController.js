@@ -84,40 +84,42 @@ const verifikasiController = {
         // ---------------------------------------------------------------
         // CASE 3: TAB DOWNLOAD SURAT
         // ---------------------------------------------------------------
-        case 'surat':
-          const [rawSurat, rawJadwalForSurat] = await Promise.all([
-            Verifikasi.suratUndangan(tahunId),
-            Verifikasi.verifJadwal(tahunId) 
-          ]);
+// controllers/admin/verifikasiController.js - Bagian case 'surat'
+case 'surat':
+  const rawSurat = await Verifikasi.suratUndangan(tahunId);
 
-          const jadwalMap = {};
-          rawJadwalForSurat.forEach(j => { jadwalMap[j.npm] = j; });
+  surat = rawSurat.map(s => {
+    const mode = s.jadwal.pelaksanaan ? s.jadwal.pelaksanaan.toLowerCase() : '';
+    const hasJadwal = !!s.jadwal.tanggal;
+    const hasZoomLengkap = !!(s.jadwal.link_zoom && s.jadwal.meeting_id && s.jadwal.passcode);
 
-          surat = rawSurat.map(s => {
-            const jadwalMhs = jadwalMap[s.npm] || {}; 
-            return {
-              nama: s.nama,
-              npm: s.npm,
-              nama_tahun: s.nama_tahun,
-              semester: s.semester,
-              suratUndanganPath: s.path_file || '#',
-              nama_surat: s.nama_surat || '-',
-              is_diterbitkan: s.is_diterbitkan,
-              last_download_at: s.last_download_at,              
-              jadwal: {
-                pelaksanaan: jadwalMhs.pelaksanaan || 'offline',
-                tanggal: jadwalMhs.tanggal || '', 
-                jam_mulai: jadwalMhs.jam_mulai || '',
-                jam_selesai: jadwalMhs.jam_selesai || '',
-                tempat: jadwalMhs.tempat || '',
-              },
-              dosbing1: jadwalMhs.dosbing1 || '-',
-              dosbing2: jadwalMhs.dosbing2 || '-',
-              penguji: [ jadwalMhs.dosen_penguji_id ? 'Sudah Ditunjuk' : '' ]
-            };
-          });
-          break;
+    // 🔥 LOGIKA VALIDASI TOMBOL
+    // Jika Offline: Cukup ada Tanggal. 
+    // Jika Online: Harus ada Tanggal + Link Zoom + ID + Passcode.
+    const canDownloadDraft = (mode === 'offline' && hasJadwal) || 
+                             (mode === 'online' && hasJadwal && hasZoomLengkap);
 
+    let jadwalDisplay = '-';
+    if (hasJadwal) {
+        const dateObj = new Date(s.jadwal.tanggal);
+        const tgl = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        const jam = `${s.jadwal.jam_mulai?.slice(0,5)} - ${s.jadwal.jam_selesai?.slice(0,5)}`;
+        jadwalDisplay = `${tgl}<br><small class="text-muted">${jam}</small>`;
+    }
+
+    return {
+      nama: s.nama,
+      npm: s.npm,
+      nama_tahun: s.nama_tahun,
+      semester: s.semester,
+      suratUndanganPath: s.path_file || '#',
+      last_download_at: s.last_download_at,
+      jadwalUjian: jadwalDisplay,
+      pelaksanaan: mode,
+      canDownloadDraft: canDownloadDraft // 👈 Kirim ke View
+    };
+  });
+  break;
         // ---------------------------------------------------------------
         // CASE 4: TAB TANDAI SELESAI (ACTION LIST - CROSSCHECK)
         // ---------------------------------------------------------------
