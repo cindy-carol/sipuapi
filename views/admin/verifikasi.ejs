@@ -145,6 +145,7 @@
         <th>NPM</th>
         <th class="text-start">Nama Mahasiswa</th>
         <th>Tahun Ajaran</th>
+        <th>Jadwal Ujian</th>
         <th>Aksi</th>
       </tr>
     </thead>
@@ -156,7 +157,9 @@
         <td><%= mhs.npm %></td>
         <td class="text-start"><%= mhs.nama %></td>
         <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
-
+        <td>
+          <%- mhs.jadwalUjian || '-' %>
+        </td>
         <td class="p-0 align-middle position-relative">
             <div class="d-flex flex-column justify-content-center align-items-center p-2" 
                  style="border-bottom: 1px solid #dee2e6; min-height: 80px;">
