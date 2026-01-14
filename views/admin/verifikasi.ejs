@@ -80,8 +80,7 @@
     <thead class="table-light">
       <tr>
         <th style="width:1%">No.</th>
-        <th style="width:1%">NPM</th>
-        <th style="width:1%" class="text-start">Nama Mahasiswa</th>
+        <th style="width:1%">Nama & NPM Mahasiswa</th>
         <th style="width:1%">Tahun Ajaran</th>
         <th style="width:10%">Dosen Pembimbing</th>
         <th style="width:10%">Jadwal</th>
@@ -93,8 +92,10 @@
         <% jadwal.forEach((mhs, index) => { %>
           <tr>
             <th scope="row"><%= index + 1 %></th>
-            <td><%= mhs.npm %></td>
-            <td class="text-start"><%= mhs.nama %></td>
+        <td class="text-start">
+          <div class="fw-bold"><%= m.nama %></div>
+          <small class="text-muted"><%= m.npm %></small>
+        </td>
             <td><%= mhs.nama_tahun + ' ' + mhs.semester %></td>
             <td class="text-start align-top">
               <ol class="mb-0 ps-3">
@@ -149,8 +150,7 @@
   <thead class="table-light">
     <tr>
       <th>No.</th>
-      <th>NPM</th>
-      <th class="text-start">Nama Mahasiswa</th>
+      <th>Nama & NPM Mahasiswa</th>
       <th>Tahun Ajaran</th>
       <th>Jadwal Ujian</th>
       <th>Aksi</th>
@@ -161,8 +161,10 @@
       <% surat.forEach((mhs, index) => { %>
         <tr>
           <th scope="row"><%= index + 1 %></th>
-          <td><%= mhs.npm %></td>
-          <td class="text-start"><%= mhs.nama %></td>
+        <td class="text-start">
+          <div class="fw-bold"><%= m.nama %></div>
+          <small class="text-muted"><%= m.npm %></small>
+        </td>
           <td><small><%= mhs.nama_tahun + ' ' + mhs.semester %></small></td>
           <td class="text-nowrap"><%- mhs.jadwalUjian %> <br>
             <% if(mhs.pelaksanaan === 'online') { %>

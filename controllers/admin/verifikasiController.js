@@ -49,43 +49,44 @@ const verifikasiController = {
         // ---------------------------------------------------------------
         // CASE 2: TAB VERIFIKASI JADWAL
         // ---------------------------------------------------------------
-        case 'jadwal':
-          const rawJadwal = await Verifikasi.verifJadwal(tahunId);
-          jadwal = rawJadwal.map(j => {
-            let jadwalDisplay = '-';
-            if (j.tanggal) {
-                const dateObj = new Date(j.tanggal);
-                const tanggalSingkat = dateObj.toLocaleDateString('id-ID', {
-                    weekday: 'long', day: 'numeric', month: 'short', year: 'numeric'
-                });
-                const mulai = j.jam_mulai ? j.jam_mulai.toString().slice(0, 5) : '';
-                const selesai = j.jam_selesai ? j.jam_selesai.toString().slice(0, 5) : '';
-                jadwalDisplay = `${tanggalSingkat}<br>${mulai} s/d ${selesai} WIB`;
-            } else {
-                jadwalDisplay = j.formattedJadwal || '-';
-            }
-    
-            return {
-                id: j.jadwal_id,
-                nama: j.nama,
-                npm: j.npm,
-                nama_tahun: j.nama_tahun,
-                semester: j.semester,
-                dosbing1: j.dosbing1 || '-',
-                dosbing2: j.dosbing2 || '-',
-                pelaksanaan: j.pelaksanaan || '-',
-                tempat: j.tempat || '-',
-                jadwalUjian: jadwalDisplay,
-                status: j.status_verifikasi ? 'Terverifikasi' : 'Menunggu Verifikasi'
-            };
-          });
-          break;
+case 'jadwal':
+  const rawJadwal = await Verifikasi.verifJadwal(tahunId);
+  jadwal = rawJadwal.map(j => {
+    let jadwalDisplay = '-';
+    if (j.tanggal) {
+        const dateObj = new Date(j.tanggal);
+        // Format: Jum, 16 Jan 2026
+        const tgl = dateObj.toLocaleDateString('id-ID', {
+            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+        });
+        // Ubah format jam dari 10:00 jadi 10.00
+        const mulai = j.jam_mulai ? j.jam_mulai.toString().slice(0, 5).replace(':', '.') : '00.00';
+        const selesai = j.jam_selesai ? j.jam_selesai.toString().slice(0, 5).replace(':', '.') : '00.00';
+        const mode = j.pelaksanaan ? j.pelaksanaan.toLowerCase() : '-';
 
-        // ---------------------------------------------------------------
-        // CASE 3: TAB DOWNLOAD SURAT
-        // ---------------------------------------------------------------
-// controllers/admin/verifikasiController.js - Bagian case 'surat'
-case 'surat':
+        // Gabungkan sesuai format permintaan
+        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB<br>${mode}`;
+    } else {
+        jadwalDisplay = j.formattedJadwal || '-';
+    }
+
+    return {
+        id: j.jadwal_id,
+        nama: j.nama,
+        npm: j.npm,
+        nama_tahun: j.nama_tahun,
+        semester: j.semester,
+        dosbing1: j.dosbing1 || '-',
+        dosbing2: j.dosbing2 || '-',
+        pelaksanaan: j.pelaksanaan || '-',
+        tempat: j.tempat || '-',
+        jadwalUjian: jadwalDisplay,
+        status: j.status_verifikasi ? 'Terverifikasi' : 'Menunggu Verifikasi'
+    };
+  });
+  break;
+
+  case 'surat':
   const rawSurat = await Verifikasi.suratUndangan(tahunId);
 
   surat = rawSurat.map(s => {
@@ -93,18 +94,23 @@ case 'surat':
     const hasJadwal = !!s.jadwal.tanggal;
     const hasZoomLengkap = !!(s.jadwal.link_zoom && s.jadwal.meeting_id && s.jadwal.passcode);
 
-    // 🔥 LOGIKA VALIDASI TOMBOL
-    // Jika Offline: Cukup ada Tanggal. 
-    // Jika Online: Harus ada Tanggal + Link Zoom + ID + Passcode.
+    // Logika validasi download draf
     const canDownloadDraft = (mode === 'offline' && hasJadwal) || 
                              (mode === 'online' && hasJadwal && hasZoomLengkap);
 
     let jadwalDisplay = '-';
     if (hasJadwal) {
         const dateObj = new Date(s.jadwal.tanggal);
-        const tgl = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-        const jam = `${s.jadwal.jam_mulai?.slice(0,5)} - ${s.jadwal.jam_selesai?.slice(0,5)}`;
-        jadwalDisplay = `${tgl}<br><small class="text-muted">${jam}</small>`;
+        // Format: Jum, 16 Jan 2026
+        const tgl = dateObj.toLocaleDateString('id-ID', { 
+            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' 
+        });
+        // Ubah format jam dari 10:00 jadi 10.00
+        const mulai = s.jadwal.jam_mulai ? s.jadwal.jam_mulai.toString().slice(0, 5).replace(':', '.') : '00.00';
+        const selesai = s.jadwal.jam_selesai ? s.jadwal.jam_selesai.toString().slice(0, 5).replace(':', '.') : '00.00';
+        
+        // Gabungkan sesuai format permintaan
+        jadwalDisplay = `${tgl}<br>${mulai} - ${selesai} WIB<br>${mode}`;
     }
 
     return {
@@ -116,7 +122,7 @@ case 'surat':
       last_download_at: s.last_download_at,
       jadwalUjian: jadwalDisplay,
       pelaksanaan: mode,
-      canDownloadDraft: canDownloadDraft // 👈 Kirim ke View
+      canDownloadDraft: canDownloadDraft 
     };
   });
   break;
