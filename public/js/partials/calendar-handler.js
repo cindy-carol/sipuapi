@@ -124,7 +124,7 @@ const mhsEvents = eventsData.map(e => {
     if (mode === 'online') {
       e.backgroundColor = '#006dc1'; // Biru (Info)
       e.borderColor = '#006dc1';
-      e.textColor = '#000000';      // Teks hitam agar terbaca jelas di biru muda
+      e.textColor = '#ffffff';      // Teks hitam agar terbaca jelas di biru muda
     } else {
       e.backgroundColor = '#198754'; // Hijau (Success)
       e.borderColor = '#198754';
