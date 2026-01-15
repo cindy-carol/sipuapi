@@ -141,12 +141,12 @@ const mhsEvents = eventsData.map(e => {
     if (mode === 'offline') {
       e.backgroundColor = '#495057'; // Abu-abu Gelap
       e.borderColor = '#495057';
-      e.title = "TERISI (OFFLINE)";
+      e.title = "OFFLINE";
     } else {
       e.backgroundColor = '#e9ecef'; // Abu-abu Terang
       e.borderColor = '#ced4da';
       e.textColor = '#6c757d';
-      e.title = "TERISI (ONLINE)";
+      e.title = "ONLINE";
     }
     e.classNames = ['clickable-event'];
   }
