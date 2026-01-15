@@ -116,33 +116,39 @@ document.addEventListener("DOMContentLoaded", () => {
 const mhsEvents = eventsData.map(e => {
   const p = e.extendedProps;
   const isMine = (p.owner === currentUserNPM);
+  const mode = p.mode ? p.mode.toLowerCase() : 'offline'; // 👈 Ambil mode pelaksanaan
 
   if (isMine) {
-    // 🛡️ LOGIKA JADWAL SAYA: Cek status verifikasi (p.status)
-    if (p.status === 'confirmed') { 
-      e.backgroundColor = '#198754'; // Hijau (Disetujui)
+    // 🛡️ LOGIKA JADWAL SAYA
+    // 🔥 SINKRONISASI WARNA: Online Biru, Offline Hijau
+    if (mode === 'online') {
+      e.backgroundColor = '#006dc1'; // Biru (Info)
+      e.borderColor = '#006dc1';
+      e.textColor = '#000000';      // Teks hitam agar terbaca jelas di biru muda
+    } else {
+      e.backgroundColor = '#198754'; // Hijau (Success)
       e.borderColor = '#198754';
-      e.title = "Jadwal Anda (ACC)"; 
-    } else { 
-      e.backgroundColor = '#ffc107'; // Kuning (Menunggu/Softbooked)
-      e.borderColor = '#ffc107';
-      e.textColor = '#000000';      // Teks hitam agar kontras di warna kuning
-      e.title = "Jadwal Anda (Menunggu)"; 
+      e.textColor = '#ffffff';
     }
-    e.textColor = isMine && p.status !== 'confirmed' ? '#000000' : '#ffffff';
+
+    // 🔥 TAMBAH KETERANGAN PELAKSANAAN & STATUS
+    const statusText = p.status === 'confirmed' ? 'ACC' : 'Proses';
+    const modeText = mode.toUpperCase();
+    e.title = `Jadwal Anda: ${modeText} (${statusText})`; 
+
   } else {
-    // 👤 JADWAL ORANG LAIN: Warna gelap (Terisi)
-    if (p.mode === 'offline') { 
-      e.backgroundColor = '#495057'; 
-      e.borderColor = '#495057'; 
-      e.title = "OFFLINE"; 
-    } else { 
-      e.backgroundColor = '#e9ecef'; 
-      e.borderColor = '#ced4da'; 
-      e.textColor = '#000000'; 
-      e.title = "ONLINE"; 
+    // 👤 JADWAL ORANG LAIN: Warna redup agar tidak tertukar
+    if (mode === 'offline') {
+      e.backgroundColor = '#495057'; // Abu-abu Gelap
+      e.borderColor = '#495057';
+      e.title = "TERISI (OFFLINE)";
+    } else {
+      e.backgroundColor = '#e9ecef'; // Abu-abu Terang
+      e.borderColor = '#ced4da';
+      e.textColor = '#6c757d';
+      e.title = "TERISI (ONLINE)";
     }
-    e.classNames = ['clickable-event']; 
+    e.classNames = ['clickable-event'];
   }
   return e;
 });
