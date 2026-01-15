@@ -184,7 +184,7 @@
                   <div class="d-flex gap-1 align-items-center"> 
                       <% if (mhs.last_download_at) { %>
                           <%- include('../partials/button', { 
-                              buttonType: 'download', buttonLabel: 'Unduh Ulang', buttonTarget: mhs.npm, 
+                              buttonType: 'download', buttonLabel: 'Download Ulang', buttonTarget: mhs.npm, 
                               buttonStatus: 'btn-outline-info border-2', isNew: false 
                           }) %>
                       <% } else { %>
@@ -214,7 +214,7 @@
                           allowDelete: true, customFields: { npm: mhs.npm } 
                       }) %>
                   <% } else { %>
-                      <span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-lock-fill"></i> Unduh draf dulu</span>
+                      <span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-lock-fill"></i> Download draft dulu</span>
                   <% } %>
               </div>
           </td>
