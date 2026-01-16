@@ -43,16 +43,15 @@ const getMonitoringMahasiswa = async (req, res) => {
 // =========================================================================
 // 🟢 2. EXPORT KE EXCEL (MEMORY STREAM - VERCEL COMPATIBLE)
 // =========================================================================
+// controllers/admin/monitoringController.js
 const exportMonitoringExcel = async (req, res) => {
   try {
     const selectedTahunId = req.query.tahun_ajaran || null;
     const mahasiswaList = await getAllMahasiswaMonitoring(selectedTahunId);
 
-    // Inisialisasi Workbook ExcelJS
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Monitoring Mahasiswa');
 
-    // Definisi Kolom Excel
     sheet.columns = [
       { header: 'No', key: 'no', width: 5 },
       { header: 'NPM', key: 'npm', width: 15 },
@@ -60,7 +59,7 @@ const exportMonitoringExcel = async (req, res) => {
       { header: 'Dosen Pembimbing 1', key: 'dosbing1', width: 30 },
       { header: 'Dosen Pembimbing 2', key: 'dosbing2', width: 30 },
       { header: 'Penguji', key: 'penguji', width: 35 },
-      { header: 'Tahun Ajaran', key: 'tahunAjaran', width: 25 },
+      { header: 'Tahun Ajaran', key: 'tahunAjaran', width: 25 }, // Akan berisi teks "2025/2026 Ganjil"
       { header: 'Jadwal Ujian', key: 'jadwal', width: 40 },
       { header: 'Upload Dokumen', key: 'upload', width: 15 },
       { header: 'Verifikasi Dokumen', key: 'verif', width: 15 },
@@ -68,11 +67,9 @@ const exportMonitoringExcel = async (req, res) => {
       { header: 'Sudah Ujian', key: 'sudahUjian', width: 15 },
     ];
 
-    // Styling Header agar lebih profesional
     sheet.getRow(1).font = { bold: true };
     sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
 
-    // Masukkan data mahasiswa ke baris Excel
     mahasiswaList.forEach((m, index) => {
       sheet.addRow({
         no: index + 1,
@@ -81,8 +78,8 @@ const exportMonitoringExcel = async (req, res) => {
         dosbing1: (m.dosbing && m.dosbing[0]) || '-',
         dosbing2: (m.dosbing && m.dosbing[1]) || '-',
         penguji: Array.isArray(m.pengujiNama) ? m.pengujiNama.join(', ') : (m.pengujiNama || '-'),
-        tahunAjaran: m.tahunAjaran || '-',
-        jadwal: m.jadwalUjian || '-',
+        tahunAjaran: m.tahunAjaran, // Mengambil data string dari model
+        jadwal: m.jadwalUjian,
         upload: m.uploadBerkas ? 'Ya' : 'Tidak',
         verif: m.verifBerkas ? 'Ya' : 'Tidak',
         suratUndangan: m.suratUndangan ? 'Ya' : 'Tidak',
@@ -90,18 +87,10 @@ const exportMonitoringExcel = async (req, res) => {
       });
     });
 
-    // Pengaturan Header Respons HTTP 
     const fileName = `Monitoring-Mahasiswa-${Date.now()}.xlsx`;
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=${fileName}`
-    );
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
 
-    // Menulis workbook langsung ke stream respon (Tanpa simpan file sementara)
     await workbook.xlsx.write(res);
     res.end();
 
