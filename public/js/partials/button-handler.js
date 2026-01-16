@@ -955,177 +955,174 @@ document.body.addEventListener('submit', async function(e) {
   // ===================================================
   // =============== 5️⃣ DELETE MODE HANDLER ============
   // ===================================================
-  document.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const table = document.querySelector('.container:not(.d-none) table');
-      if (!table) {
-        alert('Tabel tidak ditemukan.');
-        return;
-      }
-      const deleteMode = table.classList.contains('delete-mode');
+// ===================================================
+// =============== 5️⃣ DELETE MODE HANDLER ============
+// ===================================================
+document.querySelectorAll('.btn-delete').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // FIX: Gunakan selector umum agar fleksibel untuk berbagai halaman (Dosen/Mahasiswa)
+    const table = document.querySelector('table:not(.d-none)');
+    
+    if (!table) {
+      alert('Tabel tidak ditemukan.');
+      return;
+    }
 
-      // KELUAR MODE HAPUS
-      if (deleteMode) {
-        table.classList.remove('delete-mode');
-        table.querySelectorAll('.delete-col').forEach(el => el.remove());
-        btn.classList.remove('btn-warning');
-        btn.innerHTML = '<i class="bi bi-trash"></i>';
-        const btnGroup = btn.parentElement.querySelector('.delete-btn-group');
-        if (btnGroup) btnGroup.remove();
-        return;
-      }
+    const deleteMode = table.classList.contains('delete-mode');
 
-      // MASUK MODE HAPUS
-      const existingGroup = btn.parentElement.querySelector('.delete-btn-group');
-      if (existingGroup) existingGroup.remove();
+    // --- KELUAR DARI MODE HAPUS ---
+    if (deleteMode) {
+      table.classList.remove('delete-mode');
+      table.querySelectorAll('.delete-col').forEach(el => el.remove());
+      
+      // Kembalikan tombol ke ikon Trash semula
+      btn.classList.remove('btn-warning');
+      btn.innerHTML = '<i class="bi bi-trash"></i>';
+      
+      const btnGroup = btn.parentElement.querySelector('.delete-btn-group');
+      if (btnGroup) btnGroup.remove();
+      return;
+    }
 
-      table.classList.add('delete-mode');
-      const headerRow = table.querySelector('thead tr');
-      const newTh = document.createElement('th');
-      newTh.classList.add('delete-col', 'text-center');
-      newTh.style.width = '2%';
-      newTh.textContent = '🗑️';
-      headerRow.appendChild(newTh);
+    // --- MASUK KE MODE HAPUS ---
+    table.classList.add('delete-mode');
+    
+    // 1. Tambahkan Header Checkbox (🗑️)
+    const headerRow = table.querySelector('thead tr');
+    const newTh = document.createElement('th');
+    newTh.classList.add('delete-col', 'text-center');
+    newTh.style.width = '2%';
+    newTh.textContent = '🗑️';
+    headerRow.appendChild(newTh);
 
-      table.querySelectorAll('tbody tr').forEach(row => {
-        const newTd = document.createElement('td');
-        newTd.classList.add('delete-col', 'text-center', 'align-middle');
-        newTd.innerHTML = '<input type="checkbox" class="form-check-input delete-check" style="transform:scale(0.9)">';
-        row.appendChild(newTd);
-      });
+    // 2. Tambahkan Checkbox di setiap baris (Body)
+    table.querySelectorAll('tbody tr').forEach(row => {
+      const newTd = document.createElement('td');
+      newTd.classList.add('delete-col', 'text-center', 'align-middle');
+      newTd.innerHTML = '<input type="checkbox" class="form-check-input delete-check" style="transform:scale(0.9)">';
+      row.appendChild(newTd);
+    });
 
-      btn.classList.add('btn-warning');
-      btn.innerHTML = '<i class="bi bi-x-circle"></i> Batal';
+    // 3. Ubah tombol utama menjadi tombol Batal (X)
+    btn.classList.add('btn-warning');
+    btn.innerHTML = '<i class="bi bi-x-circle"></i> Batal';
 
-      const btnGroup = document.createElement('div');
-      btnGroup.className = 'delete-btn-group d-inline ms-2';
-      btnGroup.innerHTML = `
+    // 4. Munculkan tombol "Hapus yang Dipilih" di samping tombol Batal
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'delete-btn-group d-inline ms-2';
+    btnGroup.innerHTML = `
       <button class="btn btn-danger btn-sm btn-hapus-pilih" data-bs-toggle="modal" data-bs-target="#modalHapus">
         <i class="bi bi-trash3"></i> Hapus yang Dipilih
       </button>
     `;
-      btn.after(btnGroup);
+    btn.after(btnGroup);
 
-      const hapusBtn = btnGroup.querySelector('.btn-hapus-pilih');
-      hapusBtn.addEventListener('click', () => {
-        const checked = table.querySelectorAll('.delete-check:checked');
-        if (checked.length === 0) {
-          alert('Pilih minimal satu data yang ingin dihapus!');
-          const modalTarget = hapusBtn.getAttribute('data-bs-target');
-          const modalEl = document.querySelector(modalTarget);
-          const modal = bootstrap.Modal.getInstance(modalEl);
-          if (modal) modal.hide();
-          return;
-        }
-      });
+    // Validasi: Pastikan ada data yang diceklis sebelum buka modal
+    const hapusBtn = btnGroup.querySelector('.btn-hapus-pilih');
+    hapusBtn.addEventListener('click', (e) => {
+      const checked = table.querySelectorAll('.delete-check:checked');
+      if (checked.length === 0) {
+        alert('Pilih minimal satu data yang ingin dihapus!');
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
     });
   });
+});
 
-  // ===================================================
-  // =============== 6️⃣ KONFIRMASI HAPUS ===============
-  // ===================================================
-// button-handler.js
-
-// ... (Kode untuk bagian 5️⃣ DELETE MODE HANDLER)
 
 // ===================================================
-// =============== 6️⃣ KONFIRMASI HAPUS (FINAL ROBUST) =
+// =============== 6️⃣ KONFIRMASI HAPUS (SHARED) ======
 // ===================================================
 document.querySelectorAll('.btn-confirm').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const modalId = btn.getAttribute('data-modal-id');
-      const modalEl = document.getElementById(modalId);
+  btn.addEventListener('click', async () => {
+    const modalId = btn.getAttribute('data-modal-id');
+    const modalEl = document.getElementById(modalId);
+    
+    // Pastikan ini adalah aksi untuk Modal Hapus
+    if (modalId !== 'modalHapus') return;
+
+    // Gunakan selector umum untuk menemukan tabel aktif
+    const table = document.querySelector('table:not(.d-none)');
+    const checkedRows = table ? table.querySelectorAll('.delete-check:checked') : [];
+    
+    if (checkedRows.length === 0) return;
+
+    // 1. Tentukan Konteks Hapus (Dosen vs Mahasiswa) berdasarkan Path URL
+    let endpointPath;
+    let identifierName; // Hanya untuk label log
+    
+    if (window.location.pathname.includes('/daftar-dosen')) {
+        endpointPath = '/admin/dosen/'; // Sesuai router: DELETE /admin/dosen/:kodeDosen
+        identifierName = 'Dosen';
+    } else if (window.location.pathname.includes('/daftar-mahasiswa')) {
+        endpointPath = '/admin/mahasiswa/'; // Sesuai router: DELETE /admin/mahasiswa/:npm
+        identifierName = 'Mahasiswa';
+    } else {
+        alert('Halaman tidak didukung untuk aksi hapus.');
+        return;
+    }
+
+    const deletePromises = [];
+    const rowsToRemove = [];
+    
+    // Tutup modal konfirmasi
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) modalInstance.hide();
+    
+    // 2. Proses Setiap Baris yang Diceklis
+    for (const chk of checkedRows) {
+      const row = chk.closest('tr');
+      const identifierValue = row?.dataset.id; // Kode Dosen atau NPM
       
-      // 1. TENTUKAN KONTEKS HAPUS (Dosen atau Mahasiswa)
-      let endpointPath;
-      let consoleLabel;
-      let identifierKey;
-      
-      // Cek URL untuk menentukan konteks (misalnya /admin/daftar-dosen atau /admin/daftar-mahasiswa)
-      if (window.location.pathname.includes('/daftar-dosen')) {
-          endpointPath = '/admin/dosen/';
-          consoleLabel = 'dosen';
-          identifierKey = 'kodeDosen'; // Dosen menggunakan Kode Dosen
-      } else if (window.location.pathname.includes('/daftar-mahasiswa')) {
-          endpointPath = '/admin/mahasiswa/';
-          consoleLabel = 'mahasiswa';
-          identifierKey = 'npm'; // Mahasiswa menggunakan NPM
-      } else {
-          // Jika bukan halaman Dosen atau Mahasiswa, hentikan proses
-          return;
+      if (identifierValue) {
+          deletePromises.push(
+              fetch(`${endpointPath}${identifierValue}`, { method: 'DELETE' })
+              .then(async (response) => {
+                  const result = await response.json();
+                  if (response.ok && result.success) {
+                      rowsToRemove.push(row); 
+                      return { success: true };
+                  } else {
+                      throw new Error(result.message || `Gagal menghapus data ${identifierValue}`);
+                  }
+              })
+              .catch(error => {
+                  console.error(`❌ Gagal hapus ${identifierName}:`, identifierValue, error.message);
+                  return { success: false, error: error.message };
+              })
+          );
       }
+    }
 
-      // Pastikan ini modal konfirmasi kita
-      if (modalId !== 'modalHapus') return;
+    // 3. Eksekusi Semua Request Secara Paralel
+    const results = await Promise.all(deletePromises);
+    
+    // 4. Hapus Baris dari Tampilan (DOM) jika Berhasil di Database
+    rowsToRemove.forEach(row => row.remove());
+    
+    // 5. Berikan Feedback Hasil
+    const successCount = rowsToRemove.length;
+    const failureCount = results.length - successCount;
 
-      const table = document.querySelector('.container:not(.d-none) table');
-      const checkedRows = table ? table.querySelectorAll('.delete-check:checked') : [];
-      
-      if (checkedRows.length === 0) return;
-
-      const deletePromises = [];
-      const rowsToRemove = [];
-      
-      // 1. Tutup modal konfirmasi
-      const modalInstance = bootstrap.Modal.getInstance(modalEl);
-      if (modalInstance) modalInstance.hide();
-      
-      // 2. Kumpulkan promises penghapusan dan kirim request DELETE
-      for (const chk of checkedRows) {
-        const row = chk.closest('tr');
-        // data-id berisi identifier (Kode Dosen atau NPM)
-        const identifierValue = row?.dataset.id; 
-        
-        if (identifierValue) {
-            deletePromises.push(
-                fetch(`${endpointPath}${identifierValue}`, { // Menggunakan endpoint dinamis
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        rowsToRemove.push(row); 
-                        return { success: true };
-                    } else {
-                        return response.json().then(error => {
-                            throw new Error(error.message || `Gagal menghapus ${identifierValue}`);
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error(`❌ Gagal hapus ${consoleLabel}:`, identifierValue, error.message);
-                    return { success: false, error: error.message };
-                })
-            );
+    if (failureCount > 0) {
+        alert(`${successCount} data berhasil dihapus. ${failureCount} data gagal dihapus (Cek console log).`);
+    } else {
+        // Tampilkan Modal Sukses (Feedback Visual Global)
+        const modalSuksesEl = document.getElementById('modalSukses');
+        if (modalSuksesEl) {
+          const suksesInstance = new bootstrap.Modal(modalSuksesEl);
+          suksesInstance.show();
+          setTimeout(() => {
+              suksesInstance.hide();
+              window.location.reload(); // Refresh untuk mereset tampilan tabel
+          }, 1500);
+        } else {
+          window.location.reload();
         }
-      }
-
-      // 3. Tunggu semua permintaan selesai
-      const results = await Promise.all(deletePromises);
-      
-      // 4. Hapus baris dari DOM yang berhasil dihapus dari DB
-      rowsToRemove.forEach(row => row.remove());
-      
-      // 5. Tampilkan pesan hasil
-      const successCount = rowsToRemove.length;
-      const failureCount = results.length - successCount;
-
-      let message = `${successCount} data berhasil dihapus.`;
-      
-      if (failureCount > 0) {
-          message += ` ${failureCount} data gagal dihapus (mungkin terikat data lain, cek console untuk detail).`;
-          alert(message);
-      } else {
-          // Tampilkan modal sukses
-          const modalSukses = document.getElementById('modalSukses');
-          if (modalSukses) {
-            const suksesInstance = new bootstrap.Modal(modalSukses);
-            suksesInstance.show();
-            setTimeout(() => suksesInstance.hide(), 2000);
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove()); 
-          }
-      }
-      
-    });
+    }
+  });
 });
 
 
