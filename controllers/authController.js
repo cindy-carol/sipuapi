@@ -32,7 +32,7 @@ const loginAdminKaprodi = async (req, res) => {
     if (user.status_aktif === false) {
       return res.render('login-admin-kaprodi', { 
         title: 'Login Admin & Kaprodi', 
-        error: 'AKUN DINONAKTIFKAN! Hubungi Super Admin.' 
+        error: 'AKUN DINONAKTIFKAN! Hubungi Admin.' 
       });
     }
 
