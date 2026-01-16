@@ -277,22 +277,44 @@ async function kirimDataForm(formEl, url, isProfileMode = false) {
 // Helper: Toggle Tempat Edit (Offline/Online) - Dipanggil via onchange HTML
 window.toggleTempatEdit = function(selectEl) {
     const isOnline = selectEl.value === 'online';
+    
+    // Container Elements
     const offlineContainer = document.getElementById('tempat-offline-container');
     const onlineContainer = document.getElementById('tempat-online-container');
-    const tempatInput = document.getElementById('edit-tempat');
+    
+    // Input Elements
+    const tempatInput = document.getElementById('edit-tempat'); // Field Offline
+    const linkZoom = document.getElementById('edit-link-zoom'); // Field Online
+    const meetingId = document.getElementById('edit-meeting-id');
+    const passcode = document.getElementById('edit-passcode');
 
+    // 1. Toggle Visibility Kontainer
     if (offlineContainer) offlineContainer.classList.toggle('d-none', isOnline);
     if (onlineContainer) onlineContainer.classList.toggle('d-none', !isOnline);
 
-    if (tempatInput) {
-        tempatInput.required = !isOnline;
-        if (!isOnline) {
-            if (tempatInput.value === '' || tempatInput.value === 'Online') {
-                tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
-            }
-        } else {
-            tempatInput.value = ''; 
+    // 2. Logika Atribut & Validasi
+    if (isOnline) {
+        // --- MODE ONLINE ---
+        if (tempatInput) {
+            tempatInput.value = 'Online'; // Set label internal
+            tempatInput.required = false; 
+            tempatInput.readOnly = true; 
         }
+        // Link Zoom wajib diisi agar tombol download aktif nantinya
+        if (linkZoom) linkZoom.required = true; 
+        
+    } else {
+        // --- MODE OFFLINE ---
+        if (tempatInput) {
+            // Isi otomatis alamat tetap dan kunci field-nya
+            tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
+            tempatInput.readOnly = true; // 🔒 Set readonly agar admin tidak ubah manual
+            tempatInput.required = true;
+        }
+        // Kosongkan dan matikan required field online agar tidak ganggu submit
+        if (linkZoom) { linkZoom.value = ''; linkZoom.required = false; }
+        if (meetingId) meetingId.value = '';
+        if (passcode) passcode.value = '';
     }
 };
 
