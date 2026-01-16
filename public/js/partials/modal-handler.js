@@ -10,25 +10,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
 
     // A. Form Select Type (Munculkan tombol kirim jika ada pilihan)
-    document.querySelectorAll('.form-select').forEach(select => {
-        const modalId = select.id.split('formSelect-')[1];
-        if (!modalId) return;
+window.toggleTempatEdit = function(selectEl) {
+    const isOnline = selectEl.value === 'online';
+    const offlineContainer = document.getElementById('tempat-offline-container');
+    const onlineContainer = document.getElementById('tempat-online-container');
+    const tempatInput = document.getElementById('edit-tempat');
+    const linkZoom = document.getElementById('edit-link-zoom');
+    
+    // Ambil data asli dari DB yang kita simpan di atribut data saat klik tombol Edit
+    const dbTempat = selectEl.getAttribute('data-db-tempat');
 
-        const btn = document.querySelector(`.btn-kirim[data-modal-id="${modalId}"]`);
-        if (!btn) return;
+    // Toggle Tampilan
+    if (offlineContainer) offlineContainer.classList.toggle('d-none', isOnline);
+    if (onlineContainer) onlineContainer.classList.toggle('d-none', !isOnline);
 
-        select.addEventListener('change', () => {
-            btn.style.display = select.value ? 'inline-block' : 'none';
-        });
-
-        // Logika Tombol Kirim -> Modal Sukses
-        btn.addEventListener('click', () => {
-            const modalEl = document.getElementById(modalId);
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance) modalInstance.hide();
-            showModalSukses();
-        });
-    });
+    if (tempatInput) {
+        if (!isOnline) {
+            // MODE OFFLINE: Kunci field, ambil dari DB atau gunakan default
+            tempatInput.value = dbTempat || 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
+            tempatInput.readOnly = true; 
+            tempatInput.classList.add('');
+            tempatInput.required = true;
+            if (linkZoom) linkZoom.required = false;
+        } else {
+            // MODE ONLINE: Set label internal, buka field Link Zoom
+            tempatInput.value = 'Online'; 
+            tempatInput.readOnly = true;
+            tempatInput.classList.add('bg-light');
+            tempatInput.required = false;
+            if (linkZoom) linkZoom.required = true; // Wajib isi link agar tombol download aktif
+        }
+    }
+};
 
     // B. Confirm Type (Tombol Konfirmasi Aksi)
     document.querySelectorAll('.btn-confirm').forEach(btn => {
@@ -277,44 +290,24 @@ async function kirimDataForm(formEl, url, isProfileMode = false) {
 // Helper: Toggle Tempat Edit (Offline/Online) - Dipanggil via onchange HTML
 window.toggleTempatEdit = function(selectEl) {
     const isOnline = selectEl.value === 'online';
-    
-    // Container Elements
     const offlineContainer = document.getElementById('tempat-offline-container');
     const onlineContainer = document.getElementById('tempat-online-container');
-    
-    // Input Elements
-    const tempatInput = document.getElementById('edit-tempat'); // Field Offline
-    const linkZoom = document.getElementById('edit-link-zoom'); // Field Online
-    const meetingId = document.getElementById('edit-meeting-id');
-    const passcode = document.getElementById('edit-passcode');
+    const tempatInput = document.getElementById('edit-tempat');
 
-    // 1. Toggle Visibility Kontainer
     if (offlineContainer) offlineContainer.classList.toggle('d-none', isOnline);
     if (onlineContainer) onlineContainer.classList.toggle('d-none', !isOnline);
 
-    // 2. Logika Atribut & Validasi
-    if (isOnline) {
-        // --- MODE ONLINE ---
-        if (tempatInput) {
-            tempatInput.value = 'Online'; // Set label internal
-            tempatInput.required = false; 
-            tempatInput.readOnly = true; 
+    if (tempatInput) {
+        tempatInput.required = !isOnline;
+        if (!isOnline) {
+            if (tempatInput.value === '' || tempatInput.value === 'Online') {
+                tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
+            }
+            tempatInput.readOnly = true;
+        } else {
+            tempatInput.value = ''; 
+            tempatInput.readOnly = false;
         }
-        // Link Zoom wajib diisi agar tombol download aktif nantinya
-        if (linkZoom) linkZoom.required = true; 
-        
-    } else {
-        // --- MODE OFFLINE ---
-        if (tempatInput) {
-            // Isi otomatis alamat tetap dan kunci field-nya
-            tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
-            tempatInput.readOnly = true; // 🔒 Set readonly agar admin tidak ubah manual
-            tempatInput.required = true;
-        }
-        // Kosongkan dan matikan required field online agar tidak ganggu submit
-        if (linkZoom) { linkZoom.value = ''; linkZoom.required = false; }
-        if (meetingId) meetingId.value = '';
-        if (passcode) passcode.value = '';
     }
 };
 
