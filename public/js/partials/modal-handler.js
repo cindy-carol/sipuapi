@@ -10,38 +10,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
 
     // A. Form Select Type (Munculkan tombol kirim jika ada pilihan)
-window.toggleTempatEdit = function(selectEl) {
-    const isOnline = selectEl.value === 'online';
-    const offlineContainer = document.getElementById('tempat-offline-container');
-    const onlineContainer = document.getElementById('tempat-online-container');
-    const tempatInput = document.getElementById('edit-tempat');
-    const linkZoom = document.getElementById('edit-link-zoom');
-    
-    // Ambil data asli dari DB yang kita simpan di atribut data saat klik tombol Edit
-    const dbTempat = selectEl.getAttribute('data-db-tempat');
+    document.querySelectorAll('.form-select').forEach(select => {
+        const modalId = select.id.split('formSelect-')[1];
+        if (!modalId) return;
 
-    // Toggle Tampilan
-    if (offlineContainer) offlineContainer.classList.toggle('d-none', isOnline);
-    if (onlineContainer) onlineContainer.classList.toggle('d-none', !isOnline);
+        const btn = document.querySelector(`.btn-kirim[data-modal-id="${modalId}"]`);
+        if (!btn) return;
 
-    if (tempatInput) {
-        if (!isOnline) {
-            // MODE OFFLINE: Kunci field, ambil dari DB atau gunakan default
-            tempatInput.value = dbTempat || 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
-            tempatInput.readOnly = true; 
-            tempatInput.classList.add('');
-            tempatInput.required = true;
-            if (linkZoom) linkZoom.required = false;
-        } else {
-            // MODE ONLINE: Set label internal, buka field Link Zoom
-            tempatInput.value = 'Online'; 
-            tempatInput.readOnly = true;
-            tempatInput.classList.add('bg-light');
-            tempatInput.required = false;
-            if (linkZoom) linkZoom.required = true; // Wajib isi link agar tombol download aktif
-        }
-    }
-};
+        select.addEventListener('change', () => {
+            btn.style.display = select.value ? 'inline-block' : 'none';
+        });
+
+        // Logika Tombol Kirim -> Modal Sukses
+        btn.addEventListener('click', () => {
+            const modalEl = document.getElementById(modalId);
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+            showModalSukses();
+        });
+    });
 
     // B. Confirm Type (Tombol Konfirmasi Aksi)
     document.querySelectorAll('.btn-confirm').forEach(btn => {
@@ -303,10 +290,8 @@ window.toggleTempatEdit = function(selectEl) {
             if (tempatInput.value === '' || tempatInput.value === 'Online') {
                 tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
             }
-            tempatInput.readOnly = true;
         } else {
             tempatInput.value = ''; 
-            tempatInput.readOnly = false;
         }
     }
 };
