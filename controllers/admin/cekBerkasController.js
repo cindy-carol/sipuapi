@@ -121,29 +121,6 @@ rejectBerkas: async (req, res) => {
   // =========================================================================
   // 🔄 3. RETURN TO MAHASISWA (TOLAK SEMUA BERKAS SEKALIGUS)
   // =========================================================================
-  returnToMahasiswa: async (req, res) => {
-    try {
-      const { npm, catatan } = req.body; 
-      const adminId = req.session.user?.id || null;
-
-      const mahasiswa = await model.getMahasiswaByNpm(npm);
-      if (!mahasiswa) return res.status(404).send("Mahasiswa tidak ditemukan!");
-
-      // Update status semua berkas menjadi FALSE
-      await model.updateBerkasStatus({ 
-          mahasiswaId: mahasiswa.id, 
-          status: false, 
-          catatan_kesalahan: catatan,
-          adminId: adminId 
-      });
-      
-      res.json({ success: true, message: "Semua berkas telah dikembalikan untuk revisi." });
-
-    } catch (err) {
-      console.error('❌ Error returnToMahasiswa:', err);
-      res.status(500).json({ success: false, message: "Gagal memproses pengembalian berkas." });
-    }
-  },
 
   // =========================================================================
   // ✅ 4. APPROVE BERKAS (BY ID)

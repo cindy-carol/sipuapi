@@ -25,7 +25,6 @@ if (verifikasiController.saveTemplateSettings) {
 // 📂 1. CEK BERKAS SYARAT
 // =========================================================
 router.get('/cek-berkas/:npm', cekBerkasController.list);
-router.post('/cek-berkas/:npm/kembalikan', cekBerkasController.returnToMahasiswa);
 router.post('/update-status-reject', cekBerkasController.rejectBerkas);
 
 // Update status via AJAX/Fetch
