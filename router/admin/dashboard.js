@@ -17,7 +17,4 @@ router.post('/rincian', dashboardController.addRincian);
 
 // 2. Update Rincian (Ubah ke PUT dengan ID di URL)
 router.put('/rincian/:id', dashboardController.updateRincian);
-
-// 3. Hapus Rincian (Ubah ke DELETE dengan ID di URL)
-router.delete('/rincian/:id', dashboardController.deleteRincian);
 module.exports = router;

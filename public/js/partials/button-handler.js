@@ -94,33 +94,21 @@ document.querySelectorAll('.status-select').forEach(select => {
     });
 
     // B. KLIK TOMBOL BATAL (ABU)
-// D. KLIK TOMBOL HAPUS - SEKARANG PAKAI DELETE
-document.body.addEventListener('click', async function(e) {
-    const btn = e.target.closest('.btn-delete-rincian');
-    if (!btn) return;
+    document.body.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-cancel-rincian');
+        if (!btn) return;
 
-    const container = btn.closest('.editable-container');
-    const id = container.dataset.id;
+        const container = btn.closest('.editable-container');
+        
+        // Switch Tampilan: Input -> Teks
+        container.querySelectorAll('.content-view').forEach(el => el.classList.remove('d-none'));
+        container.querySelectorAll('.editor-view').forEach(el => el.classList.add('d-none'));
 
-    if (!confirm('Apakah Anda yakin ingin menghapus informasi ini?')) return;
-
-    try {
-        const response = await fetch(`/admin/dashboard/rincian/${id}`, {
-            method: 'DELETE'
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            container.remove(); // Hapus elemen dari DOM tanpa reload
-        } else {
-            alert('Gagal menghapus: ' + result.message);
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Gagal koneksi ke server');
-    }
-});
+        // Switch Tombol: Simpan & Batal -> Edit
+        container.querySelector('.btn-edit-rincian').classList.remove('d-none');
+        btn.classList.add('d-none');
+        container.querySelector('.btn-save-rincian').classList.add('d-none');
+    });
 
     // C. KLIK TOMBOL SIMPAN (HIJAU) - PUSH KE DB
 // C. KLIK TOMBOL SIMPAN (HIJAU) - SEKARANG PAKAI PUT

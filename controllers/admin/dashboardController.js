@@ -107,19 +107,6 @@ updateRincian: async (req, res) => {
   }
 },
 
-deleteRincian: async (req, res) => {
-  try {
-    const { id } = req.params; // Mengambil ID dari URL rute :id
-    await Dashboard.deleteRincian(id);
-    
-    // Karena dipanggil via Fetch, kita kirim respon JSON
-    res.json({ success: true, message: 'Data berhasil dihapus!' });
-  } catch (err) { 
-    console.error("Gagal Delete:", err); 
-    res.status(500).json({ success: false, message: 'Gagal menghapus data' }); 
-  }
-},
-
   // =========================================================================
   // 📊 3. API CHARTS (Untuk Grafik Interaktif)
   // =========================================================================
