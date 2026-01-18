@@ -86,32 +86,39 @@ const dashboardController = {
     }
   },
 
-  updateRincian: async (req, res) => {
-    try {
-      await Dashboard.updateRincian(
-        req.body.id, 
-        req.body.title, 
-        req.body.content, 
-        req.session.user.id
-      );
-      
-      // Respon JSON untuk mendukung fitur Inline Edit di Frontend
-      res.json({ success: true, message: 'Data berhasil diupdate!' });
-    } catch (err) { 
-      console.error("Gagal Update:", err); 
-      res.status(500).json({ success: false, message: 'Gagal update database' }); 
-    }
-  },
+// dashboardController.js
 
-  deleteRincian: async (req, res) => {
-    try {
-      await Dashboard.deleteRincian(req.params.id);
-      res.redirect('/admin/dashboard');
-    } catch (err) { 
-      console.error("Gagal Delete:", err); 
-      res.redirect('/admin/dashboard'); 
-    }
-  },
+updateRincian: async (req, res) => {
+  try {
+    const { id } = req.params; // Mengambil ID dari URL rute :id
+    const { title, content } = req.body;
+
+    await Dashboard.updateRincian(
+      id, 
+      title, 
+      content, 
+      req.session.user.id
+    );
+    
+    res.json({ success: true, message: 'Data berhasil diperbarui!' });
+  } catch (err) { 
+    console.error("Gagal Update:", err); 
+    res.status(500).json({ success: false, message: 'Gagal update database' }); 
+  }
+},
+
+deleteRincian: async (req, res) => {
+  try {
+    const { id } = req.params; // Mengambil ID dari URL rute :id
+    await Dashboard.deleteRincian(id);
+    
+    // Karena dipanggil via Fetch, kita kirim respon JSON
+    res.json({ success: true, message: 'Data berhasil dihapus!' });
+  } catch (err) { 
+    console.error("Gagal Delete:", err); 
+    res.status(500).json({ success: false, message: 'Gagal menghapus data' }); 
+  }
+},
 
   // =========================================================================
   // 📊 3. API CHARTS (Untuk Grafik Interaktif)

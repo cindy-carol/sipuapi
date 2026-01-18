@@ -94,69 +94,80 @@ document.querySelectorAll('.status-select').forEach(select => {
     });
 
     // B. KLIK TOMBOL BATAL (ABU)
-    document.body.addEventListener('click', function(e) {
-        const btn = e.target.closest('.btn-cancel-rincian');
-        if (!btn) return;
+// D. KLIK TOMBOL HAPUS - SEKARANG PAKAI DELETE
+document.body.addEventListener('click', async function(e) {
+    const btn = e.target.closest('.btn-delete-rincian');
+    if (!btn) return;
 
-        const container = btn.closest('.editable-container');
-        
-        // Switch Tampilan: Input -> Teks
-        container.querySelectorAll('.content-view').forEach(el => el.classList.remove('d-none'));
-        container.querySelectorAll('.editor-view').forEach(el => el.classList.add('d-none'));
+    const container = btn.closest('.editable-container');
+    const id = container.dataset.id;
 
-        // Switch Tombol: Simpan & Batal -> Edit
-        container.querySelector('.btn-edit-rincian').classList.remove('d-none');
-        btn.classList.add('d-none');
-        container.querySelector('.btn-save-rincian').classList.add('d-none');
-    });
+    if (!confirm('Apakah Anda yakin ingin menghapus informasi ini?')) return;
+
+    try {
+        const response = await fetch(`/admin/dashboard/rincian/${id}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            container.remove(); // Hapus elemen dari DOM tanpa reload
+        } else {
+            alert('Gagal menghapus: ' + result.message);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Gagal koneksi ke server');
+    }
+});
 
     // C. KLIK TOMBOL SIMPAN (HIJAU) - PUSH KE DB
-    document.body.addEventListener('click', async function(e) {
-        const btn = e.target.closest('.btn-save-rincian');
-        if (!btn) return;
+// C. KLIK TOMBOL SIMPAN (HIJAU) - SEKARANG PAKAI PUT
+document.body.addEventListener('click', async function(e) {
+    const btn = e.target.closest('.btn-save-rincian');
+    if (!btn) return;
 
-        const container = btn.closest('.editable-container');
-        const id = container.dataset.id;
+    const container = btn.closest('.editable-container');
+    const id = container.dataset.id; // Mengambil ID dari data-id [cite: 4]
 
-        const titleInput = container.querySelector('.rincian-title-input').value;
-        const contentInput = container.querySelector('.rincian-content-input').value;
+    const titleInput = container.querySelector('.rincian-title-input').value;
+    const contentInput = container.querySelector('.rincian-content-input').value;
 
-        // Efek Loading
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        btn.classList.add('disabled');
+    // Efek Loading
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    btn.classList.add('disabled');
 
-        try {
-            const response = await fetch('/admin/dashboard/update-rincian', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: id,
-                    title: titleInput,
-                    content: contentInput
-                })
-            });
+    try {
+        // Menggunakan method PUT dan mengirim ID lewat URL sesuai standar REST [cite: 4]
+        const response = await fetch(`/admin/dashboard/rincian/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: titleInput,
+                content: contentInput
+            })
+        });
 
-            const result = await response.json();
+        const result = await response.json();
 
-            if (result.success) {
-                // Update Tampilan Layar
-                container.querySelector('h5.content-view').textContent = titleInput;
-                container.querySelector('p.content-view').textContent = contentInput;
-
-                // Otomatis klik batal (biar balik ke mode baca)
-                container.querySelector('.btn-cancel-rincian').click();
-            } else {
-                alert('Gagal: ' + result.message);
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Gagal koneksi ke server');
-        } finally {
-            btn.innerHTML = originalHtml;
-            btn.classList.remove('disabled');
+        if (result.success) {
+            // Update Tampilan Layar secara instan
+            container.querySelector('h5.content-view').textContent = titleInput;
+            container.querySelector('p.content-view').textContent = contentInput;
+            container.querySelector('.btn-cancel-rincian').click();
+        } else {
+            alert('Gagal: ' + result.message);
         }
-    });
+    } catch (error) {
+        console.error(error);
+        alert('Gagal koneksi ke server');
+    } finally {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('disabled');
+    }
+});
 
 
     // ===================================================
