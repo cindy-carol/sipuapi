@@ -548,9 +548,9 @@ function handleAlasanChange() {
 <div class="mb-3">
     <label class="form-label fw-bold small text-muted">Nama Tampilan</label>
     <div class="input-group">
-        <input type="text" name="nama" id="inputNamaProfile" class="form-control" 
+        <input type="text" name="nama" id="inputNamaProfile" class="form-control bg-light" 
                value="<%= cData.nama || '' %>" 
-               placeholder="Nama Lengkap" readonly disabled>
+               placeholder="Nama Lengkap" readonly>
         
         <% if (cData.role === 'admin') { %>
             <button class="btn btn-outline-secondary" type="button" onclick="enableInput('inputNamaProfile')">
@@ -560,9 +560,8 @@ function handleAlasanChange() {
     </div>
 
     <% if (cData.role === 'admin') { %>
-        <div class="form-text small text-muted">Klik ikon pensil untuk mengubah nama/gelar.</div>
+        <div class="form-text small text-muted">Klik ikon pensil untuk mengubah nama.</div>
     <% } else { %>
-        <div class="form-text small text-info">Nama/Gelar bersifat tetap. Hubungi Admin jika ingin melakukan perubahan.</div>
     <% } %>
 </div>
 
