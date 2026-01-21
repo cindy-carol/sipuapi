@@ -552,7 +552,7 @@ function handleAlasanChange() {
                class="form-control <%= cData.role !== 'admin' ? 'bg-light' : '' %>" 
                value="<%= cData.nama || '' %>" 
                placeholder="Nama Lengkap" 
-               readonly>
+               readonly disabled>
         
         <% if (cData.role === 'admin') { %>
             <button class="btn btn-outline-secondary" type="button" onclick="enableInput('inputNamaProfile')">
