@@ -291,7 +291,7 @@ window.toggleTempatEdit = function(selectEl) {
                 tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
             }
         } else {
-            tempatInput.value = ''; 
+            tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung'; 
         }
     }
 };
