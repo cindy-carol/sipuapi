@@ -549,7 +549,7 @@ function handleAlasanChange() {
     <label class="form-label fw-bold small text-muted">Nama Tampilan</label>
     <div class="input-group">
         <input type="text" name="nama" id="inputNamaProfile" 
-               class="form-control <%= cData.role !== 'admin' ? 'bg-light' : 'bg-dark' %>" 
+               class="form-control <%= cData.role !== 'admin' ? 'bg-none' : '' %>" 
                value="<%= cData.nama || '' %>" 
                placeholder="Nama Lengkap" 
                readonly <%= cData.role !== 'admin' ? 'disabled' : '' %>>
