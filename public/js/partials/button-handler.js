@@ -745,7 +745,7 @@ window.toggleTempatEdit = function(selectEl) {
           tempatInput.value = 'Zoom Meeting';
       } else {
           // Jika OFFLINE: Isi otomatis "Ruang Sidang PSPPI"
-          tempatInput.value = 'Ruang Sidang PSPPI';
+          tempatInput.value = 'Ruang Sidang PSPPI, Gedung A FT Universitas Lampung';
       }
   }
 };

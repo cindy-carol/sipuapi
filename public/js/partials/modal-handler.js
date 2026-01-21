@@ -281,7 +281,7 @@ window.toggleTempatEdit = function(selectEl) {
     const onlineContainer = document.getElementById('tempat-online-container');
     const tempatInput = document.getElementById('edit-tempat');
 
-    if (offlineContainer) offlineContainer.classList.toggle('d-none', isOnline);
+    if (offlineContainer) offlineContainer.classList.toggle('d-none bg-none', isOnline);
     if (onlineContainer) onlineContainer.classList.toggle('d-none', !isOnline);
 
     if (tempatInput) {
